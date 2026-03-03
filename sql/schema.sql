@@ -6,12 +6,14 @@ CREATE TABLE IF NOT EXISTS users(
     created_at TIMESTAMP NOT NULL DEFAULT now()
 );
 
+
 CREATE TABLE IF NOT EXISTS items(
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
     description TEXT,
     quantity INTEGER NOT NULL CHECK(quantity>=0) DEFAULT 0,
     price NUMERIC(10,2) NOT NULL CHECK(price >= 0)
+    
 );
 
 CREATE TABLE IF NOT EXISTS carts(
