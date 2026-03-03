@@ -1,0 +1,40 @@
+# Virtual environment
+venv/
+
+*.pyc
+
+# Python cache files
+__pycache__/
+
+api/services/__pycache__/
+
+
+api/routes/__pycache__/
+api/routes/models/__pycache__/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+api/data/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+# Environment variables
+.env
+
+# VS Code settings
+.vscode/
+*.code-workspace
+
+# Logs
+*.log
+
+tests/
+
+
+# Database backups or local files (optional)
+*.sqlite3
+*.db
+
