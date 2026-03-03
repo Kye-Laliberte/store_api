@@ -7,10 +7,8 @@ venv/
 __pycache__/
 
 api/services/__pycache__/
-
-
 api/routes/__pycache__/
-api/routes/models/__pycache__/
+api/models/__pycache__/
 
 # Distribution / packaging
 build/
@@ -31,6 +29,7 @@ api/data/__pycache__/
 # Logs
 *.log
 
+#tester files
 tests/
 
 

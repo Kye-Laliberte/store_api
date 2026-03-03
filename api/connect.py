@@ -1,5 +1,4 @@
 import os
-
 import psycopg2
 from contextlib import contextmanager
 from dotenv import load_dotenv
@@ -8,7 +7,7 @@ from pathlib import Path
 @contextmanager
 def get_connection():
 
-    dotenv_path = Path("C:\projects\vs stuff 2\New folder (2)\store-interface/.env")
+    dotenv_path = Path(".env")
     load_dotenv(dotenv_path=dotenv_path)
     
 
@@ -24,7 +23,7 @@ def get_connection():
     try:
         yield conn
         conn.commit()
-    except:
+    except Exception as e:
         conn.rollback()
         raise
     finally:
