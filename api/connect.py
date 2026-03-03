@@ -5,8 +5,6 @@ from contextlib import contextmanager
 from dotenv import load_dotenv
 from pathlib import Path
 
-
-
 @contextmanager
 def get_connection():
 
