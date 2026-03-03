@@ -5,10 +5,15 @@ from sqlalchemy.orm import Session
 import models
 import sqlAmodels 
 import logging
+from routers.items_route import router as item_router 
+from routers.carts_route import router as cart_router
+from routers.users_route import router as user_router 
 
 sqlAmodels.Base.metadata.create_all(bind=engine) 
 app = FastAPI(title="Inventory API")
-router = APIRouter(prefix="/items", tags=["items"])
+app.include_router(item_router)
+app.include_router(cart_router)
+app.include_router(user_router)
 
 logging.basicConfig(
     level=logging.INFO,
