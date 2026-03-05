@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from api.database import  get_db
-from ..import sqlAmodels as models
+from ..alembic import sqlAmodels as models
 
 router = APIRouter(prefix="/items", tags=["items"])
 
@@ -39,10 +39,11 @@ def update_item(item_id: int, quantity: int = None, price: float = None, db: Ses
 #get items detales
 @router.get("/{item_id}/detals")
 def get_item(item_id: int, db: Session = Depends(get_db)):
-    item=db.query(models.Items).filter(models.Item.id ==item_id).first()
+    item=db.query(models.Item).filter(models.Item.id ==item_id).first()
     if not item:
         raise HTTPException(status_code=404, detail="item not found")
     return item
+
 # DELETE an item
 @router.delete("/{item_id}/delete")
 def delete_item(item_id: int, db: Session = Depends(get_db)):

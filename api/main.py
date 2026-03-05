@@ -2,7 +2,7 @@
 from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from sqlalchemy.orm import Session
 #import models
-from .import  sqlAmodels as models 
+from .alembic import  sqlAmodels as models 
 import logging
 from .routers.items_route import router  as item_router 
 from .routers.carts_route import router as cart_router
