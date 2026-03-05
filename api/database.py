@@ -10,5 +10,12 @@ load_dotenv(dotenv_path=dotenv_path)
 DATABASE_URL = f"postgresql://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('POSTGRES_DB')}"
 
 engine = create_engine(DATABASE_URL)  # PostgreSQL engine
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+LocalSession = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
+def get_db():
+    db =sessionmaker()
+    try:
+        yield db
+    finally:
+        db.close_all()

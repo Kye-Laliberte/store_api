@@ -7,7 +7,7 @@ import logging
 from .routers.items_route import router  as item_router 
 from .routers.carts_route import router as cart_router
 from .routers.users_route import router as user_router 
-from ..database import SessionLocal, engine
+from .database import get_db,engine,LocalSession
 
 models.Base.metadata.create_all(bind=engine) 
 app = FastAPI(title="Inventory API")
@@ -21,7 +21,7 @@ logging.basicConfig(
 )
 
 def get_datab():
-    bd= SessionLocal()
+    bd= LocalSession()
     try:
         yield bd
     finally:
