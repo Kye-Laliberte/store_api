@@ -2,14 +2,14 @@
 from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from sqlalchemy.orm import Session
 #import models
-import sqlAmodels 
+from .import  sqlAmodels as models 
 import logging
-from routers.items_route import router as item_router 
-from routers.carts_route import router as cart_router
-from routers.users_route import router as user_router 
+from .routers.items_route import router  as item_router 
+from .routers.carts_route import router as cart_router
+from .routers.users_route import router as user_router 
 from ..database import SessionLocal, engine
 
-sqlAmodels.Base.metadata.create_all(bind=engine) 
+models.Base.metadata.create_all(bind=engine) 
 app = FastAPI(title="Inventory API")
 app.include_router(item_router)
 app.include_router(cart_router)
