@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from api.database import  get_db
 from ..import sqlAmodels as models
+from ..psycopg_models import item 
 
 router = APIRouter(prefix="/items", tags=["items"])
 
@@ -11,7 +12,7 @@ def read_items(db: Session = Depends(get_db)):
     return db.query(models.Item).all()
 
 # CREATE an item
-@router.post("/add_item")
+@router.post("/add_item",response_model=item)
 def create_item(name: str, description: str = None, quantity: int = 0, price: float = 0.0, db: Session = Depends(get_db)):
     existing = db.query(models.Item).filter(models.Item.name == name).first()
     if existing:
@@ -23,7 +24,7 @@ def create_item(name: str, description: str = None, quantity: int = 0, price: fl
     return item
 
 # UPDATE an item
-@router.put("/{item_id}/update")
+@router.put("/{item_id}/update",response_model=item)
 def update_item(item_id: int, quantity: int = None, price: float = None, db: Session = Depends(get_db)):
     item = db.query(models.Item).filter(models.Item.id == item_id).first()
     if not item:
@@ -37,7 +38,7 @@ def update_item(item_id: int, quantity: int = None, price: float = None, db: Ses
     return item
 
 #get items detales
-@router.get("/{item_id}/detals")
+@router.get("/{item_id}/detals",response_model=item)
 def get_item(item_id: int, db: Session = Depends(get_db)):
     item=db.query(models.Item).filter(models.Item.id ==item_id).first()
     if not item:
@@ -45,7 +46,7 @@ def get_item(item_id: int, db: Session = Depends(get_db)):
     return item
 
 # DELETE an item
-@router.delete("/{item_id}/delete")
+@router.delete("/{item_id}/delete",response_model=item)
 def delete_item(item_id: int, db: Session = Depends(get_db)):
     item = db.query(models.Item).filter(models.Item.id == item_id).first()
     if not item:

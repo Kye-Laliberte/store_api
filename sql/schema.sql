@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS users(
 CREATE TABLE IF NOT EXISTS items(
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
-    description TEXT,
+    description TEXT DEFAULT "no description",
     quantity INTEGER NOT NULL CHECK(quantity>=0) DEFAULT 0,
     price NUMERIC(10,2) NOT NULL CHECK(price >= 0)
     

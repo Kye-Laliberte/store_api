@@ -20,8 +20,8 @@ def setup(schema_path="SQL/schema.sql"):
             cursor.execute("""
                 INSERT INTO users (email, password_hash, created_at)
                 VALUES
-                ('alice@example.com', 'hash_alice', %s),
-                       ('bob@example.com', 'hash_bob', %s)
+                ('alice@gmail.com', 'hash_alice', %s),
+                       ('bob@outlook.com', 'hash_bob', %s)
                 ON CONFLICT (email) DO NOTHING;
             """, (datetime.now(), datetime.now()))
 
