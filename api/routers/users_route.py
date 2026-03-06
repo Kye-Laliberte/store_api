@@ -5,8 +5,10 @@ from ..import sqlAmodels as models
 from passlib.context import CryptContext
 from typing import List, Optional
 from ..psycopg_models import users
+from passlib.hash import bcrypt
+
 router = APIRouter(prefix="/users", tags=["users"])
-#pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # CREATE a new user
 @router.post("/addUser")
@@ -18,20 +20,19 @@ def create_user(email: str, password: str, db: Session = Depends(get_db)):
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
     
-    #if len(password.encode('utf-8')) > 72:
-    #    raise HTTPException(status_code=400, detail="Password too long (max 72 bytes).")
+    if len(password.encode('utf-8')) < 9:
+        raise HTTPException(status_code=400, detail="Password too shot.")
 
-    #hashed_password = pwd_context.hash(password)
-   #pwd_context becam corupted as a file so im teporaraly leaving it out
-    #AttributeError: module 'bcrypt' has no attribute '__about__'
-    if(len(password) >5 or (password<15)):
-        raise HTTPException(status_code=400, detail="Password too long (max 72 bytes).")
+    hashed_password = pwd_context.hash(password)
+     
+    if(len(hashed_password)>72):
+        raise HTTPException(status_code=400, detail=f"{len(hashed_password)}Password too long (max 72 bytes).")
     
     user = models.User(email=email, password_hash=password)
     db.add(user)
     db.commit()
     db.refresh(user)
-    return {"id": user.id, "email": user.email, "created_at": user.created_at}
+    return {"id": user.id, "email": user.email, "created_at": user.created_at, "password_hash":hashed_password}
 
 
 @router.get("/{email}/RetrievePasword",response_model=users)
