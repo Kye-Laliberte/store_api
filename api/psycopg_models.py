@@ -14,8 +14,11 @@ class item(BaseModel):
 class users(BaseModel):
     id: int
     email: str
-    password_hash: str
+    password_hash: Optional[str]="private infermaton"
     created_at: Optional[datetime]=datetime.now()
+
+
+
 
 class carts(BaseModel):
     id:int
