@@ -3,16 +3,17 @@ from sqlalchemy.orm import Session
 from api.database import  get_db
 from ..import sqlAmodels as models
 from ..psycopg_models import item 
+from typing import List, Optional
 
 router = APIRouter(prefix="/items", tags=["items"])
 
 # READ all items
-@router.get("/")
-def read_items(db: Session = Depends(get_db)):
+@router.get("/get_all")
+def readAllItems(db: Session = Depends(get_db)):
     return db.query(models.Item).all()
 
 # CREATE an item
-@router.post("/add_item",response_model=item)
+@router.post("/add_item",response_model=List[item])
 def create_item(name: str, description: str = None, quantity: int = 0, price: float = 0.0, db: Session = Depends(get_db)):
     existing = db.query(models.Item).filter(models.Item.name == name).first()
     if existing:
