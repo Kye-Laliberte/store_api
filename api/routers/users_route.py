@@ -4,7 +4,7 @@ from api.database import get_db
 from ..import sqlAmodels as models
 from passlib.context import CryptContext
 from typing import List, Optional
-from ..psycopg_models import users
+from ..psycopg_models import users,userOut
 from passlib.hash import bcrypt
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -35,13 +35,18 @@ def create_user(email: str, password: str, db: Session = Depends(get_db)):
     return {"id": user.id, "email": user.email, "created_at": user.created_at, "password_hash":hashed_password}
 
 
-@router.get("/{email}/RetrievePasword",response_model=users)
+@router.get("/{email}/RetrievebyEmail",response_model=users)
 def getUser(email:str,db:Session=Depends(get_db)):
     email=email.strip().lower()
     user=db.query(models.User).filter(models.User.email==email).first()
     if not user:
-        HTTPException(status_code=404,detail="Email not found")
-    return user
+        raise HTTPException(status_code=404,detail="Email not found")
+    return {
+        "id": user.id,
+        "email": user.email,
+        "created_at": user.created_at,
+        
+    }
 
 
 # READ all users
