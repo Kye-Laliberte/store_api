@@ -37,3 +37,4 @@ tests/
 *.sqlite3
 *.db
 
+alembic/versions/__pycache__/*

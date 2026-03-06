@@ -10,14 +10,14 @@ def get_connection():
     dotenv_path = Path(".env")
     load_dotenv(dotenv_path=dotenv_path)
     
-
+    bb=os.getenv("DATABASE_URL")
     conn= psycopg2.connect(
-        dbname=os.getenv("POSTGRES_DB"),
-        user=os.getenv("user"),
-        password=os.getenv("POSTGRES_PASSWORD"),
-        host=os.getenv("DB_HOST"),
-        port=os.getenv("DB_PORT")
-        )
+       dbname=os.getenv("POSTGRES_DB"),
+       user=os.getenv("user"),
+       password=os.getenv("POSTGRES_PASSWORD"),
+       host=os.getenv("DB_HOST"),
+       port=os.getenv("DB_PORT")
+       )
     
 
     try:
