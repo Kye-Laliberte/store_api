@@ -38,14 +38,17 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
     return cart_item
     
 
-@router.delete("/leaveCart")
+@router.delete("/{user_id}/leaveCart")
 def leaveCart():
     print()
 
-@router.put("/{item_id}/leaveitem",List[cartItemsout])
-def leaveitem():
-    print()
-
+@router.delete("/{user_id}/removeitem",response_model="cart_items")
+def leaveitem(user_id:int,db:Session=Depends(get_db)):
+    cart=db.query(models.CartItem).filter(models.CartItem.user_id==user_id,models.CartItem.item_id==item_id)
+    if not cart:
+        raise HTTPException(status_code=404, detail="Item not in cart")
+    db.delete(cart)
+    db.commit()
 router.put("/purchaseItems",List[cartItemsout])
 def purchaseItems():
     print()
