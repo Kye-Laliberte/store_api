@@ -40,7 +40,7 @@ def update_item(item_id: int, quantity: int = None, price: float = None, db: Ses
 
 #get items detales
 @router.get("/{item_id}/detals",response_model=item)
-def get_item(item_id: int, db: Session = Depends(get_db)):
+def getItem(item_id: int, db: Session = Depends(get_db)):
     item=db.query(models.Item).filter(models.Item.id ==item_id).first()
     if not item:
         raise HTTPException(status_code=404, detail="item not found")
@@ -48,10 +48,10 @@ def get_item(item_id: int, db: Session = Depends(get_db)):
 
 # DELETE an item
 @router.delete("/{item_id}/delete",response_model=item)
-def delete_item(item_id: int, db: Session = Depends(get_db)):
+def deleteItem(item_id: int, db: Session = Depends(get_db)):
     item = db.query(models.Item).filter(models.Item.id == item_id).first()
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
     db.delete(item)
     db.commit()
-    return {"detail": "Item deleted"}
+    return item

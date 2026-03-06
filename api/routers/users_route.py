@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter,Path, Depends, HTTPException
 from sqlalchemy.orm import Session
 from api.database import get_db
 from ..import sqlAmodels as models
@@ -41,12 +41,7 @@ def getUser(email:str,db:Session=Depends(get_db)):
     user=db.query(models.User).filter(models.User.email==email).first()
     if not user:
         raise HTTPException(status_code=404,detail="Email not found")
-    return {
-        "id": user.id,
-        "email": user.email,
-        "created_at": user.created_at,
-        
-    }
+    return {"id": user.id,"email": user.email,"created_at": user.created_at}
 
 
 # READ all users
@@ -62,3 +57,14 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return {"id": user.id, "email": user.email, "created_at": user.created_at}
+
+@router.delete("/{user_id}/delete",response_model=users)
+def deleteUser(user_id:int,db:Session=Depends(get_db)):
+    user=db.query(models.User).filter(models.User.id==user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    db.delete(user)
+    db.commit()
+    user
+
+
