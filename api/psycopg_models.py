@@ -26,32 +26,36 @@ class users(BaseModel):
     email: str
     password_hash: Optional[str]="private infermaton"
     created_at: datetime
-class Config:
-        orm_mode = True
+
 
 class userOut(BaseModel):
       email:str
       created_at: datetime
-class Config:
-        orm_mode = True
+
 
 class carts(BaseModel):
     id:int
     user_id:int
     purchase_date: Optional[datetime]=datetime.now()
-class Config:
-        orm_mode = True
+
 
 class createCart(BaseModel):
       user_id:int
       purchase_date: Optional[datetime]=datetime.now()
 
 class cart_items(BaseModel):
-    cart_id:int
     item_id:int
     quantity: float = confloat(ge=0)
-class Config:
-        orm_mode = True
+
+
+#items in cart
+class cartItemsout(BaseModel):
+      item_id:int
+      name: str
+      quantity: float = confloat(ge=0)
+      description: Optional[str]="no description"
+      price: float = confloat(ge=0)
+
 
 class create_cartItem(BaseModel):
     cart_id:int
