@@ -35,7 +35,6 @@ class userOut(BaseModel):
 class Config:
         orm_mode = True
 
-
 class carts(BaseModel):
     id:int
     user_id:int
@@ -43,12 +42,22 @@ class carts(BaseModel):
 class Config:
         orm_mode = True
 
+class createCart(BaseModel):
+      user_id:int
+      purchase_date: Optional[datetime]=datetime.now()
+
 class cart_items(BaseModel):
-    item_id: int
+    cart_id:int
+    item_id:int
     quantity: float = confloat(ge=0)
 class Config:
         orm_mode = True
 
+class create_cartItem(BaseModel):
+    cart_id:int
+    item_id:int
+    uantity: float = confloat(ge=0)
+    
 
 
 
