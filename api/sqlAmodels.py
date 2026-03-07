@@ -32,12 +32,14 @@ class Cart(Base):
 
     user = relationship("User", back_populates="cart")
     cart_items = relationship("CartItem", back_populates="cart", cascade="all, delete-orphan")
+    items = relationship("CartItem", back_populates="cart")
 
 class CartItem(Base):
     __tablename__ = "cart_items"
     cart_id = Column(Integer, ForeignKey("carts.id"), primary_key=True)
     item_id = Column(Integer, ForeignKey("items.id"), primary_key=True)
     quantity = Column(Integer, nullable=False)
-
+    
+    item = relationship("Item") 
     cart = relationship("Cart", back_populates="cart_items")
     item = relationship("Item", back_populates="cart_items")

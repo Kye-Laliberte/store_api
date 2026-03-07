@@ -11,6 +11,7 @@ class item(BaseModel):
     description: Optional[str]="no description"
     quantity:int = conint(ge=0) 
     price: float = confloat(ge=0)
+    
 class Config:
         orm_mode = True
 
@@ -48,13 +49,15 @@ class cart_items(BaseModel):
     quantity: float = confloat(ge=0)
 
 
-#items in cart
-class cartItemsout(BaseModel):
-      item_id:int
-      name: str
-      quantity: float = confloat(ge=0)
-      description: Optional[str]="no description"
-      price: float = confloat(ge=0)
+class CartItemsOut(BaseModel):
+    item_id: Optional[int]=0
+    name: Optional[str]="none"
+    price: Optional[float]=0.0
+    quantity: Optional[int]=0
+    description: Optional[str]="no description"
+
+    class Config:
+        orm_mode = True
 
 
 class create_cartItem(BaseModel):

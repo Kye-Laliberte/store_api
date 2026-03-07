@@ -65,6 +65,6 @@ def deleteUser(user_id:int,db:Session=Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     db.delete(user)
     db.commit()
-    user
+    return {"id": user.id, "email": user.email, "created_at": user.created_at}
 
 

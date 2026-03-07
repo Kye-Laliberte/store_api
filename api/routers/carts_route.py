@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from api.database import get_db
 from ..import sqlAmodels as models
 from typing import List, Optional
-from psycopg_models import cartItemsout,carts,createCart,create_cartItem
+from ..psycopg_models import CartItemsOut,carts,create_cartItem
 
 router = APIRouter(prefix="/carts", tags=["carts"])
 
@@ -13,13 +13,26 @@ router = APIRouter(prefix="/carts", tags=["carts"])
 def carthome():
     return {"message":"welcom to the store grab a cart"}
 
-@router.get("{cart_id}/viewcart",List[cartItemsout])
-def viewCart(user_id:int,db: Session=Depends(get_db)):
-    cartitems = db.query(models.CartItem).filter(models.CartItem.user_id == user_id).all()
-    if not cartitems:
+@router.get("/{cart_id}/viewcart",response_model=List[CartItemsOut])
+def viewCart(cart_id:int,db: Session=Depends(get_db)):
+    
+    
+    cartItems = (db.query(models.CartItem.item_id,
+                           models.CartItem.quantity,
+                           models.Item.description,
+                           models.Item.name,
+                           models.Item.price)
+                           .join(models.Item, models
+                                 .CartItem.item_id == models.Item.id)
+                                 .filter(models.CartItem.cart_id == cart_id).all()
+)
+    
+    if not cartItems:
         raise HTTPException(status_code=404, detail="Cart is empty")
-    return cartitems
-
+        
+    return cartItems
+    
+"""
 @router.post("/newcart", response_model=carts)
 def new_cart(user_id: int, db: Session = Depends(get_db)):
     cart = models.Cart(user_id=user_id)
@@ -36,11 +49,7 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
     db.commit()
     db.refresh(cart_item)
     return cart_item
-    
-
-@router.delete("/{user_id}/leaveCart")
-def leaveCart():
-    print()
+   
 
 @router.delete("/{user_id}/removeitem",response_model="cart_items")
 def leaveitem(user_id:int,db:Session=Depends(get_db)):
@@ -49,8 +58,12 @@ def leaveitem(user_id:int,db:Session=Depends(get_db)):
         raise HTTPException(status_code=404, detail="Item not in cart")
     db.delete(cart)
     db.commit()
-router.put("/purchaseItems",List[cartItemsout])
-def purchaseItems():
-    print()
 
-#purchies items
+router.put("/{user_id}/purchaseItems",response_model=List[cartItemsout])
+def purchaseItems(user_id:int,db:Session=Depends(get_db)):
+     items = db.query(models.CartItem).filter(models.CartItem.user_id == user_id).all()
+     if not items:
+        raise HTTPException(status_code=404, detail="Cart is empty")
+        work out purchis logic 
+
+#purchies items""" 
