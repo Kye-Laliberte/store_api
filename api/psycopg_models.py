@@ -3,14 +3,12 @@ from typing import Optional
 from enum import Enum
 from datetime import datetime
 
-
-
 class item(BaseModel):
     id: int
     name: str
     description: Optional[str]="no description"
     quantity:int = conint(ge=0) 
-    price: float = confloat(ge=0)
+    price: float = confloat(gt=0)
     
 class Config:
         orm_mode = True
@@ -19,7 +17,7 @@ class createitem(BaseModel):
     name:str
     description: Optional[str]="no description"
     quantity:int = conint(ge=0) 
-    price: float = confloat(ge=0)
+    price: float = confloat(gt=0)
 
 
 class users(BaseModel):

@@ -14,11 +14,17 @@ def readAllItems(db: Session = Depends(get_db)):
 
 # CREATE an item
 @router.post("/add_item",response_model=List[item])
-def create_item(name: str, description: str = None, quantity: int = 0, price: float = 0.0, db: Session = Depends(get_db)):
+def create_item(item:createitem, db: Session = Depends(get_db)):
+    name=item.name.strip().lower()
+    description=item.description.strip()
+    if item.price<0:
+        raise HTTPException(status_code= 200, detail="can not have a 0 or negative price" )
+    if item.quantity<0:
+        raise HTTPException(status_code=200, detail="can not have a negative inventory")
     existing = db.query(models.Item).filter(models.Item.name == name).first()
     if existing:
         raise HTTPException(status_code=400, detail="Item already exists")
-    item = models.Item(name=name, description=description, quantity=quantity, price=price)
+    item = models.Item(name=item.name, description=description, quantity=item.quantity, price=item.price)
     db.add(item)
     db.commit()
     db.refresh(item)
@@ -27,6 +33,7 @@ def create_item(name: str, description: str = None, quantity: int = 0, price: fl
 # UPDATE an item
 @router.put("/{item_id}/update",response_model=item)
 def update_item(item_id: int, quantity: int = None, price: float = None, db: Session = Depends(get_db)):
+
     item = db.query(models.Item).filter(models.Item.id == item_id).first()
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")

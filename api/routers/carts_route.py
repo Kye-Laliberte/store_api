@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from api.database import get_db
 from ..import sqlAmodels as models
 from typing import List, Optional
-from ..psycopg_models import CartItemsOut,carts,create_cartItem
+from ..psycopg_models import CartItemsOut,carts,create_cartItem,createCart
 
 router = APIRouter(prefix="/carts", tags=["carts"])
 
@@ -15,8 +15,7 @@ def carthome():
 
 @router.get("/{cart_id}/viewcart",response_model=List[CartItemsOut])
 def viewCart(cart_id:int,db: Session=Depends(get_db)):
-    
-    
+
     cartItems = (db.query(models.CartItem.item_id,
                            models.CartItem.quantity,
                            models.Item.description,
@@ -32,16 +31,19 @@ def viewCart(cart_id:int,db: Session=Depends(get_db)):
         
     return cartItems
     
-"""
-@router.post("/newcart", response_model=carts)
-def new_cart(user_id: int, db: Session = Depends(get_db)):
-    cart = models.Cart(user_id=user_id)
-    
-    db.add(cart)
-    db.commit()
-    db.refresh(cart)
-    return cart
 
+@router.post("{user_id}/newcart", response_model=carts)
+def new_cart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
+    
+    newcart = models.Cart(user_id=user_id,purchase_date=cart.purchase_date)
+    
+    db.add(newcart)
+    db.commit()
+    db.refresh(newcart)
+    return newcart
+
+
+"""
 @router.post("/{user_id}/additem",response_model="cart_items")
 def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
     cart_item = models.CartItem(user_id=user_id, item_id=item.item_id, quantity=item.quantity)
