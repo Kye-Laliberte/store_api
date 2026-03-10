@@ -21,8 +21,7 @@ def viewCart(cart_id:int,db: Session=Depends(get_db)):
                            models.Item.description,
                            models.Item.name,
                            models.Item.price)
-                           .join(models.Item, models
-                                 .CartItem.item_id == models.Item.id)
+                           .join(models.Item, models.CartItem.item_id == models.Item.id)
                                  .filter(models.CartItem.cart_id == cart_id).all()
 )
     
@@ -30,8 +29,38 @@ def viewCart(cart_id:int,db: Session=Depends(get_db)):
         raise HTTPException(status_code=404, detail="Cart is empty")
         
     return cartItems
-    
 
+@router.post("/{user_id}/additem",response_model=CartItemsOut)
+def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
+    quantity=item.quantity
+    item_id=item.item_id
+    if quantity<=0:
+        raise HTTPException( status_code=400,detail="cant add less than 1 items to a cart")
+    cart=db.query(models.Cart).filter(models.Cart.user_id==user_id).first()
+   
+    if not cart:
+        raise HTTPException(status_code=404,detail=" cart not found.")
+    cart_id=cart.id
+    cart_item = models.CartItem(cart_id=cart_id, item_id=item_id, quantity=quantity)
+    
+    db.add(cart_item)
+    db.commit()
+    db.refresh(cart_item)
+    
+    cartItem= (
+        db.query(models.CartItem,
+                        models.CartItem.quantity,
+                        models.CartItem.item_id,
+                        models.Item.description,
+                        models.Item.name,
+                        models.Item.price).join(models.Item,models.CartItem.item_id==models.Item.id).filter(models.Item.id==models.Item.id)
+                        .filter(models.CartItem.cart_id==cart_id).filter(models.Item.id == item.item_id).first()
+    )
+    if not cartItem:
+        raise HTTPException(status_code=404, detail="faled to join")
+    return cartItem
+
+"""
 @router.post("{user_id}/newcart", response_model=carts)
 def new_cart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
     
@@ -41,17 +70,6 @@ def new_cart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(newcart)
     return newcart
-
-
-"""
-@router.post("/{user_id}/additem",response_model="cart_items")
-def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
-    cart_item = models.CartItem(user_id=user_id, item_id=item.item_id, quantity=item.quantity)
-    db.add(cart_item)
-    db.commit()
-    db.refresh(cart_item)
-    return cart_item
-   
 
 @router.delete("/{user_id}/removeitem",response_model="cart_items")
 def leaveitem(user_id:int,db:Session=Depends(get_db)):

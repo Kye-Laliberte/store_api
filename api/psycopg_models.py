@@ -44,7 +44,7 @@ class createCart(BaseModel):
 
 class cart_items(BaseModel):
     item_id:int
-    quantity: float = confloat(ge=0)
+    quantity: int = conint(ge=0)
 
 
 class CartItemsOut(BaseModel):
@@ -61,7 +61,7 @@ class CartItemsOut(BaseModel):
 class create_cartItem(BaseModel):
     cart_id:int
     item_id:int
-    uantity: float = confloat(ge=0)
+    quantity: int = conint(ge=0)
     
 
 
