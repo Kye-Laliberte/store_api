@@ -78,7 +78,7 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
 
 
 @router.post("{user_id}/newcart", response_model=carts)
-def new_cart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
+def newCart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
     
     purchase_date=cart.purchase_date
     newcart = models.Cart(user_id=user_id,purchase_date=cart.purchase_date)
@@ -93,24 +93,37 @@ def new_cart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
 @router.delete("/{cart_id}/removeitem",response_model=create_cartItem)
 def leaveitem(cart_id:int,item_id:int,db:Session=Depends(get_db)):
    
-    cart=(db.query(models.CartItem).filter(cart_id==models.CartItem.cart_id,item_id==models.CartItem.item_id).first()
+    cartitem=(db.query(models.CartItem)
+              .filter(cart_id==models.CartItem.cart_id,item_id==models.CartItem.item_id).first()
     )
-    if not cart:
+    if not cartitem:
         raise HTTPException(status_code=404, detail="Item not in cart.")
     
+    db.delete(cartitem)
+    db.commit()
+    return cartitem
+
+
+@router.delete("/{user_id}/dropCart",response_model=carts)
+def dropcart(user_id:int,db:Session=Depends(get_db)):
+    cart=(db.query(models.Cart)
+          .filter(models.Cart.user_id==user_id).first()
+          )
+    if not cart:
+        raise HTTPException(status_code=404,detail="no cart active or found")
+    
+    db.query(models.CartItem).filter(models.CartItem.cart_id==cart.id).delete()
+           
     db.delete(cart)
     db.commit()
+
     return cart
-
-"""
-@router.delete("/{{user_id}/dropCart}
-def 
-
-router.put("/{user_id}/purchaseItems",response_model=List[cartItemsout])
+    
+    """
+router.put("/{user_id}/PurchaseItems",response_model=List[cartItemsout])
 def purchaseItems(user_id:int,db:Session=Depends(get_db)):
-     items = db.query(models.CartItem).filter(models.CartItem.user_id == user_id).all()
-     if not items:
-        raise HTTPException(status_code=404, detail="Cart is empty")
-        work out purchis logic 
+     
 
-#purchies items""" 
+router.put("/{user_id}/PurchaseCart")
+def buyCart(user_id:int,db:Session=Depends(get_db)):
+""" 
