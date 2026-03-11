@@ -64,6 +64,8 @@ class create_cartItem(BaseModel):
     quantity: int = conint(ge=0)
     
 
-
+class purchase(BaseModel):
+     item_id:int
+     cart_id:int
 
 

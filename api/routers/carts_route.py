@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from api.database import get_db
 from ..import sqlAmodels as models
 from typing import List, Optional
-from ..psycopg_models import CartItemsOut,carts,create_cartItem,createCart
+from ..psycopg_models import CartItemsOut,carts,create_cartItem,createCart,purchase
 from datetime import datetime
 router = APIRouter(prefix="/carts", tags=["carts"])
 
@@ -119,11 +119,36 @@ def dropcart(user_id:int,db:Session=Depends(get_db)):
 
     return cart
     
-    """
-router.put("/{user_id}/PurchaseItems",response_model=List[cartItemsout])
-def purchaseItems(user_id:int,db:Session=Depends(get_db)):
-     
+    
+@router.put("/{user_id}/PurchaseItems",response_model=CartItemsOut)
+def purchaseItems(user_id:int,input:purchase,db:Session=Depends(get_db)):
 
-router.put("/{user_id}/PurchaseCart")
+    item_id=input.item_id
+    cart_id=input.cart_id
+    cartitem=(db.query(models.CartItem)
+          .filter(models.CartItem.cart_id==cart_id,models.CartItem.item_id==item_id).first()
+    )
+    quantity=cartitem.quantity
+    item=(db.query(models.Item)
+          .filter(cartitem.item_id==item_id))
+    if not item: 
+        raise HTTPException(status_code=400)
+    
+    itemquantity=item.quantity
+    if quantity>itemquantity:
+       return ({"warning":f"to few items in stock only {itemquantity} avalibal"})
+    itemquantity=itemquantity-quantity
+    
+    item.quantity=itemquantity
+
+    #db.query(models.CartItem).filter(models.CartItem.cart_id==cart_id,models.CartItem.item_id==item_id).delete()
+    
+
+
+
+    
+    """     
+
+router.put("/{user_id}/PurchaseCart",response_model=List[CartItemsOut])
 def buyCart(user_id:int,db:Session=Depends(get_db)):
 """ 
