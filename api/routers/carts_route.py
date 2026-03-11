@@ -4,7 +4,7 @@ from api.database import get_db
 from ..import sqlAmodels as models
 from typing import List, Optional
 from ..psycopg_models import CartItemsOut,carts,create_cartItem,createCart
-
+from datetime import datetime
 router = APIRouter(prefix="/carts", tags=["carts"])
 
 #add item to cart
@@ -70,7 +70,7 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
                         models.Item.description,
                         models.Item.name,
                         models.Item.price).join(models.Item,models.CartItem.item_id==models.Item.id).filter(models.Item.id==models.Item.id)
-                        .filter(models.CartItem.cart_id==cart_id).filter(models.Item.id == item.item_id)
+                        .filter(models.CartItem.cart_id==cart_id).filter(models.Item.id == item.item_id).first()
     )
     if not cartItem:
         raise HTTPException(status_code=404, detail="faled to join")
@@ -87,21 +87,20 @@ def new_cart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(newcart)
     
-    return {"id":models.Cart.id,"user_id":user_id,"purchase_date":purchase_date,}
+    return {"id":models.Cart.id,"user_id":user_id,"purchase_date":purchase_date}
 
 
-@router.delete("/{user_id}/removeitem",response_model=carts)
+@router.delete("/{cart_id}/removeitem",response_model=create_cartItem)
 def leaveitem(cart_id:int,item_id:int,db:Session=Depends(get_db)):
    
-    cart=db.query(models.CartItem).filter(cart_id==models.Cart.cart_id,item_id==models.CartItem.item_id)
+    cart=(db.query(models.CartItem).filter(cart_id==models.CartItem.cart_id,item_id==models.CartItem.item_id).first()
+    )
     if not cart:
         raise HTTPException(status_code=404, detail="Item not in cart.")
-    id=models.Cart.id
-    user_id=cart.user_id
-    purchase_date=cart.purchase_date
+    
     db.delete(cart)
     db.commit()
-    return {"id":id,"user_id":user_id,"purchase_date":purchase_date,}
+    return cart
 
 """
 @router.delete("/{{user_id}/dropCart}
