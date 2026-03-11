@@ -13,11 +13,11 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # CREATE a new user
 @router.post("/addUser")
 def create_user(email: str, password: str, db: Session = Depends(get_db)):
-    existing = db.query(models.User).filter(models.User.email == email).first()
+    exist = db.query(models.User).filter(models.User.email == email).first()
     email=email.lower().strip()
     password=password.strip()
 
-    if existing:
+    if exist:
         raise HTTPException(status_code=400, detail="Email already registered")
     
     if len(password.encode('utf-8')) < 9:
@@ -46,13 +46,13 @@ def getUser(email:str,db:Session=Depends(get_db)):
 
 # READ all users
 @router.get("/getAll",response_model=List[users])
-def read_users(db: Session = Depends(get_db)):
+def getUsers(db: Session = Depends(get_db)):
     users = db.query(models.User).all()
     return [{"id": u.id, "email": u.email, "created_at": u.created_at} for u in users]
 
 # READ user by ID
 @router.get("/{user_id}",response_model=users)
-def read_user(user_id: int, db: Session = Depends(get_db)):
+def readuser(user_id: int, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
