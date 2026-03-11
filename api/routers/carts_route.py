@@ -37,15 +37,27 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
     if quantity<=0:
         raise HTTPException( status_code=400,detail="cant add less than 1 items to a cart")
     cart=db.query(models.Cart).filter(models.Cart.user_id==user_id).first()
-   
+    
     if not cart:
         raise HTTPException(status_code=404,detail=" cart not found.")
-    cart_id=cart.id
-    cart_item = models.CartItem(cart_id=cart_id, item_id=item_id, quantity=quantity)
     
-    db.add(cart_item)
-    db.commit()
-    db.refresh(cart_item)
+    cart_id=cart.id
+    swich=True
+    existing = (db.query(models.CartItem).filter(
+        models.CartItem.cart_id == cart_id,
+        models.CartItem.item_id == item_id
+    ).first()
+    )
+    if existing:
+        existing.quantity = item.quantity
+        db.commit()
+        swich=False
+        
+    if swich:
+        cart_item = models.CartItem(cart_id=cart_id, item_id=item_id, quantity=quantity)
+        db.add(cart_item)
+        db.commit()
+        db.refresh(cart_item)
     
     cartItem= (
         db.query(models.CartItem,
@@ -60,9 +72,10 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
         raise HTTPException(status_code=404, detail="faled to join")
     return cartItem
 
-"""
+
 @router.post("{user_id}/newcart", response_model=carts)
 def new_cart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
+    
     
     newcart = models.Cart(user_id=user_id,purchase_date=cart.purchase_date)
     
@@ -71,6 +84,7 @@ def new_cart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
     db.refresh(newcart)
     return newcart
 
+"""
 @router.delete("/{user_id}/removeitem",response_model="cart_items")
 def leaveitem(user_id:int,db:Session=Depends(get_db)):
     cart=db.query(models.CartItem).filter(models.CartItem.user_id==user_id,models.CartItem.item_id==item_id)
