@@ -12,9 +12,10 @@ router = APIRouter(prefix="/items", tags=["items"])
 def readAllItems(db: Session = Depends(get_db)):
     return db.query(models.Item).all()
 
-# CREATE an item
+
 @router.post("/add_item",response_model=List[item])
 def create_item(item:createitem, db: Session = Depends(get_db)):
+    """add a item to the stores inventory"""
     name=item.name.strip().lower()
     description=item.description.strip()
     if item.price<0:
@@ -32,8 +33,8 @@ def create_item(item:createitem, db: Session = Depends(get_db)):
 
 # UPDATE an item
 @router.put("/{item_id}/update",response_model=item)
-def update_item(item_id: int, quantity: int = None, price: float = None, db: Session = Depends(get_db)):
-
+def update_item(item_id: int,description:str=None, quantity: int = None, price: float = None, db: Session = Depends(get_db)):
+    """update a items infermation"""
     item = db.query(models.Item).filter(models.Item.id == item_id).first()
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -41,6 +42,8 @@ def update_item(item_id: int, quantity: int = None, price: float = None, db: Ses
         item.quantity = quantity
     if price is not None:
         item.price = price
+    if description is not None:    
+        item.description=description
     db.commit()
     db.refresh(item)
     return item

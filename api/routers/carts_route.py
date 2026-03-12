@@ -14,9 +14,13 @@ def carthome():
     return {"message":"welcom to the store grab a cart"}
 
 
-@router.get("/{cart_id}/viewcart",response_model=List[CartItemsOut])
-def viewCart(cart_id:int,db: Session=Depends(get_db)):
-
+@router.get("/{user_id}/viewcart",response_model=List[CartItemsOut])
+def viewCart(user_id:int,db: Session=Depends(get_db)):
+    cart= db.query(models.Cart.id).filter(models.Cart.user_id==user_id).first()
+    
+    if not cart:
+        raise HTTPException(status_code=404,detail=f"no cart found or active for {user_id}")
+    cart_id=cart.id
     cartItems = (db.query(models.CartItem.item_id,
                            models.CartItem.quantity,
                            models.Item.description,
@@ -24,6 +28,8 @@ def viewCart(cart_id:int,db: Session=Depends(get_db)):
                            models.Item.price)
                            .join(models.Item, models.CartItem.item_id == models.Item.id)
                                  .filter(models.CartItem.cart_id == cart_id).all()
+
+
 )
     
     if not cartItems:
@@ -40,18 +46,16 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
     item_id=item.item_id
     if quantity<=0:
         raise HTTPException( status_code=400,detail="cant add less than 1 items to a cart")
-    cart=db.query(models.Cart).filter(models.Cart.user_id==user_id).first()
-    
+    cart=(db.query(models.Cart.id)
+          .filter(models.Cart.user_id==user_id).first()
+    )
     if not cart:
         raise HTTPException(status_code=404,detail=" cart not found.")
     
     cart_id=cart.id
     
     existing = (db.query(models.CartItem).filter(
-        models.CartItem.cart_id == cart_id,
-        models.CartItem.item_id == item_id
-    ).first()
-    )
+    models.CartItem.cart_id == cart_id,models.CartItem.item_id == item_id).first())
     if existing:
         existing.quantity = item.quantity
         db.commit()
@@ -95,18 +99,18 @@ def leaveitem(user_id:int,item_id:int,db:Session=Depends(get_db)):
    
     cart=db.query(models.Cart).filter(models.Cart.user_id==user_id).first()
     if not cart:
-       raise HTTPException(status_code=404,detail=" Cart not found")
+        raise HTTPException(status_code=404,detail=" Cart not found")
     
     cartitem=(db.query(models.CartItem)
-              .filter(cart.id==models.CartItem.cart_id,item_id==models.CartItem.item_id).first()
-    )
+        .filter(cart.id==models.CartItem.cart_id,item_id==models.CartItem.item_id).first()
+        )
     if not cartitem:
         raise HTTPException(status_code=404, detail="Item not in cart.")
     
     db.delete(cartitem)
     db.commit()
     return cartitem
-
+    
 
 @router.delete("/{user_id}/dropCart",response_model=carts)
 def dropcart(user_id:int,db:Session=Depends(get_db)):
@@ -153,11 +157,14 @@ def purchaseItem(user_id:int,input:purchase,db:Session=Depends(get_db)):
       raise HTTPException(status_code=400,detail=f"to few items in stock only {quantity} avalibal")
     itemquantity=itemquantity-quantity
     
-    item.quantity=itemquantity
-
+    item.quantity=itemquantity 
     db.delete(cartitem)
-    db.commit()
     
+    try:   
+        db.commit()
+        return cartitem
+    except:
+        db.rollback()
 
 @router.post("/{user_id}/PurchaseCart",response_model=List[CartItemsOut])
 def buyCart(user_id:int,db:Session=Depends(get_db)):
@@ -169,26 +176,32 @@ def buyCart(user_id:int,db:Session=Depends(get_db)):
        raise HTTPException(status_code=404,detail=" Cart not found")
 
     cart_id=cart.id
-    cartItems=(db.query(models.CartItem).filter(models.CartItem.cart_id==cart_id).all()
+    cartItems=(db.query(models.CartItem, models.Item)
+               .join(models.Item,models.CartItem.item_id==models.Item.id)
+               .filter(models.CartItem.cart_id==cart_id).all()
     )
     if  not cartItems:
-        raise HTTPException(status_code=200,detail="cart is empty")
-
-    for cart_items in cartItems:
-        db.delete(cart_items)
+        raise HTTPException(status_code=400,detail="cart is empty")
+ 
+    
+    for cart_items, item in cartItems:
+        #items=(db.query(models.Item).filter(models.Item.id==cart_items.item_id).first())
+        if  not item:
+            raise HTTPException(status_code=404,detail=f"Item not found {cartItems.item_id}")
         
-        items=(db.query(models.Item).filter(models.Item.id==cart_items.item_id).first())
-        if  not items:
-            raise HTTPException(status_code=404,detail=f"Item not found {items.item_id}")
-        
-        if items.quantity<cart_items.quantity:
-            raise HTTPException(status_code=400,detail=f"Not enough in stock {items.id}")
-        
-        items.quantity -= cart_items.quantity
-
-    db.commit()
-
-    return cartItems
+        if item.quantity<cart_items.quantity:
+            raise HTTPException(status_code=400,detail=f"Not enough in stock {item.id}")
+       
+    for cart_item, items in cartItems: 
+        items.quantity -= cart_item.quantity
+        db.delete(cart_item)
+    
+    try:
+        db.commit()
+        return cartItems
+    except:
+        db.rollback
+    
         
     
                
