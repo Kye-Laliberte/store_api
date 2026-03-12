@@ -66,6 +66,5 @@ class create_cartItem(BaseModel):
 
 class purchase(BaseModel):
      item_id:int
-     cart_id:int
 
 

@@ -120,28 +120,42 @@ def dropcart(user_id:int,db:Session=Depends(get_db)):
     return cart
     
     
-@router.put("/{user_id}/PurchaseItems",response_model=CartItemsOut)
-def purchaseItems(user_id:int,input:purchase,db:Session=Depends(get_db)):
+@router.post("/{user_id}/PurchaseItems",response_model=CartItemsOut)
+def purchaseItem(user_id:int,input:purchase,db:Session=Depends(get_db)):
+    
 
-    item_id=input.item_id
-    cart_id=input.cart_id
-    cartitem=(db.query(models.CartItem)
-          .filter(models.CartItem.cart_id==cart_id,models.CartItem.item_id==item_id).first()
+    cart = (
+        db.query(models.Cart)
+        .filter(models.Cart.user_id == user_id)
+        .first()
     )
-    quantity=cartitem.quantity
-    item=(db.query(models.Item)
-          .filter(cartitem.item_id==item_id))
+    if not cart:
+        raise HTTPException(status_code=404, detail="Cart not found")
+    
+    item_id=input.item_id
+    cart_id=cart.id
+    cartitem=(db.query(models.CartItem)
+              .filter(models.CartItem.cart_id==cart_id,models.CartItem.item_id==item_id).first()
+    )
+    if not cartitem:
+        raise HTTPException(status_code=404,detail="item not in cart")
+    
+    item=(db.query(models.Item).filter(models.Item.id==item_id).first())
+    
     if not item: 
         raise HTTPException(status_code=400)
     
+    quantity=cartitem.quantity
     itemquantity=item.quantity
+
     if quantity>itemquantity:
-       return ({"warning":f"to few items in stock only {itemquantity} avalibal"})
+      raise HTTPException(status_code=400,detail=f"to few items in stock only {quantity} avalibal")
     itemquantity=itemquantity-quantity
     
     item.quantity=itemquantity
 
-    #db.query(models.CartItem).filter(models.CartItem.cart_id==cart_id,models.CartItem.item_id==item_id).delete()
+    db.delete(cartitem)
+    db.commit()
     
 
 
