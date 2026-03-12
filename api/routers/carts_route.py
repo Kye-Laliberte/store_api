@@ -90,11 +90,15 @@ def newCart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
     return {"id":models.Cart.id,"user_id":user_id,"purchase_date":purchase_date}
 
 
-@router.delete("/{cart_id}/removeitem",response_model=create_cartItem)
-def leaveitem(cart_id:int,item_id:int,db:Session=Depends(get_db)):
+@router.delete("/{user_id}/removeitem",response_model=create_cartItem)
+def leaveitem(user_id:int,item_id:int,db:Session=Depends(get_db)):
    
+    cart=db.query(models.Cart).filter(models.Cart.user_id==user_id).first()
+    if not cart:
+       raise HTTPException(status_code=404,detail=" Cart not found")
+    
     cartitem=(db.query(models.CartItem)
-              .filter(cart_id==models.CartItem.cart_id,item_id==models.CartItem.item_id).first()
+              .filter(cart.id==models.CartItem.cart_id,item_id==models.CartItem.item_id).first()
     )
     if not cartitem:
         raise HTTPException(status_code=404, detail="Item not in cart.")
