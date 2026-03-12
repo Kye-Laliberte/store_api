@@ -124,11 +124,8 @@ def dropcart(user_id:int,db:Session=Depends(get_db)):
 def purchaseItem(user_id:int,input:purchase,db:Session=Depends(get_db)):
     
 
-    cart = (
-        db.query(models.Cart)
-        .filter(models.Cart.user_id == user_id)
-        .first()
-    )
+    cart =db.query(models.Cart).filter(models.Cart.user_id == user_id).first()
+
     if not cart:
         raise HTTPException(status_code=404, detail="Cart not found")
     
@@ -143,7 +140,7 @@ def purchaseItem(user_id:int,input:purchase,db:Session=Depends(get_db)):
     item=(db.query(models.Item).filter(models.Item.id==item_id).first())
     
     if not item: 
-        raise HTTPException(status_code=400)
+        raise HTTPException(status_code=404)
     
     quantity=cartitem.quantity
     itemquantity=item.quantity
@@ -158,11 +155,39 @@ def purchaseItem(user_id:int,input:purchase,db:Session=Depends(get_db)):
     db.commit()
     
 
+@router.post("/{user_id}/PurchaseCart",response_model=List[CartItemsOut])
+def buyCart(user_id:int,db:Session=Depends(get_db)):
+    """removes all items from the cartItems tabel pertaning to the user_id and removse them from the Item tebel"""
+    
+    cart=db.query(models.Cart).filter(models.Cart.user_id==user_id).first()
+    print("cart:", cart)
+    if not cart:
+       raise HTTPException(status_code=404,detail=" Cart not found")
 
+    cart_id=cart.id
+    cartItems=(db.query(models.CartItem).filter(models.CartItem.cart_id==cart_id).all()
+    )
+    if  not cartItems:
+        raise HTTPException(status_code=200,detail="cart is empty")
+
+    for cart_items in cartItems:
+        db.delete(cart_items)
+        
+        items=(db.query(models.Item).filter(models.Item.id==cart_items.item_id).first())
+        if  not items:
+            raise HTTPException(status_code=404,detail=f"Item not found {items.item_id}")
+        
+        if items.quantity<cart_items.quantity:
+            raise HTTPException(status_code=400,detail=f"Not enough in stock {items.id}")
+        
+        items.quantity -= cart_items.quantity
+
+    db.commit()
+
+    return cartItems
+        
+    
+               
+    
 
     
-    """     
-
-router.put("/{user_id}/PurchaseCart",response_model=List[CartItemsOut])
-def buyCart(user_id:int,db:Session=Depends(get_db)):
-""" 
