@@ -131,7 +131,7 @@ def dropcart(user_id:int,db:Session=Depends(get_db)):
     return cart
     
     
-@router.post("/{user_id}/PurchaseItems",response_model=CartItemsOut)
+@router.post("/{user_id}/PurchaseItems",response_model=purchaseout)
 def purchaseItem(user_id:int,input:purchase,db:Session=Depends(get_db)):
     
 
@@ -142,9 +142,10 @@ def purchaseItem(user_id:int,input:purchase,db:Session=Depends(get_db)):
     
     item_id=input.item_id
     cart_id=cart.id
-    cartitem=(db.query(models.CartItem,models.Item)
+    cartitem=(db.query(models.CartItem)
               .filter(models.CartItem.cart_id==cart_id,models.CartItem.item_id==item_id).first()
     )
+  
     if not cartitem:
         raise HTTPException(status_code=404,detail="item not in cart")
     
@@ -154,17 +155,18 @@ def purchaseItem(user_id:int,input:purchase,db:Session=Depends(get_db)):
         raise HTTPException(status_code=404)
     
     quantity=cartitem.quantity
+    
     itemquantity=item.quantity
 
     if quantity>itemquantity:
       raise HTTPException(status_code=400,detail=f"to few items in stock only {quantity} avalibal")
-    itemquantity=itemquantity-quantity
-    
-    item.quantity=itemquantity 
+        
+    item.quantity -= quantity 
     toalprice=quantity*item.price 
-    outitem=({"item_id":cartitem.item_id,"name":item.name,
-              "quantity":cartitem.quantity,"price":toalprice,
-              "description":cartitem.description})
+    outitem=({"cart_id":cart_id,"item_id":cartitem.item_id,"name":item.name,
+              "quantity":cartitem.quantity,"totalprice":toalprice})
+    
+   
     db.delete(cartitem)
     
     try:   
