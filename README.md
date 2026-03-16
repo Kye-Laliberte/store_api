@@ -30,45 +30,26 @@ insufficient stock,invalid requests
 Tech Stack
 
 Backend,Python,FastAPI,SQLAlchemy ORM,Database,SQL (PostgreSQL)
+Other Tools Pydantic,Uvicorn
 
-Other Tools
-Pydantic,Uvicorn
-
-
-
-Goal of this structure:
-
-routers/ handles API routes
-
-SQL/ contains database definitions
-
-This keeps the codebase organized and easier to debug.
-
-Database Schema
-
-Core tables used in the system:
-
+SQL schema
 Users
-
 id Primary Key
 username
 password_hash
 
 Items
-
 id Primary Key
 name
 quantity (inventory stock)
 price
 
 Carts
-
 id Primary Key
 user_id FK
 status
 
 Cart_Items
-
 id Primary Key/compound key(cart_id/item_id)
 cart_id FK
 item_id FK
