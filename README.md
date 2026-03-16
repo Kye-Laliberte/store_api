@@ -79,25 +79,29 @@ DELETE /items/{item_id}
 Cart
 
 Create cart
-POST /cart/{user_id}/newcart", response_model=carts
+  POST /cart/{user_id}/newcart", response_model=carts
 View cart
-GET /cart/{user_id}/viewcart",response_model=List[CartItemsOut])
+  GET /cart/{user_id}/viewcart",response_model=List[CartItemsOut])
 Add item to cart
-POST /cart/{user_id}/addItem,response_model=CartItemsOut
-Remove item from cart
-DELETE /cart/{user_id}/removeItem,response_model=create_cartItem
-Checkout
-POST/cart/{user_id}/PurchaseItems",response_model=purchaseout
-POST/{user_id}/PurchaseCart",response_model=List[purchaseout]
+  POST /cart/{user_id}/addItem,response_model=CartItemsOut
+Remove item from cart removes a CartItem from Cart
+  DELETE /cart/{user_id}/removeItem,response_model=create_cartItem
+PurchaseItem one item in the cart is removed and purchised.
+  POST/cart/{user_id}/PurchaseItems",response_model=purchaseout
+PurchaseCart all CartItems asoseate to a Cart are Purchaseed and lowers the Item.quantity by the cart item and returns a list of pydantic modeles of purchasout
+  POST/{user_id}/PurchaseCart",response_model=List[purchaseout]
 This ensures that inventory cannot go negative.
 
 Running the Project
 
 Clone repository
-git clone <repo-url>
+git clone <https://github.com/Kye-Laliberte/store_api.git>
 Install dependencies
 pip install -r requirements.txt
+
+
 Start server
+set up a .env or directly conect the database to the server
 uvicorn main:app --reload
 
 API will run on
