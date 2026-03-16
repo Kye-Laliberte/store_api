@@ -83,7 +83,10 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
 
 @router.post("{user_id}/newcart", response_model=carts)
 def newCart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
-    
+    exists=db.query(models.Cart).filter(models.Cart.user_id==user_id).first()
+    if exists:
+        #raise HTTPException(status_code=200,detail="cart alredy active")
+        return {"id":exists.id,"user_id":user_id,"purchase_date":exists.purchase_date}
     purchase_date=cart.purchase_date
     newcart = models.Cart(user_id=user_id,purchase_date=cart.purchase_date)
     
@@ -139,7 +142,7 @@ def purchaseItem(user_id:int,input:purchase,db:Session=Depends(get_db)):
     
     item_id=input.item_id
     cart_id=cart.id
-    cartitem=(db.query(models.CartItem)
+    cartitem=(db.query(models.CartItem,models.Item)
               .filter(models.CartItem.cart_id==cart_id,models.CartItem.item_id==item_id).first()
     )
     if not cartitem:
@@ -158,11 +161,15 @@ def purchaseItem(user_id:int,input:purchase,db:Session=Depends(get_db)):
     itemquantity=itemquantity-quantity
     
     item.quantity=itemquantity 
+    toalprice=quantity*item.price 
+    outitem=({"item_id":cartitem.item_id,"name":item.name,
+              "quantity":cartitem.quantity,"price":toalprice,
+              "description":cartitem.description})
     db.delete(cartitem)
     
     try:   
         db.commit()
-        return cartitem
+        return outitem
     except:
         db.rollback()
 
