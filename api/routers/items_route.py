@@ -9,11 +9,11 @@ router = APIRouter(prefix="/items", tags=["items"])
 
 # READ all items
 @router.get("/get_all")
-def readAllItems(db: Session = Depends(get_db)):
+def readAllItems(db: Session = Depends(get_db),response_model =List[item]):
     return db.query(models.Item).all()
 
 
-@router.post("/add_item",response_model=List[item])
+@router.post("/add_item",response_model=item)
 def create_item(item:createitem, db: Session = Depends(get_db)):
     """add a item to the stores inventory"""
     name=item.name.strip().lower()
