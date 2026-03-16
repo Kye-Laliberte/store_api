@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from api.database import get_db
 from ..import sqlAmodels as models
 from typing import List, Optional
-from ..psycopg_models import CartItemsOut,carts,create_cartItem,createCart,purchase
+from ..psycopg_models import CartItemsOut,carts,create_cartItem,createCart,purchase,purchaseout
 from datetime import datetime
 router = APIRouter(prefix="/carts", tags=["carts"])
 
@@ -166,7 +166,7 @@ def purchaseItem(user_id:int,input:purchase,db:Session=Depends(get_db)):
     except:
         db.rollback()
 
-@router.post("/{user_id}/PurchaseCart",response_model=List[CartItemsOut])
+@router.post("/{user_id}/PurchaseCart",response_model=List[purchaseout])
 def buyCart(user_id:int,db:Session=Depends(get_db)):
     """removes all items from the cartItems tabel pertaning to the user_id and removse them from the Item tebel"""
     
@@ -182,23 +182,28 @@ def buyCart(user_id:int,db:Session=Depends(get_db)):
     )
     if  not cartItems:
         raise HTTPException(status_code=400,detail="cart is empty")
- 
+    
+    purchase=[]
     
     for cart_items, item in cartItems:
-        #items=(db.query(models.Item).filter(models.Item.id==cart_items.item_id).first())
+        
         if  not item:
             raise HTTPException(status_code=404,detail=f"Item not found {cartItems.item_id}")
         
         if item.quantity<cart_items.quantity:
             raise HTTPException(status_code=400,detail=f"Not enough in stock {item.id}")
-       
-    for cart_item, items in cartItems: 
+    totalprice=0
+    for cart_item, items in cartItems:
+        totalprice=cart_item.quantity*items.price
         items.quantity -= cart_item.quantity
+        val={"cart_id":cart_item.cart_id,"item_id":items.id,"name": items.name,"totalprice": totalprice,"quantity":cart_item.quantity}
+        purchase.append(val)
         db.delete(cart_item)
+    
     
     try:
         db.commit()
-        return cartItems
+        return purchase
     except:
         db.rollback
     

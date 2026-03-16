@@ -48,10 +48,10 @@ class cart_items(BaseModel):
 
 
 class CartItemsOut(BaseModel):
-    item_id: Optional[int]=0
-    name: Optional[str]="none"
-    price: Optional[float]=0.0
-    quantity: Optional[int]=0
+    item_id: int
+    name: str
+    price: float
+    quantity: int = conint(ge=0)
     description: Optional[str]="no description"
 
     class Config:
@@ -66,5 +66,13 @@ class create_cartItem(BaseModel):
 
 class purchase(BaseModel):
      item_id:int
+     amout: Optional[int]=None
+    #for changing if ther is to many of few items
 
+class purchaseout(BaseModel):
+    cart_id: int
+    item_id: int
+    name: str
+    totalprice: float
+    quantity: int    
 
