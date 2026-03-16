@@ -15,7 +15,8 @@ Prevent purchases when inventory is insufficient
 Cart System
 
 Create carts for users Add, remove and Update items quantities for carts 
-
+a user can only curintly have one cart at a time that may change but for now it keeps it
+more of a structered system and less of a overlaping feature.
 Checkout Logic
 
 Validates cart items against available inventory, then deducts purchased quantities from stock
@@ -26,6 +27,7 @@ Error Handling
 API returns structured error responses for cases such as:
 cart not found, item not found
 insufficient stock,invalid requests
+and in some cases telling the the amoun of the items left or the item_id
 
 Tech Stack
 
@@ -33,27 +35,28 @@ Backend,Python,FastAPI,SQLAlchemy ORM,Database,SQL (PostgreSQL)
 Other Tools Pydantic,Uvicorn
 
 SQL schema
-Users
+Users table
 id Primary Key
-username
-password_hash
+password_hash user pasword
+created_at date of creation
 
-Items
+Items table
 id Primary Key
-name
+name item name
+description TEXT DEFAULT no description item description is no description by defalt
 quantity (inventory stock)
-price
+price item price
 
 Carts
 id Primary Key
-user_id FK
-status
+user_id FK to carts
+purchase_date date of cart creation
 
 Cart_Items
-id Primary Key/compound key(cart_id/item_id)
-cart_id FK
-item_id FK
-quantity (amount requested by user)
+cart_id FK to Carts
+item_id FK to items
+quantity (amount requested by user) NOT NULL CHECK (quantity > 0)
+PRIMARY KEY (cart_id, item_id)/compound key(cart_id/item_id)
 
 Design notes:
 
