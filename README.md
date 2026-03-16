@@ -24,7 +24,6 @@ Removes items from cart after purchase.
 Error Handling
 
 API returns structured error responses for cases such as:
-
 cart not found, item not found
 insufficient stock,invalid requests
 
