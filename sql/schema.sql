@@ -23,8 +23,8 @@ CREATE TABLE IF NOT EXISTS carts(
 );
 
 CREATE TABLE IF NOT EXISTS cart_items (
-    cart_id INTEGER REFERENCES carts(id) ON DELETE CASCADE,
-    item_id INTEGER REFERENCES items(id) ON DELETE CASCADE,
+    cart_id INTEGER REFERENCES NOT NULL carts(id) ON DELETE CASCADE,
+    item_id INTEGER REFERENCES NOT NULL items(id) ON DELETE CASCADE,
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     PRIMARY KEY (cart_id, item_id)
 );
