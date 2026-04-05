@@ -58,8 +58,6 @@ def test_sqlalchemy():
         logging.error("SQLAlchemy session test failed.", exc_info=True)
         print("SQLAlchemy session test failed:", e)
 
-
-
 if __name__ == "__main__":
     testConnection()     
     test_sqlalchemy()

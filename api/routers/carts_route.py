@@ -11,7 +11,7 @@ router = APIRouter(prefix="/carts", tags=["carts"])
 
 @router.get("/")
 def carthome():
-    return {"message":"welcom to the store grab a cart"}
+    return {"message":"welcome to the store grab a cart"}
 
 
 @router.get("/{user_id}/viewcart",response_model=List[CartItemsOut])
