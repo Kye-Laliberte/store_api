@@ -28,3 +28,16 @@ CREATE TABLE IF NOT EXISTS cart_items (
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     PRIMARY KEY (cart_id, item_id)
 );
+
+CREATE TABLE IF NOT EXISTS purchases (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS purchasesItems (
+    product_name TEXT NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    purchase_id INT REFERENCES purchases(id) ON DELETE CASCADE,
+    PRIMARY KEY (purchase_id, product_name)
+);
