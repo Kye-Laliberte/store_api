@@ -1,9 +1,9 @@
 from symtable import Class
-
 from sqlalchemy import Column, Integer, String, Numeric, DateTime, ForeignKey, CheckConstraint
 from  sqlalchemy.orm import relationship, declarative_base,sessionmaker
-from api.database import Base
+from database import Base
 from datetime import datetime
+
 __table_args__ = (
     CheckConstraint('quantity > 0'),
     CheckConstraint('price > 0'),

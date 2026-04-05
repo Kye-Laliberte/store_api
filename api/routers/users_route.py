@@ -1,10 +1,10 @@
 from fastapi import APIRouter,Path, Depends, HTTPException
 from sqlalchemy.orm import Session
-from api.database import get_db
-from ..import sqlAmodels as models
+from database import get_db
+import sqlAmodels as models
 from passlib.context import CryptContext
 from typing import List, Optional
-from ..psycopg_models import users,userOut
+from psycopg_models import users,userOut
 from passlib.hash import bcrypt
 
 router = APIRouter(prefix="/users", tags=["users"])
