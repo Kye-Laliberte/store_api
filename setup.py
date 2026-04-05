@@ -4,7 +4,7 @@ import random
 import psycopg2
 import logging
 from datetime import datetime
-def setup(schema_path="SQL/schema.sql"):
+def setup(schema_path="sql/schema.sql"):
     
     if not exists(schema_path):
         raise FileNotFoundError(f"file not found: {schema_path}")
@@ -42,18 +42,31 @@ def setup(schema_path="SQL/schema.sql"):
                 ON CONFLICT (user_id) DO NOTHING;
             """, (datetime.now(),))
 
-            # Cart Items
+            ## Cart Items
             cursor.execute("""
                 INSERT INTO cart_items (cart_id, item_id, quantity)
                 SELECT c.id, i.id, 1
                 FROM carts c
                 JOIN items i ON i.name = 'Keyboard'
+                WHERE c.user_id = (SELECT id FROM users WHERE email = 'alice@gmail.com')
                 ON CONFLICT (cart_id, item_id) DO NOTHING;
             """)
-
-            
-
-         
+            # Orders
+            cursor.execute("""
+                INSERT INTO orders (user_id, total_price, order_date)
+                SELECT id, 49.99, %s FROM users
+                WHERE email = 'alice@gmail.com';
+            """, (datetime.now(),))
+            #ON CONFLICT (user_id) DO NOTHING
+            # Order Items
+            cursor.execute("""
+                INSERT INTO order_items (order_id, item_id, quantity, price_at_order)
+                SELECT o.id, i.id, 1 , i.price
+                FROM orders o
+                JOIN items i ON i.name = 'Keyboard'
+                WHERE o.user_id = (SELECT id FROM users WHERE email = 'alice@gmail.com')
+                ;
+            """)
 
 if __name__ == "__main__":
     setup()
