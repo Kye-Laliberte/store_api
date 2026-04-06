@@ -6,7 +6,7 @@ from alembic import context, config
 from dotenv import load_dotenv
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from api.sqlAmodels import Base
+from api.models.sqlAmodels import Base
 
 load_dotenv()
 

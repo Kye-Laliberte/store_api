@@ -1,16 +1,15 @@
 #venv\Scripts\Activate.ps1
-from unittest import result
 
 from fastapi import FastAPI, Depends, HTTPException, APIRouter
 from sqlalchemy.orm import Session
-#import models
-import  sqlAmodels as models
-import  models.ordermodels as Omodels 
+import  api.models.sqlAmodels as models
+import  api.models.ordermodels as Omodels 
 import logging
-from routers.items_route import router  as item_router 
-from routers.carts_route import router as cart_router
-from routers.users_route import router as user_router 
-from database import get_db,engine,LocalSession
+from api.routers.items_route import router  as item_router 
+from api.routers.carts_route import router as cart_router
+from api.routers.users_route import router as user_router
+from api.routers.order_route import router as order_router 
+from api.database import get_db,engine,LocalSession
 from sqlalchemy import text
 models.Base.metadata.create_all(bind=engine)
 Omodels.Base.metadata.create_all(bind=engine)
@@ -19,7 +18,7 @@ app = FastAPI(title="Inventory API")
 app.include_router(item_router)
 app.include_router(cart_router)
 app.include_router(user_router)
-
+app.include_router(order_router)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s | %(levelname)s | %(message)s"

@@ -1,7 +1,7 @@
 from symtable import Class
 from sqlalchemy import Column, Integer, String, Numeric, DateTime, ForeignKey, CheckConstraint
 from  sqlalchemy.orm import relationship, declarative_base,sessionmaker
-from database import Base
+from api.database import Base
 from datetime import datetime
 
 __table_args__ = (

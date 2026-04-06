@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from database import  get_db
-import sqlAmodels as models
-from psycopg_models import item,createitem 
+from api.database import  get_db
+import api.models.sqlAmodels as models
+from api.psycopg_models import item,createitem 
 from typing import List, Optional
 
 router = APIRouter(prefix="/items", tags=["items"])
