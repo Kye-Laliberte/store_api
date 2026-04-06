@@ -29,15 +29,17 @@ def getAllOrders(db: Session=Depends(get_db)):
     orders = db.query(Omodels.Order).all()
     return orders
 
-@router.get("/{user_id}/vieworderdetails")
+@router.get("/{user_id}/vieworderdetails", response_model=List[pmodels.orderInfo])
 def viewOrderDetails(user_id:int,db: Session=Depends(get_db)):
+    """ shows all detals of past orders incluting item infermation and price at order time"""
     orderDetails = (db.query(Omodels.Order.id,
-                             Omodels.Order.created_at,
+                             Omodels.Order.order_date,
                              Omodels.OrderItem.item_id,
                              Omodels.OrderItem.quantity,
+                             Omodels.OrderItem.price_at_order,
                              models.Item.name,
-                             models.Item.description,
-                             models.Item.price)
+                             models.Item.description
+                             )
                              .join(Omodels.OrderItem, Omodels.Order.id == Omodels.OrderItem.order_id)
                              .join(models.Item, Omodels.OrderItem.item_id == models.Item.id)
                              .filter(Omodels.Order.user_id == user_id).all())

@@ -8,7 +8,7 @@ __table_args__ = (
     CheckConstraint('quantity > 0'),
     CheckConstraint('price > 0'),
     CheckConstraint('quantity_available >= 0'))
-Base = declarative_base()
+
 
 class User(Base):
     __tablename__ = "users"
@@ -17,6 +17,7 @@ class User(Base):
     password_hash = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    orders = relationship("Order", back_populates="user")
     cart = relationship("Cart", back_populates="user", uselist=False)
 
 class Item(Base):
@@ -26,7 +27,7 @@ class Item(Base):
     description = Column(String)
     quantity= Column(Integer, CheckConstraint('quantity_available  >= 0'), nullable=False, default=0,)
     price = Column(Numeric(10, 2),CheckConstraint('price > 0'), nullable=False)
-   
+    order_items = relationship("OrderItem", back_populates="item")
     cart_items = relationship("CartItem", back_populates="item")
 
 class Cart(Base):
