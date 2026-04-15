@@ -86,7 +86,7 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
     else:
         cart_item = models.CartItem(cart_id=cart_id, item_id=item_id, quantity=quantity)
         db.add(cart_item)
-        db.commit()
+        
         db.refresh(cart_item)
     
     try:
@@ -103,7 +103,7 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
             logging.error(f"Insufficient stock for item {item_id} while retrieving cart item for user {user_id}")
             db.rollback()
             raise HTTPException(status_code=400, detail=f"Insufficient stock for item {item_id}")
-        
+        db.commit()
     except KeyError:
         logging.error("KeyError: Item not found in database.")
         db.rollback()
