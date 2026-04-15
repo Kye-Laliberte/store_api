@@ -19,10 +19,16 @@ def carthome():
 @router.get("/{user_id}/viewcart",response_model=List[CartItemsOut])
 def viewCart(user_id:int,db: Session=Depends(get_db)):
     """retreves all items in the cart that relar to the user_id and returns a list of models with the item name, description, price and quantity"""
-    cart= db.query(models.Cart.id).filter(models.Cart.user_id==user_id).first()
+    try:
+        cart= db.query(models.Cart.id).join(models.User, models.Cart.user_id == models.User.id).filter(models.Cart.user_id==user_id).first()
+    except Exception as e:
+        logging.error(f"Error retrieving cart for user {user_id}: {e}")
+        raise HTTPException(status_code=500, detail="An error occurred while retrieving the cart")
     
     if not cart:
         raise HTTPException(status_code=404,detail=f"no cart found or active for {user_id}")
+
+
     cart_id=cart.id
     cartItems = (db.query(models.CartItem.item_id,
                            models.CartItem.quantity,
@@ -43,6 +49,7 @@ def GetCarts(db: Session = Depends(get_db)):
     """retreves all of the carts info and returns a list of cart models"""
     return db.query(models.Cart).all()
 
+
 @router.post("/{user_id}/additem",response_model=CartItemsOut)
 def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
     """adds a item to the cart if it is alredy there it updates the quantity to the new quantity, returns a item model with item name, description, price and quantity"""
@@ -53,27 +60,36 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
         raise HTTPException( status_code=400,detail="cant add less than 1 items to a cart")
     
     cart=(db.query(models.Cart.id)
+        .join(models.User, models.Cart.user_id == models.User.id)
           .filter(models.Cart.user_id==user_id).first()
     )
-
-
 
     if not cart:
         raise HTTPException(status_code=404,detail=" cart not found.")
     
     cart_id=cart.id
     
-    existing = (db.query(models.CartItem).filter(
-    models.CartItem.cart_id == cart_id,models.CartItem.item_id == item_id).first())
-    if existing:
+    try:
+        existing = (db.query(models.CartItem).filter(
+        models.CartItem.cart_id == cart_id,models.CartItem.item_id == item_id).join(models.Item,models.CartItem.item_id == models.Item.id).first())
+    except Exception as e:
+        logging.error(f"Error checking for existing cart item for user {user_id} and item {item_id}: {e}")
+        raise HTTPException(status_code=500, detail="An error occurred while checking for existing cart item")
+    
+
+    if existing:  
+        if existing.item.quantity <= item.quantity:
+            logging.error(f"Insufficient stock for item {item_id} while adding to cart for user {user_id}")
+            raise HTTPException(status_code=400, detail=f"Insufficient stock for item {item_id}")
         existing.quantity = item.quantity
         db.commit()
-        
+       
     if not existing:
         cart_item = models.CartItem(cart_id=cart_id, item_id=item_id, quantity=quantity)
         db.add(cart_item)
         db.commit()
         db.refresh(cart_item)
+    
     try:
         cartItem= (
         db.query(models.CartItem,
@@ -84,12 +100,15 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
                         models.Item.price).join(models.Item,models.CartItem.item_id==models.Item.id).filter(models.Item.id==models.Item.id)
                         .filter(models.CartItem.cart_id==cart_id).filter(models.Item.id == item.item_id).first()
         )
+        
     
     except KeyError:
         logging.error("KeyError: Item not found in database.")
+        db.rollback()
         raise HTTPException(status_code=400,detail="failed to add item to cart Item not found")
     except Exception as e:
         logging.error(f"Error retrieving cart item: {e}")
+        db.rollback()
         raise HTTPException(status_code=400,detail=f"failed to add item to cart {e}")
     
     if not cartItem:

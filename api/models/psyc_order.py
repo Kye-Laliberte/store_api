@@ -11,7 +11,7 @@ class orders(BaseModel):
     total_price: float = confloat(gt=0)
     user_id: int
     order_date: Optional[datetime] = Field(default_factory=datetime.utcnow)
-
+    number_of_items: int = conint(gt=0)
 class orderItems(BaseModel):
     id: int
     item_id: int
