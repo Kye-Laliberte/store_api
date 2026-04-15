@@ -83,25 +83,27 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
             raise HTTPException(status_code=400, detail=f"Insufficient stock for item {item_id}")
         existing.quantity = item.quantity
         db.commit()
-       
-    if not existing:
+    else:
         cart_item = models.CartItem(cart_id=cart_id, item_id=item_id, quantity=quantity)
         db.add(cart_item)
         db.commit()
         db.refresh(cart_item)
     
     try:
-        cartItem= (
-        db.query(models.CartItem,
-                        models.CartItem.quantity,
-                        models.CartItem.item_id,
-                        models.Item.description,
-                        models.Item.name,
-                        models.Item.price).join(models.Item,models.CartItem.item_id==models.Item.id).filter(models.Item.id==models.Item.id)
-                        .filter(models.CartItem.cart_id==cart_id).filter(models.Item.id == item.item_id).first()
+        cartItem=(db.query(models.CartItem,models.CartItem.quantity,
+                           models.CartItem.item_id,models.Item.description,
+                        models.Item.name, models.Item.quantity.label('stock'),
+                        models.Item.price)
+                        .join(models.Item,models.CartItem.item_id==models.Item.id)
+                        .filter(models.CartItem.cart_id==cart_id)
+                        .filter(models.Item.id == item.item_id).first()
         )
+        stock=cartItem.stock
+        if cartItem.quantity >= stock:
+            logging.error(f"Insufficient stock for item {item_id} while retrieving cart item for user {user_id}")
+            db.rollback()
+            raise HTTPException(status_code=400, detail=f"Insufficient stock for item {item_id}")
         
-    
     except KeyError:
         logging.error("KeyError: Item not found in database.")
         db.rollback()
