@@ -58,7 +58,7 @@ def viewOrderDetails(user_id:int,db: Session=Depends(get_db)):
         
     return orderDetails
 
-@router.post("/{user_id}/createorder")
+@router.post("/{user_id}/createorder",response_model=pmodels.ordersout)
 def createOrder(user_id:int, db: Session=Depends(get_db)):
     """creates an order for the user with the items in their cart and returns the order details"""
     cart = db.query(models.Cart).filter(models.Cart.user_id == user_id).first()
@@ -115,5 +115,5 @@ def createOrder(user_id:int, db: Session=Depends(get_db)):
         raise HTTPException(status_code=500, detail="An error occurred while creating the order")
     
     # Return order details
-    order={"order_id": new_order.id, "total_price": new_order.total_price, "order_date": new_order.order_date, "number_of_items": len(cartItems)}
+    order={"order_id": new_order.id, "total_price": new_order.total_price, "order_date": new_order.order_date, "number_of_items": len(cartItems), "Items": orders}
     return order
