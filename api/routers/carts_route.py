@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from api.database import get_db
@@ -16,6 +18,7 @@ def carthome():
 
 @router.get("/{user_id}/viewcart",response_model=List[CartItemsOut])
 def viewCart(user_id:int,db: Session=Depends(get_db)):
+    """retreves all items in the cart that relar to the user_id and returns a list of models with the item name, description, price and quantity"""
     cart= db.query(models.Cart.id).filter(models.Cart.user_id==user_id).first()
     
     if not cart:
@@ -28,27 +31,33 @@ def viewCart(user_id:int,db: Session=Depends(get_db)):
                            models.Item.price)
                            .join(models.Item, models.CartItem.item_id == models.Item.id)
                                  .filter(models.CartItem.cart_id == cart_id).all()
+                )
 
-
-)
-    
     if not cartItems:
+        logging.info(f"Cart {cart_id} for user {user_id} is empty.")
         raise HTTPException(status_code=404, detail="Cart is empty")
         
     return cartItems
-@router.get("/getallcarts")
+@router.get("/getallcarts",response_model=List[carts])
 def GetCarts(db: Session = Depends(get_db)):
+    """retreves all of the carts info and returns a list of cart models"""
     return db.query(models.Cart).all()
 
 @router.post("/{user_id}/additem",response_model=CartItemsOut)
 def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
+    """adds a item to the cart if it is alredy there it updates the quantity to the new quantity, returns a item model with item name, description, price and quantity"""
     quantity=item.quantity
     item_id=item.item_id
+    
     if quantity<=0:
         raise HTTPException( status_code=400,detail="cant add less than 1 items to a cart")
+    
     cart=(db.query(models.Cart.id)
           .filter(models.Cart.user_id==user_id).first()
     )
+
+
+
     if not cart:
         raise HTTPException(status_code=404,detail=" cart not found.")
     
@@ -60,14 +69,13 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
         existing.quantity = item.quantity
         db.commit()
         
-        
     if not existing:
         cart_item = models.CartItem(cart_id=cart_id, item_id=item_id, quantity=quantity)
         db.add(cart_item)
         db.commit()
         db.refresh(cart_item)
-    
-    cartItem= (
+    try:
+        cartItem= (
         db.query(models.CartItem,
                         models.CartItem.quantity,
                         models.CartItem.item_id,
@@ -75,14 +83,24 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
                         models.Item.name,
                         models.Item.price).join(models.Item,models.CartItem.item_id==models.Item.id).filter(models.Item.id==models.Item.id)
                         .filter(models.CartItem.cart_id==cart_id).filter(models.Item.id == item.item_id).first()
-    )
+        )
+    
+    except KeyError:
+        logging.error("KeyError: Item not found in database.")
+        raise HTTPException(status_code=400,detail="failed to add item to cart Item not found")
+    except Exception as e:
+        logging.error(f"Error retrieving cart item: {e}")
+        raise HTTPException(status_code=400,detail=f"failed to add item to cart {e}")
+    
     if not cartItem:
-        raise HTTPException(status_code=404, detail="faled to join")
+        logging.error("Error: Failed to join cart and item.")
+        raise HTTPException(status_code=404, detail="failed to join")
     return cartItem
 
 
 @router.post("{user_id}/newcart", response_model=carts)
 def newCart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
+    """creates a new cart for the user if one does not already exist"""
     exists=db.query(models.Cart).filter(models.Cart.user_id==user_id).first()
     if exists:
         #raise HTTPException(status_code=200,detail="cart alredy active")
@@ -99,7 +117,7 @@ def newCart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
 
 @router.delete("/{user_id}/removeitem",response_model=create_cartItem)
 def leaveitem(user_id:int,item_id:int,db:Session=Depends(get_db)):
-   
+    """removes a cartItem from the cart if in the cart and returns a item model with the item name, description, price and quantity"""
     cart=db.query(models.Cart).filter(models.Cart.user_id==user_id).first()
     if not cart:
         raise HTTPException(status_code=404,detail=" Cart not found")
@@ -117,6 +135,7 @@ def leaveitem(user_id:int,item_id:int,db:Session=Depends(get_db)):
 
 @router.delete("/{user_id}/dropCart",response_model=carts)
 def dropcart(user_id:int,db:Session=Depends(get_db)):
+    """removes all items from the cartItems tabel pertaning to the user_id and removes the cart from the Cart tebel"""
     cart=(db.query(models.Cart)
           .filter(models.Cart.user_id==user_id).first()
           )
@@ -133,7 +152,7 @@ def dropcart(user_id:int,db:Session=Depends(get_db)):
     
 @router.post("/{user_id}/PurchaseItems",response_model=purchaseout)
 def purchaseItem(user_id:int,input:purchase,db:Session=Depends(get_db)):
-    
+    """removes a cartItem from the cart if in the cart and returns a item model with the item name, description, price and quantity"""
 
     cart =db.query(models.Cart).filter(models.Cart.user_id == user_id).first()
 
