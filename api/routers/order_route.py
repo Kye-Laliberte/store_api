@@ -64,56 +64,61 @@ def createOrder(user_id:int, db: Session=Depends(get_db)):
     cart = db.query(models.Cart).filter(models.Cart.user_id == user_id).first()
     if not cart:
         raise HTTPException(status_code=404, detail="Cart not found for this user")
-    cart_id = cart.id
-    cartItems = (db.query(models.CartItem, models.Item).join(models.Item, models.CartItem.item_id == models.Item.id).filter(models.Cart.id==cart_id)).all()
+   
+    cartItems = (db.query(models.CartItem, models.Item)
+                 .join(models.Item, models.CartItem.item_id == models.Item.id)
+                 .filter(models.CartItem.cart_id==cart.id)).all()
     if  not cartItems:
         raise HTTPException(status_code=400,detail="cart is empty")
     
-    # create order
-    total_price = sum(cart_item.quantity * item.price for cart_item, item in cartItems)
-    new_order = Omodels.Order(total_price=total_price, user_id=user_id)
-    db.add(new_order)
-    db.commit()
-    db.refresh(new_order)
+    #stop if any item in the cart is more than available in stock
+    for cart_item, item in cartItems:
+        if item.quantity < cart_item.quantity:
+            logging.error(f"Insufficient stock for item {item.id} while creating order for user {user_id}")
+            raise HTTPException(status_code=400, detail=f"Insufficient stock for item {item.name}")
 
-    # create order items
     try:
+        # create order
+        total_price = sum(cart_item.quantity * item.price for cart_item, item in cartItems)
+        new_order = Omodels.Order(total_price=total_price, user_id=user_id)
+        db.add(new_order)
+        db.flush()  # flush to get the new order ID
+        
+    # create order items
+        itemNames = []
+        order_items =[]
         for cart_item, item in cartItems:
             order_item = Omodels.OrderItem(
                 order_id=new_order.id,
                 item_id=cart_item.item_id,
                 quantity=cart_item.quantity,
                 price_at_order=item.price
-            )
+                )
+            itemNames.append( item.name)
             db.add(order_item)
-        # update item quantity
-            if item.quantity < cart_item.quantity:
-                logging.error(f"Insufficient stock for item {item.id} while creating order for user {user_id}")
-                db.rollback() 
-                raise HTTPException(status_code=400, detail=f"Insufficient stock for item {item.name}")
+            item.quantity -= cart_item.quantity  # update stock quantity
+            val={"order_id":new_order.id,"item_id":item.id,"name": item.name,"totalprice": cart_item.quantity*item.price,"quantity":cart_item.quantity}
+            order_items.append(val)
+            
+            db.delete(cart_item)  # clear cart item
+        v=({"id": new_order.id, "total_price": new_order.total_price,"user_id":user_id,
+            "order_date": new_order.order_date, "number_of_items": len(cartItems)})
+        
+        order = pmodels.ordersout(**v)           
+        db.commit()
+        db.refresh(new_order)
+        return order
+    
     except Exception as e:
         logging.error(f"Error creating order items for user {user_id}: {e}")
         db.rollback()
-        raise HTTPException(status_code=500, detail="An error occurred while creating order items")    
-    # # clear cart
+        raise HTTPException(status_code=500, detail="An error occurred while creating order items") 
     
-    orders=[]# crates a list of order items, may use for return details in the future or may remove if not needed.
-    try:
-        db.commit()
-        for cart_item, item in cartItems:
-            
-            item.quantity -= cart_item.quantity
+ 
 
-            # create a dictionary to hold the order details for each item
-            val={"order_id":new_order.id,"item_id":item.id,"name": item.name,"totalprice": cart_item.quantity*item.price,"quantity":cart_item.quantity}
-            orders.append(val)
-            db.delete(cart_item)
-        db.commit()
-    except Exception as e:
-        logging.error(f"Error creating order for user {user_id}: {e}")
-        db.rollback()
-        raise HTTPException(status_code=500, detail="An error occurred while creating the order")
-    
     # Return order details
-    order={"order_id": new_order.id, "total_price": new_order.total_price, "order_date": new_order.order_date, "number_of_items": len(cartItems), "Items": orders}
-    return order
+   
+    
+
+    
+    
