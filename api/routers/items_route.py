@@ -38,14 +38,20 @@ def update_item(item_id: int,description:str=None, quantity: int = None, price: 
     item = db.query(models.Item).filter(models.Item.id == item_id).first()
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
-    if quantity is not None:
-        item.quantity = quantity
-    if price is not None:
-        item.price = price
-    if description is not None:    
-        item.description=description
-    db.commit()
-    db.refresh(item)
+    try:
+        if quantity is not None:
+            item.quantity = quantity
+        if price is not None:
+            item.price = price
+        if description is not None:    
+            item.description=description
+        db.commit()
+        db.refresh(item)
+    except Exception as e:
+        db.rollback()
+        
+        raise HTTPException(status_code=500, detail="Error updating item") from e
+    
     return item
 
 #get items detales
