@@ -54,7 +54,6 @@ def GetCarts(db: Session = Depends(get_db)):
 def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
     """adds a item to the cart if it is alredy there it updates the quantity to the new quantity, returns a item model with item name, description, price and quantity"""
     
-    
     quantity=item.quantity
     item_id=item.item_id
     
@@ -108,21 +107,27 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
 
 
 
-@router.post("{user_id}/newcart", response_model=carts)
+@router.post("/{user_id}/newcart", response_model=carts)
 def newCart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
     """creates a new cart for the user if one does not already exist"""
+    
     exists=db.query(models.Cart).filter(models.Cart.user_id==user_id).first()
     if exists:
         #raise HTTPException(status_code=200,detail="cart alredy active")
-        return {"id":exists.id,"user_id":user_id,"purchase_date":exists.purchase_date}
-    purchase_date=cart.purchase_date
-    newcart = models.Cart(user_id=user_id,purchase_date=cart.purchase_date)
+         return carts(id=exists.id,user_id=user_id,purchase_date=exists.purchase_date)
+        
+    try:
+        newcart = models.Cart(user_id=user_id, purchase_date=cart.purchase_date)
+        db.add(newcart)
+        db.commit()
+        db.refresh(newcart)
+        return newcart       
+    except Exception as e:
+        logging.error(f"Error creating new cart for user {user_id}: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="An error occurred while creating a new cart")
     
-    db.add(newcart)
-    db.commit()
-    db.refresh(newcart)
     
-    return {"id":models.Cart.id,"user_id":user_id,"purchase_date":purchase_date}
 
 
 @router.delete("/{user_id}/removeitem",response_model=create_cartItem)
@@ -153,7 +158,7 @@ def dropcart(user_id:int,db:Session=Depends(get_db)):
         raise HTTPException(status_code=404,detail="no cart active or found")
     
     db.query(models.CartItem).filter(models.CartItem.cart_id==cart.id).delete()
-           
+    
     db.delete(cart)
     db.commit()
 

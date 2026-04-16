@@ -25,10 +25,14 @@ def create_item(item:createitem, db: Session = Depends(get_db)):
     existing = db.query(models.Item).filter(models.Item.name == name).first()
     if existing:
         raise HTTPException(status_code=400, detail="Item already exists")
-    item = models.Item(name=item.name, description=description, quantity=item.quantity, price=item.price)
-    db.add(item)
-    db.commit()
-    db.refresh(item)
+    try:
+         item = models.Item(name=name, description=description, quantity=item.quantity, price=item.price)
+         db.add(item)
+         db.commit()
+         db.refresh(item)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error creating item") from e
     return item
 
 # UPDATE an item
@@ -49,7 +53,6 @@ def update_item(item_id: int,description:str=None, quantity: int = None, price: 
         db.refresh(item)
     except Exception as e:
         db.rollback()
-        
         raise HTTPException(status_code=500, detail="Error updating item") from e
     
     return item
