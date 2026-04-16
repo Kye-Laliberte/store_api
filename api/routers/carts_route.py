@@ -159,10 +159,9 @@ def dropcart(user_id:int,db:Session=Depends(get_db)):
 
     return cart
     
-    
+"""
 @router.post("/{user_id}/PurchaseItems",response_model=purchaseout)
 def purchaseItem(user_id:int,input:purchase,db:Session=Depends(get_db)):
-    """removes a cartItem from the cart if in the cart and returns a item model with the item name, description, price and quantity"""
 
     cart =db.query(models.Cart).filter(models.Cart.user_id == user_id).first()
 
@@ -206,8 +205,6 @@ def purchaseItem(user_id:int,input:purchase,db:Session=Depends(get_db)):
 
 @router.post("/{user_id}/PurchaseCart",response_model=List[purchaseout])
 def buyCart(user_id:int,db:Session=Depends(get_db)):
-    """removes all items from the cartItems tabel pertaning to the user_id and removse them from the Item tebel"""
-    
     cart=db.query(models.Cart).filter(models.Cart.user_id==user_id).first()
     print("cart:", cart)
     if not cart:
@@ -244,7 +241,7 @@ def buyCart(user_id:int,db:Session=Depends(get_db)):
         return purchase
     except:
         db.rollback
-    
+"""    
         
     
                

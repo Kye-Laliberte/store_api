@@ -19,6 +19,7 @@ def carthome():
 
 @router.get("/{user_id}/vieworders", response_model=List[pmodels.orders])
 def viewOrders(user_id:int,db: Session=Depends(get_db)):
+    """ shows all past orders for a user"""
     orders= db.query(Omodels.Order).filter(Omodels.Order.user_id==user_id).all()
     
     if not orders:
@@ -28,6 +29,7 @@ def viewOrders(user_id:int,db: Session=Depends(get_db)):
 
 @router.get("/getallorders", response_model=List[pmodels.orders])
 def getAllOrders(db: Session=Depends(get_db)):
+    """returns all orders in the database, for testing purposes only"""
     orders = db.query(Omodels.Order).all()
     return orders
 
@@ -60,7 +62,7 @@ def viewOrderDetails(user_id:int,db: Session=Depends(get_db)):
 
 @router.post("/{user_id}/createorder",response_model=pmodels.ordersout)
 def createOrder(user_id:int, db: Session=Depends(get_db)):
-    """creates an order for the user with the items in their cart and returns the order details"""
+    """orders all Items in a user's cart, creates an order and order items, updates stock quantity, and clears the cart"""
     cart = db.query(models.Cart).filter(models.Cart.user_id == user_id).first()
     if not cart:
         raise HTTPException(status_code=404, detail="Cart not found for this user")
