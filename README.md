@@ -92,6 +92,10 @@ PurchaseCart all CartItems asoseate to a Cart are Purchaseed and lowers the Item
   POST/{user_id}/PurchaseCart",response_model=List[purchaseout]
 This ensures that inventory cannot go negative.
 
+
+Order
+
+
 Running the Project
 
 Clone repository
@@ -101,6 +105,7 @@ pip install -r requirements.txt
 
 
 Start server
+run setup_db.py to seed the data and set up tabels
 set up a .env or directly conect the database to the server
 uvicorn main:app --reload
 
