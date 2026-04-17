@@ -10,7 +10,7 @@ router = APIRouter(prefix="/items", tags=["items"])
 # READ all items
 @router.get("/get_all")
 def readAllItems(db: Session = Depends(get_db),response_model =List[item]):
-    return db.query(models.Item).all()
+    return db.query(models.Item).filter(models.Item.quantity>0).all()
 
 
 @router.post("/add_item",response_model=item)

@@ -11,7 +11,8 @@ function APP()
     const [items, setItems] = useState([]);
 // Replace 1 with the actual item ID you want to fetch
   useEffect(() => {
-    getItem(1) 
+    getItem(2)
+    getAllItems() 
       .then(data => {
         console.log("Items:", data);
         setItems(data); 
@@ -27,20 +28,29 @@ function APP()
   if (items.error) {
     return <p>Error: {items.error}</p>;
   }
-
+  //if (!items.id)
+  //  return<p>404 not found</p>
+  
   return (
-    <div>
-      <h1>Items</h1>
-      {items.map(item => (
-        <div key={item.id}>
-          <h3>{item.name}</h3>
-          <p>{item.description}</p>
-          <p>${item.price}</p>
-        </div>
-      ))}
-    </div>
-  );
+
+    <div key = {items.id}>
+      <h1>Item info</h1>
+      {items.length === 0 ?(<p>no item found</p>) : (
+      
+      <div>
+        <p>Name : {items.name} </p>
+        <p>Discripton: {items.description}</p>
+        <p>Price: {items.price}</p>
+        <p>Quantity : {items.quantity}</p>
+      </div>
+    )}
+      </div>  
+      
+    
+    );
+
 }
+  
 export default APP;
 /*
 function App() {
@@ -157,4 +167,4 @@ function App() {
   )
 }
 
-export default App; */
+export default App; */ 
