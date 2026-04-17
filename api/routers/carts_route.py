@@ -127,9 +127,6 @@ def newCart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=500, detail="An error occurred while creating a new cart")
     
-    
-
-
 @router.delete("/{user_id}/removeitem",response_model=create_cartItem)
 def leaveitem(user_id:int,item_id:int,db:Session=Depends(get_db)):
     """removes a cartItem from the cart if in the cart and returns a item model with the item name, description, price and quantity"""
@@ -138,16 +135,21 @@ def leaveitem(user_id:int,item_id:int,db:Session=Depends(get_db)):
         raise HTTPException(status_code=404,detail=" Cart not found")
     
     cartitem=(db.query(models.CartItem)
-        .filter(cart.id==models.CartItem.cart_id,item_id==models.CartItem.item_id).first()
-        )
+              .filter(cart.id==models.CartItem.cart_id,item_id==models.CartItem.item_id).first())
     if not cartitem:
         raise HTTPException(status_code=404, detail="Item not in cart.")
     
-    db.delete(cartitem)
-    db.commit()
-    return cartitem
+    try:    
+        db.delete(cartitem)
+        db.commit()
+        return cartitem
+    except Exception as e:
+        logging.error(f"Error occurred while querying cart item for user {user_id} and item {item_id}: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="An error occurred while removing item from cart")
     
-
+    
+    
 @router.delete("/{user_id}/dropCart",response_model=carts)
 def dropcart(user_id:int,db:Session=Depends(get_db)):
     """removes all items from the cartItems tabel pertaning to the user_id and removes the cart from the Cart tebel"""
