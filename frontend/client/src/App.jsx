@@ -1,9 +1,48 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from 'react';
+import reactLogo from './assets/react.svg';
+import viteLogo from './assets/vite.svg';
+import heroImg from './assets/hero.png';
+import './App.css';
+import { getItem } from './api/itemsClient';
+import { useEffect } from 'react';
+import { getAllItems } from './api/itemsClient';
+function APP()
+    {
+    const [items, setItems] = useState([]);
+// Replace 1 with the actual item ID you want to fetch
+  useEffect(() => {
+    getItem(1) 
+      .then(data => {
+        console.log("Items:", data);
+        setItems(data); 
+      })
+      .catch(err => console.error(err));
+  }, []);
+  
+  // check if items are loaded
+  if (items.length === 0) {
+    return <p>Loading items...</p>;
+  }
 
+  if (items.error) {
+    return <p>Error: {items.error}</p>;
+  }
+
+  return (
+    <div>
+      <h1>Items</h1>
+      {items.map(item => (
+        <div key={item.id}>
+          <h3>{item.name}</h3>
+          <p>{item.description}</p>
+          <p>${item.price}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+export default APP;
+/*
 function App() {
   const [count, setCount] = useState(0)
 
@@ -118,4 +157,4 @@ function App() {
   )
 }
 
-export default App
+export default App; */

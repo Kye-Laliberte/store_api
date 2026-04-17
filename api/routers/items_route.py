@@ -57,13 +57,15 @@ def update_item(item_id: int,description:str=None, quantity: int = None, price: 
     
     return item
 
-#get items detales
-@router.get("/{item_id}/detals",response_model=item)
+#get items details
+@router.get("/{item_id}/details",response_model=item)
 def getItem(item_id: int, db: Session = Depends(get_db)):
     """gets items infermation"""
+    
     item=db.query(models.Item).filter(models.Item.id ==item_id).first()
+    
     if not item:
-        raise HTTPException(status_code=404, detail="item not found")
+        raise HTTPException(status_code=404, detail="Item not found")
     return item
 
 # DELETE an item

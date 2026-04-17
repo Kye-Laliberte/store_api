@@ -38,7 +38,7 @@ class Cart(Base):
 
     user = relationship("User", back_populates="cart")
     cart_items = relationship("CartItem", back_populates="cart", cascade="all, delete-orphan")
-    items = relationship("CartItem", back_populates="cart")
+    
 
 class CartItem(Base):
     __tablename__ = "cart_items"
