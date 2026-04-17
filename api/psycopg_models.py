@@ -11,7 +11,7 @@ class item(BaseModel):
     price: float = confloat(gt=0)
     
 class Config:
-        orm_mode = True
+        from_attributes = True# allows pydantic to read data from SQLAlchemy models
 
 class createitem(BaseModel):
     name:str
@@ -55,7 +55,7 @@ class CartItemsOut(BaseModel):
     description: Optional[str]="no description"
 
     class Config:
-        orm_mode = True
+        from_attributes = True# allows pydantic to read data from SQLAlchemy models
 
 
 class create_cartItem(BaseModel):
