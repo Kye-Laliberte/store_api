@@ -29,5 +29,6 @@ class OrderItem(Base):
     quantity = Column(Integer, nullable=False)
     price_at_order = Column(Numeric(10, 2), nullable=False) 
 
-    order = relationship("Order", back_populates="order_items")
+
+    order = relationship("Order", back_populates="order_items", cascade="all, delete-orphan")
     item = relationship("Item", back_populates="order_items")
