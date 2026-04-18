@@ -1,61 +1,46 @@
 import { useState } from 'react';
-import reactLogo from './assets/react.svg';
+import reactLogo from'./assets/react.svg';
 import viteLogo from './assets/vite.svg';
 import heroImg from './assets/hero.png';
-import './App.css';
-import { getItem } from './api/itemsClient';
+//import './App.css';
 import { useEffect } from 'react';
-import { getAllItems } from './api/itemsClient';
-function APP()
-    {
-    const [items, setItems] = useState([]);
-// Replace 1 with the actual item ID you want to fetch
-  useEffect(() => {
-    getItem(2)
-    getAllItems() 
-      .then(data => {
-        console.log("Items:", data);
-        setItems(data); 
-      })
-      .catch(err => console.error(err));
-  }, []);
-  
-  // check if items are loaded
-  if (items.length === 0) {
-    return <p>Loading items...</p>;
-  }
 
-  if (items.error) {
-    return <p>Error: {items.error}</p>;
-  }
-  //if (!items.id)
-  //  return<p>404 not found</p>
-  
-  return (
+import { Routes, Route, useNavigate} from 'react-router-dom';
+import OrderPage from './componets/OrderPage'; 
+import CartPage from './componets/CartPage';
+import AdminPage from './componets/AdminPage';  
 
-    <div key = {items.id}>
-      <h1>Item info</h1>
-      {items.length === 0 ?(<p>no item found</p>) : (
+function  App() {
+  //
+  const nav = useNavigate();
+  return(
+    <div>
+      <h1>Store</h1>
       
-      <div>
-        <p>Name : {items.name} </p>
-        <p>Discripton: {items.description}</p>
-        <p>Price: {items.price}</p>
-        <p>Quantity : {items.quantity}</p>
-      </div>
-    )}
-      </div>  
-      
-    
-    );
+      <Routes>
+        <Route path="/cart" element={<CartPage/>}/>
+        <Route path="/orders" element={<AdminPage/>}/>
+        <Route path="/admin" element={<OrderPage/>}/>
+        
+      </Routes>
 
+      <nav>
+        <button onClick={() => nav("/cart")}>ShopPage</button>
+        <button onClick={() => nav("/orders")}>Orders</button>
+        <button onClick={() => nav("/admin")}>Admin</button>
+      </nav>
+      
+    </div>
+  );
+ 
 }
-  
-export default APP;
-/*
-function App() {
-  const [count, setCount] = useState(0)
-
+ export default App;
+ /* <nav>
+        <button onClick={() => Navigate("/")}>Cart</button>
+        <button onClick={() => navigate("/orders")}>Orders</button>
+        <button onClick={() => navigate("/admin")}>Admin</button>
+      </nav>
+ const [count, setCount] = useState(0)
   return (
     <>
       <section id="center">
@@ -164,7 +149,10 @@ function App() {
       <div className="ticks"></div>
       <section id="spacer"></section>
     </>
-  )
-}
+  );
 
-export default App; */ 
+
+}
+  */
+
+  
