@@ -4,7 +4,7 @@ from api.database import get_db
 import api.models.sqlAmodels as models
 from passlib.context import CryptContext
 from typing import List, Optional
-from api.psycopg_models import users,userOut
+from api.psycopg_models import users,userOut, login
 from passlib.hash import bcrypt
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -67,4 +67,15 @@ def deleteUser(user_id:int,db:Session=Depends(get_db)):
     db.commit()
     return {"id": user.id, "email": user.email, "created_at": user.created_at}
 
-
+@router.post("/login")
+def loginn(log: login, db: Session=Depends(get_db)):
+    
+    email=log.email
+    email=email.strip()
+    
+        #AND login.pasword==models.password_hash
+    user=db.query(models.User).filter(email==models.User.email).first()
+    if not user.id:
+        raise HTTPException(status_code=404, detail="user not found")
+    return {"id": user.id}
+    

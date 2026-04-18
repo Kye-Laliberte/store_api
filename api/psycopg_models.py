@@ -26,6 +26,10 @@ class users(BaseModel):
     password_hash: Optional[str]="private infermaton"
     created_at: datetime
 
+class login(BaseModel):
+     pasword:int
+     email:str
+
 
 class userOut(BaseModel):
       email:str

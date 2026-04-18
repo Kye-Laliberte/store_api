@@ -16,31 +16,28 @@ function  App() {
   return(
     <div>
       <h1>Store</h1>
-      
+      <ul>
       <Routes>
-        <Route path="/cart" element={<CartPage/>}/>
+        
+        <Route path="/" element={<CartPage/>}/>
         <Route path="/admin" element={<AdminPage/>}/>
         <Route path="/orders" element={<OrderPage/>}/>
-        
       </Routes>
-
+      
       <nav>
-        <button onClick={() => nav("/cart")}>ShopPage</button>
-        <button onClick={() => nav("/orders")}>Orders</button>
-        <button onClick={() => nav("/admin")}>Admin</button>
+        
+       <li><button onClick={() => nav("/")}>ShopPage</button></li> 
+        <li><button onClick={() => nav("/orders")}>Orders</button></li>
+        <li><button onClick={() => nav("/admin")}>Admin</button></li>
         
       </nav>
-      
+      </ul>
     </div>
   );
  
 }
  export default App;
- /* <nav>
-        <button onClick={() => Navigate("/")}>Cart</button>
-        <button onClick={() => navigate("/orders")}>Orders</button>
-        <button onClick={() => navigate("/admin")}>Admin</button>
-      </nav>
+ /* 
  const [count, setCount] = useState(0)
   return (
     <>
