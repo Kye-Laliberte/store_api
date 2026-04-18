@@ -19,8 +19,8 @@ function  App() {
       
       <Routes>
         <Route path="/cart" element={<CartPage/>}/>
-        <Route path="/orders" element={<AdminPage/>}/>
-        <Route path="/admin" element={<OrderPage/>}/>
+        <Route path="/admin" element={<AdminPage/>}/>
+        <Route path="/orders" element={<OrderPage/>}/>
         
       </Routes>
 
@@ -28,6 +28,7 @@ function  App() {
         <button onClick={() => nav("/cart")}>ShopPage</button>
         <button onClick={() => nav("/orders")}>Orders</button>
         <button onClick={() => nav("/admin")}>Admin</button>
+        
       </nav>
       
     </div>
