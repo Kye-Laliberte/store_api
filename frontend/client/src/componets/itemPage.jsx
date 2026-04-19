@@ -4,9 +4,9 @@
 //import heroImg from './assets/hero.png';
 
 
-import { getItem } from './api/itemsClient';
+
 import { useEffect } from 'react';
-import { getAllItems } from './api/itemsClient';
+import { getAllItems,getItem } from './api/itemsClient';
 
 function itemAPP()
     {

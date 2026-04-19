@@ -25,13 +25,3 @@ async function addToCart(item_id) {
     
    
 } 
-async function login(email) {
-  const res = await fetch("http://127.0.0.1:8000/login", {
-    method: "POST",  
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email })
-  });
-
-  const data = await res.json();
-  localStorage.setItem("user_id", data.user_id);
-}

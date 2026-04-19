@@ -27,7 +27,7 @@ class users(BaseModel):
     created_at: datetime
 
 class login(BaseModel):
-     pasword:int
+     #pasword:int
      email:str
 
 

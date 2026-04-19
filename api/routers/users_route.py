@@ -67,15 +67,13 @@ def deleteUser(user_id:int,db:Session=Depends(get_db)):
     db.commit()
     return {"id": user.id, "email": user.email, "created_at": user.created_at}
 
-@router.post("/login")
+@router.post("/login", response_model=users)
 def loginn(log: login, db: Session=Depends(get_db)):
-    
     email=log.email
     email=email.strip()
-    
         #AND login.pasword==models.password_hash
     user=db.query(models.User).filter(email==models.User.email).first()
-    if not user.id:
+    if not user:
         raise HTTPException(status_code=404, detail="user not found")
-    return {"id": user.id}
+    return {"id": user.id, "email": user.email, "created_at": user.created_at}
     
