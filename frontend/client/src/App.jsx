@@ -13,6 +13,7 @@ import UserWidget from'./componets/UserWidget';
 
 function  App() {
   //
+  
 
   const nav = useNavigate();
   return(
@@ -21,15 +22,13 @@ function  App() {
         <UserWidget/>
       <ul>
       <Routes>
-        <Route path="/"/>
-        <Route path="/cart" element={<CartPage/>}/>
+        <Route path="/" element={<CartPage/>}/>
         <Route path="/admin" element={<AdminPage/>}/>
         <Route path="/orders" element={<OrderPage/>}/>
       </Routes>
       
       <nav>
-      <li><button onClick={() => nav("/")}>Home</button></li> 
-       <li><button onClick={() => nav("/cart")}>ShopPage</button></li> 
+      <li><button onClick={() => nav("/")}>ShopPage</button></li> 
         <li><button onClick={() => nav("/orders")}>Orders</button></li>
         <li><button onClick={() => nav("/admin")}>Admin</button></li>
         
@@ -37,7 +36,9 @@ function  App() {
       </ul>
     </div>
   );
- 
+ //<Route path="/cart" element={<CartPage/>}/>
+ //<li><button onClick={() => nav("/cart")}>ShopPage</button></li> 
+
 }
  export default App;
  /* 

@@ -11,11 +11,13 @@ const [ email, setEmail] = useState("");
    useEffect(() => {
     const saved = localStorage.getItem("user_id");
     if (saved !== null)
-         {setUserId(saved)};
-    
+         {setUserId(saved)
+        
+         };
+        
   }, []);
     
-    
+    //for testing put in user id th sign in
     function SaveData() {
     if (!userId) {
       alert("Enter a user id");
@@ -24,7 +26,7 @@ const [ email, setEmail] = useState("");
     localStorage.setItem("user_id", userId);
     alert(`User set to ${userId}`);
     }
-    
+    // this is for email sign in will ad pasword in at a later time
     async function inmail(){
     if (!email){
         alert("Enter your email to sign in");
@@ -51,7 +53,7 @@ const [ email, setEmail] = useState("");
     <div style={{ marginBottom: "20px" }}>
       <input
         type="number"
-        placeholder="User ID"
+        placeholder="user_Id"
         value={userId}
         onChange={(e) => setUserId(e.target.value)}
       />
