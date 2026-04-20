@@ -1,9 +1,14 @@
 # Virtual environment
 venv/
-
 .venv/
 
 *.pyc
+node_modules/
+dist/
+.vite/
+
+npm-debug.log*
+yarn-debug.log*
 
 # Python cache files
 __pycache__/

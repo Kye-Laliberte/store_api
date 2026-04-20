@@ -40,12 +40,15 @@ export async function viewCart(user_id) {
                     quantity,
                     description
                 })});
+    if (respon==HTMLOutputElement.arguments(400))
+        {console.error()}
+
     if (!respon.ok) {
       throw new Error("failed request");
     }
     return await respon.json();    
     }catch(err){
-        console.error("failed to find cart")
+        console.error("failed to find cart",err)
     }
     
 }
@@ -63,9 +66,13 @@ export async function addCart(user_id){
             user_id,
             purchase_dat
         })});
+        
+    if (!respon.ok) {
+      throw new Error("failed request");
+    }
     return await cart.json
     }catch(err){
-        console.error("failed to add cart")
+        console.error("failed to add cart", err)
     }
     
 } 
