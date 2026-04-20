@@ -50,4 +50,22 @@ export async function viewCart(user_id) {
     
 }
    
- 
+export async function addCart(user_id){
+    try{
+        const cart = await fetch(
+        `${Cart_URL}/${user_id}/newcart`,{
+        method: "post",
+        headers:{
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            id,
+            user_id,
+            purchase_dat
+        })});
+    return await cart.json
+    }catch(err){
+        console.error("failed to add cart")
+    }
+    
+} 
