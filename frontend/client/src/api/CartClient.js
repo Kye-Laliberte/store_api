@@ -5,8 +5,9 @@ const Cart_URL = `${BASE_URL}/carts`;
 
 
 export async function addToCart(user_id,item_id,quantity) {
+    /**  adds quantity of item_id to user_id cart and returns the cartItem info*/
     try{
-        const response = await fetch(
+        const out= await fetch(
             `${Cart_URL}/${user_id}/additem`,{
                 method: "POST",
                 headers: {
@@ -16,30 +17,23 @@ export async function addToCart(user_id,item_id,quantity) {
                     item_id,
                     quantity
                 })});
-    if (!response.ok) {
+    if (!out.ok) {
       throw new Error("failed request");
     }
-    return await response.json();
+    return await out.json();
     }catch(err){
         console.error("error adding item to cart ", err)
         throw err;
     }
 }    
 export async function viewCart(user_id) {
+    /**not tested should return a list[] of Items object in user_ids cart*/
     try{
         const respon= await fetch(
             `${Cart_URL}/${user_id}/viewcart`,{
                 method: "get",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    item_id,
-                    name,
-                    price,
-                    quantity,
-                    description
-                })});
+                headers: {"Content-Type": "application/json"},
+               });
     if (respon==HTMLOutputElement.arguments(400))
         {console.error()}
 

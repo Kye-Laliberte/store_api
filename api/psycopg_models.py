@@ -33,7 +33,8 @@ class login(BaseModel):
 
 class userOut(BaseModel):
       email:str
-      created_at: datetime
+      cart_id:Optional[int]=None
+      id: int
 
 
 class carts(BaseModel):

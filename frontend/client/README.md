@@ -1,16 +1,29 @@
-# React + Vite
+# React + Frontend
+Tech Stack
+React (Vite)
+React Router
+Fetch API (async/await)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+set up a windows nodes.js envierment in front end.
+cd frontend
+npm install 
+npm run dev
+Frontend runs on:
+http://localhost:5173
 
-Currently, two official plugins are available:
+APP.jsx
+frontend/api/ javascript fetching for difrent JONSON form the  routers/functons
+CartClient.js(addToCart(),viewCart(), addCart())
+itemClient.js(getItem(),getAllItems())
+orderClient.js(None)
+userClient.js(Emaillogin())
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+frontend/componets/
+(AdminPage.jxs,OrderPage.jsx,itemPage.jsx) Are not done yet so nothing more than words
 
-## React Compiler
+CartPage.jsx
+  a basic set up for displaying all avalibal items and adding them to your cart with a nodes frame work
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+UserWidgit.jsx 
+Is a basic log_in system to get the user_id in LocalStorage.
+you can do it with email, or ID !WARNING direct ID login will not block you if ID douesnt exist only email will

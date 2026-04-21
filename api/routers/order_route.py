@@ -35,7 +35,8 @@ def getAllOrders(db: Session=Depends(get_db)):
 
 @router.get("/{user_id}/vieworderdetails", response_model=List[pmodels.orderInfo])
 def viewOrderDetails(user_id:int,db: Session=Depends(get_db)):
-    """ shows all detals of past orders incluting item infermation and price at order time"""
+    """ shows all detals of past orders incluting item infermation and price at order time
+    returns a list of OrderItems with item detalies"""
     try:
         orderDetails = (db.query(Omodels.Order.id,
                              Omodels.Order.order_date,
@@ -62,7 +63,9 @@ def viewOrderDetails(user_id:int,db: Session=Depends(get_db)):
 
 @router.post("/{user_id}/createorder",response_model=pmodels.ordersout)
 def createOrder(user_id:int, db: Session=Depends(get_db)):
-    """orders all Items in a user's cart, creates an order and order items, updates stock quantity, and clears the cart"""
+    """orders all Items in a user's cart, creates an order and orderitems, updates stock quantity, and clears the cart
+    returns the order info (order_id,user_id):int ,total_price:float  
+     order_date:DateTime,  number_of_items:Int."""
     cart = db.query(models.Cart).filter(models.Cart.user_id == user_id).first()
     if not cart:
         raise HTTPException(status_code=404, detail="Cart not found for this user")

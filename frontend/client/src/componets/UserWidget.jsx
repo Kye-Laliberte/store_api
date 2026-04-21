@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
-import {Emaillogin} from '../api/userClient';
+import {Emaillogin,getUser} from '../api/userClient';
 const BASE_URL = "http://localhost:8000";
 const user_URL = `${BASE_URL}/users`;
 
 export default function UserWidget() {
+/**a basic log_in system to get the user_id.
+ * you can do it with email, or user_id
+ * B aware this is a Local storage set up so you have to put ina id or email firt.
+ *  */ 
 const [ userId, setUserId] = useState("");
 const user_id = localStorage.getItem("user_id");    
 const [ email, setEmail] = useState("");
@@ -18,14 +22,20 @@ const [ email, setEmail] = useState("");
   }, []);
     
     //for testing put in user id th sign in
-    function SaveData() {
-    if (!userId) {
-      alert("Enter a user id");
-      return;
+    async function SaveData() {
+      if (!userId) {
+        alert("Enter a user id");
+        return;
+      }
+      const id= await getUser(userId)
+      if(id){
+        alert(`no user at ${userId}`);
+        return;
+      }
+      localStorage.setItem("user_id", userId);
+      alert(`User set to ${userId}`);
     }
-    localStorage.setItem("user_id", userId);
-    alert(`User set to ${userId}`);
-    }
+
     // this is for email sign in will ad pasword in at a later time
     async function inmail(){
     if (!email){

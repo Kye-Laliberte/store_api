@@ -15,17 +15,32 @@ const item_url =`${Base_url}/items`
 
 
 export default function CartPage(){
+  /** prints a list of all the items in the database with at least 1 item.
+   *  gives the user a input and button interface for each.
+   * input for quantity and the button adds it to your cart.
+   * most have cart for this to work
+  */
 const [items, setItems]= useState([]);
 const [quantities, setQuantities] = useState({});
-
-  useEffect(() => {
+// keeps the user_id up to date if its in localStorage
+  
+    useEffect(()=>{
+      /** fetches a list[] of items and set it to items and checks if user_id is in localStorage*/
       const saved = localStorage.getItem("user_id");
       if (saved == null)
-        {alert.CartPage("curent no user_id")};
+        {alert.CartPage("no user_id")};
 
-    }, []);
-
+      fetch(`${item_url}/get_all`)
+      .then( res=> res.json())
+      .then(data=>{console.log("ITEMS:",data);
+      setItems(data);})
+    .catch(err => console.error(err));
+    },[]);
+    
+    
+    
     async function ToCart(item){
+      /** sends the given items_id to addToCart().js to add the quantity in the input field */
       const user_id=localStorage.getItem("user_id");
       if(!user_id )
           {alert("sign in.");
@@ -50,13 +65,7 @@ const [quantities, setQuantities] = useState({});
 
     }
     
-    useEffect(()=>{
-        fetch(`${item_url}/get_all`)
-        .then( res=> res.json())
-        .then(data=>{console.log("ITEMS:",data);
-            setItems(data);})
-    .catch(err => console.error(err));
-    },[]);
+    
     
 
     return(
