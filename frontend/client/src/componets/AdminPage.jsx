@@ -4,7 +4,7 @@ import { useState } from 'react';
 //import heroImg from './assets/hero.png';
 //import './App.css';
 import { useEffect } from 'react';
-
+import UserWidget from'../componets/UserWidget';
 
 
 export default function AdminPage(){

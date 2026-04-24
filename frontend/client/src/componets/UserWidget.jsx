@@ -60,6 +60,7 @@ const [ email, setEmail] = useState("");
     }
 
   return (
+    
     <div style={{ marginBottom: "20px" }}>
       <input
         type="number"
@@ -68,8 +69,8 @@ const [ email, setEmail] = useState("");
         onChange={(e) => setUserId(e.target.value)}
       />
       <button onClick={SaveData}>Set User</button>
-      
-      <input
+      <p></p>
+     <input
         type="text"
         placeholder="email"
         value={email}

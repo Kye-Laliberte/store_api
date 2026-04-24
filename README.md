@@ -131,10 +131,6 @@ price_at_order NUMERIC(10,2), price of item at the order
 PRIMARY KEY (order_id, item_id) 
 
 
-
-
-
-
 Design notes:
 
 items.quantity represents inventory stock.  cart_items.quantity represents how many units a user wants to purchase.
@@ -213,15 +209,17 @@ git clone <https://github.com/Kye-Laliberte/store_api.git>
 Install dependencies
 pip install -r requirements.txt
 
-
 Start server
 run setup_db.py to seed the data and set up tabels
 set up a .env or directly conect the database to the server
-uvicorn main:app --reload
 
+run setup.py
+to seed and set up the tabels
+
+uvicorn main:app --reload
 API will run on
 http://127.0.0.1:8000
-Interactive docs available at
+docs available /docs
 
 /docs
 Future Improvements

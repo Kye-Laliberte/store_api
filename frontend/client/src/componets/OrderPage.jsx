@@ -7,11 +7,12 @@ import { useState } from 'react';
 import { useEffect } from 'react';
 import { useNavigate} from 'react-router-dom';
 import UserWidget from'../componets/UserWidget';
-//<button onClick={()=> nav("/")}>Home</button>
+
 export default function OrderPage(){
     const nav = useNavigate();
     return(
         <div>
+            
             <h2>Order</h2>
             <p>View your orders</p>
             

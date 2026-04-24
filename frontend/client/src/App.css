@@ -182,3 +182,14 @@
     border-right-color: var(--border);
   }
 }
+
+.item-block {
+  display: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 10px;
+}
+.item-Display{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}

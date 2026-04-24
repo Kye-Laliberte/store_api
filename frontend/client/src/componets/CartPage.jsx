@@ -2,7 +2,7 @@
 //import reactLogo from './assets/react.svg';
 //import viteLogo from './assets/vite.svg';
 //import heroImg from './assets/hero.png';
-//import './App.css';
+import '../App.css';
 import { getItem, getAllItems } from '../api/itemsClient';
 import { addToCart } from '../api/CartClient';
 import { useEffect, useState } from 'react';
@@ -66,22 +66,19 @@ const [quantities, setQuantities] = useState({});
     }
     
     
-    
-
     return(
-        
         <div>
-          <p>sign in</p> 
-          <UserWidget/>
-        <h2>Items</h2>
-       
+          <h2>Items Available</h2>
+        <div className='item-Display'>
+          
         {items.length === 0 ? (
   <p>no items</p>
 ) : (
   items.map(item => (
-    <div key={item.id}>
+    
+    <div key={item.id} className='item-block'>
       <h3>{item.name}</h3>
-
+      
       <input
         type="number"
         placeholder="quantity"
@@ -103,9 +100,11 @@ const [quantities, setQuantities] = useState({});
       <p>price {item.price}$</p>
       <p>{item.quantity} left</p>
     </div>
+    
   ))
 )}
-  </div> );
+  </div> 
+  </div>);
         
        
        
