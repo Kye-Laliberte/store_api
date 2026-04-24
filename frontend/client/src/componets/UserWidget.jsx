@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import {Emaillogin,getUser} from '../api/userClient';
 const BASE_URL = "http://localhost:8000";
 const user_URL = `${BASE_URL}/users`;
-
+import '../App.css';
 export default function UserWidget() {
 /**a basic log_in system to get the user_id.
  * you can do it with email, or user_id
@@ -23,15 +23,18 @@ const [ email, setEmail] = useState("");
     
     //for testing put in user id th sign in
     async function SaveData() {
-      if (!userId) {
+     if (!userId) {
         alert("Enter a user id");
         return;
-      }
+      } 
+      if(userId<1)
+        return;
       const id= await getUser(userId)
       if(id){
         alert(`no user at ${userId}`);
         return;
       }
+      
       localStorage.setItem("user_id", userId);
       alert(`User set to ${userId}`);
     }
@@ -66,17 +69,28 @@ const [ email, setEmail] = useState("");
         type="number"
         placeholder="user_Id"
         value={userId}
-        onChange={(e) => setUserId(e.target.value)}
+        
+        onChange={(e) => setUserId(...email, 
+          userId= e.target.value)}
       />
-      <button onClick={SaveData}>Set User</button>
+      <button onClick={SaveData
+      } className='button2'
+      >Set User</button>
       <p></p>
      <input
+      
         type="text"
         placeholder="email"
         value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        
+        onChange={(e) => setEmail(e.target.value || "")}
       />
-    <button onClick={inmail}>Set User by email</button>
+    <button onClick={() => inmail}
+    className="button2"
+    disabled{...email==0}
+    >Set User by email
+      
+    </button>
 
     </div>
   );

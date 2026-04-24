@@ -193,3 +193,46 @@
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
 }
+.basic-button{
+  width: 100%;
+  background-color: rgba(0, 247, 255, 0.562);
+  color: rgb(0, 0, 0);
+  padding:5px;
+  border: none;
+  cursor: pointer;
+transition: background 0.2s ease, transform 0.1s ease;
+}
+.basic-button:active {
+  transform: scale(0.98);
+}
+.basic-button:hover {
+  background: #1e4ed8;
+}
+.basic-button:disabled {
+  background: #aaa;
+  color: black; 
+  cursor: not-allowed;
+}
+
+
+buttons{
+  width: 100%;
+  background-color: rgba(0, 247, 255, 0.562);
+  color: rgb(0, 0, 0);
+  padding:5px;
+  border: none;
+  cursor: pointer;
+transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.button2:active {
+  transform: scale(0.10);
+}
+.button2:hover {
+  background: #1e4ed8;
+}
+.button2:disabled {
+  background: #aaa;
+  color: black; 
+  cursor: not-allowed;
+}

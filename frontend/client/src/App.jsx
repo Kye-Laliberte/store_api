@@ -31,9 +31,13 @@ function  App() {
 
       <p>navigaton buttons</p>
       <nav>
-      <li><button onClick={() => nav("/")}>ShopPage</button></li> 
-        <li><button onClick={() => nav("/orders")}>Orders</button></li>
-        <li><button onClick={() => nav("/admin")}>Admin</button></li>
+      <li><button onClick={() => nav("/")}
+        >ShopPage</button>
+        </li> 
+        <li><button onClick={() => nav("/orders")}
+          >Orders</button></li>
+        <li><button onClick={() => nav("/admin")}
+          >Admin</button></li>
         
       </nav>
       </ul>
