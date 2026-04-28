@@ -11,6 +11,7 @@ export default function UserWidget() {
 const [ userId, setUserId] = useState("");
 const user_id = localStorage.getItem("user_id");    
 const [ email, setEmail] = useState("");
+const [user, setUser] = useState("");
 // load saved user on page load
    useEffect(() => {
     const saved = localStorage.getItem("user_id");
@@ -23,14 +24,8 @@ const [ email, setEmail] = useState("");
     
     //for testing put in user id th sign in
     async function SaveData() {
-     if (!userId) {
-        alert("Enter a user id");
-        return;
-      } 
-      if(userId<1)
-        return;
       const id= await getUser(userId)
-      if(id){
+      if(!id){
         alert(`no user at ${userId}`);
         return;
       }
@@ -40,15 +35,12 @@ const [ email, setEmail] = useState("");
     }
 
     // this is for email sign in will ad pasword in at a later time
-    async function inmail(){
-    if (!email){
-        alert("Enter your email to sign in");
-        return;
-    }
+    async function inmail(e){
+    
     try{
         const data = await Emaillogin(email);
         localStorage.setItem("user_id", data.id);
-        if (!data || !data.id) {
+        if (!data) {
         alert("Invalid email");
         return;
       }
@@ -67,27 +59,32 @@ const [ email, setEmail] = useState("");
     <div style={{ marginBottom: "20px" }}>
       <input
         type="number"
-        placeholder="user_Id"
+        placeholder="userId"
         value={userId}
         
-        onChange={(e) => setUserId(...email, 
-          userId= e.target.value)}
+        onChange={(g) => setUserId( Number(g.target.value))}
+          
       />
-      <button onClick={SaveData
+      <button
+      onClick={() => SaveData()
       } className='button2'
+      disabled={!userId} 
+      
       >Set User</button>
+      
       <p></p>
+     
      <input
       
         type="text"
         placeholder="email"
-        value={email}
+        value={email ?? ""}
         
-        onChange={(e) => setEmail(e.target.value || "")}
+        onChange={(e) => setEmail( e.target.value)}
       />
-    <button onClick={() => inmail}
-    className="button2"
-    disabled{...email==0}
+    <button onClick={() => inmail()}
+    className='button2'
+    disabled={!email}
     >Set User by email
       
     </button>

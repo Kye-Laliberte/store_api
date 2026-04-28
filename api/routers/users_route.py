@@ -83,7 +83,7 @@ def deleteUser(user_id:int,db:Session=Depends(get_db)):
     
 @router.post("/login", response_model=userOut)
 def loginn(log: login, db: Session=Depends(get_db)):
-    """returns the user_Id"""
+    """returns the user_Id, and email and cart_id if the user has one active"""
     try:
         email=log.email
         email=email.strip()
@@ -101,4 +101,7 @@ def loginn(log: login, db: Session=Depends(get_db)):
         return {"id": user.id, "email": user.email, "created_at": user.created_at}
         
     except Exception as e:
-        HTTPException(status_code=400, detail=f"{e}")
+        raise HTTPException(status_code=400, detail=f"{e}")
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail="f{e}")
+    

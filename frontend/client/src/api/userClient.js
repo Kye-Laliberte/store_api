@@ -8,11 +8,13 @@ export async function Emaillogin(email) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email })
   });
- 
+  
   if (!response.ok){
     throw new Error("Faled to log in");
   }
   const data = await response.json();
+  if (data.cart_it==null)
+    alert("a cart is needed before you can shop")
   return data;
 }
 

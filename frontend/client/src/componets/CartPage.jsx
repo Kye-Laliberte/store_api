@@ -28,7 +28,7 @@ const [quantities, setQuantities] = useState({});
       /** fetches a list[] of items and set it to items and checks if user_id is in localStorage*/
       const saved = localStorage.getItem("user_id");
       if (saved == null)
-        {alert.CartPage("no user_id")};
+        {alert("no user_id")};
 
       fetch(`${item_url}/get_all`)
       .then( res=> res.json())
@@ -82,7 +82,7 @@ const [quantities, setQuantities] = useState({});
       <input
         type="number"
         placeholder="quantity"
-        value={quantities[item.id] || ""}
+        value={quantities[item.id] ?? ""}
         onChange={(e) =>
           setQuantities({
             ...quantities,
@@ -96,7 +96,7 @@ const [quantities, setQuantities] = useState({});
 
       <button onClick={() => ToCart(item)}
       className='basic-button'
-      disabled={!quantities[item.id]}
+      disabled={!quantities[item.id] || quantities[item.id]<=0}
      
       >
         

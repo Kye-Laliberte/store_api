@@ -42,7 +42,7 @@ def setup(schema_path="sql/schema.sql"):
                 ON CONFLICT (user_id) DO NOTHING;
             """, (datetime.now(),))
 
-            ## Cart Items
+            # Cart Items
             cursor.execute("""
                 INSERT INTO cart_items (cart_id, item_id, quantity)
                 SELECT c.id, i.id, 1
