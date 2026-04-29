@@ -44,14 +44,14 @@ const [user, setUser] = useState("");
         alert("Invalid email");
         return;
       }
-       setUserId(data.id);
+       
        
       alert(`User set to ${data.id}`);
     }catch (err) {
       console.error(err);
       alert("Login failed");    
     }
-    localStorage.setItem("user_id", userId);
+    localStorage.setItem("user_id", data.id);//will set to just data, temporary for testing
     }
 
   return (
@@ -59,10 +59,10 @@ const [user, setUser] = useState("");
     <div style={{ marginBottom: "20px" }}>
       <input
         type="number"
-        placeholder="userId"
-        value={userId}
+        placeholder="user_id"
+        value={userId ?? ""}
         
-        onChange={(g) => setUserId( Number(g.target.value))}
+        onChange={(g) => setUserId( g.target.value)}
           
       />
       <button

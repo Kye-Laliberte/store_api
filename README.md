@@ -199,7 +199,7 @@ CartPage.jsx
   a basic set up for displaying all avalibal items and adding them to your cart with a nodes frame work
 UserWidgit.jsx
  a basic log_in system to get the user_id.
-you can do it with email, or ID !WARNING direct ID login will not block yo if ID dous not exist only email will
+ !WARNING log_in is set up with a localhost 
 
 
 SET UP

@@ -4,7 +4,7 @@
 //import heroImg from './assets/hero.png';
 import '../App.css';
 import { getItem, getAllItems } from '../api/itemsClient';
-import { addToCart } from '../api/CartClient';
+import { addToCart,viewCart } from '../api/CartClient';
 import { useEffect, useState } from 'react';
 import { useNavigate} from 'react-router-dom';
 import UserWidget from'../componets/UserWidget';
@@ -22,8 +22,12 @@ export default function CartPage(){
   */
 const [items, setItems]= useState([]);
 const [quantities, setQuantities] = useState({});
+const [cart, setcartitem]= useState({});
 // keeps the user_id up to date if its in localStorage
-  
+    
+      
+      
+
     useEffect(()=>{
       /** fetches a list[] of items and set it to items and checks if user_id is in localStorage*/
       const saved = localStorage.getItem("user_id");
@@ -107,10 +111,15 @@ const [quantities, setQuantities] = useState({});
       <p>price {item.price}$</p>
       <p>{item.quantity} left</p>
     </div>
-    
   ))
 )}
   </div> 
+
+  <div>
+
+  </div>
+
+
   </div>);
         
        
