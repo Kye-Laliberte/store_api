@@ -11,7 +11,7 @@ class item(BaseModel):
     price: float = confloat(gt=0)
     
 class Config:
-        orm_mode = True
+        from_attributes = True# allows pydantic to read data from SQLAlchemy models
 
 class createitem(BaseModel):
     name:str
@@ -26,10 +26,15 @@ class users(BaseModel):
     password_hash: Optional[str]="private infermaton"
     created_at: datetime
 
+class login(BaseModel):
+     #pasword:int
+     email:str
+
 
 class userOut(BaseModel):
       email:str
-      created_at: datetime
+      cart_id:Optional[int]=None
+      id: int
 
 
 class carts(BaseModel):
@@ -55,11 +60,11 @@ class CartItemsOut(BaseModel):
     description: Optional[str]="no description"
 
     class Config:
-        orm_mode = True
+        from_attributes = True# allows pydantic to read data from SQLAlchemy models
 
 
 class create_cartItem(BaseModel):
-    cart_id:int
+    #cart_id:Optional[int]=None
     item_id:int
     quantity: int = conint(ge=0)
     

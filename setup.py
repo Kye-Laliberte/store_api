@@ -42,7 +42,7 @@ def setup(schema_path="sql/schema.sql"):
                 ON CONFLICT (user_id) DO NOTHING;
             """, (datetime.now(),))
 
-            ## Cart Items
+            # Cart Items
             cursor.execute("""
                 INSERT INTO cart_items (cart_id, item_id, quantity)
                 SELECT c.id, i.id, 1
@@ -67,6 +67,14 @@ def setup(schema_path="sql/schema.sql"):
                 WHERE o.user_id = (SELECT id FROM users WHERE email = 'alice@gmail.com')
                 ;
             """)
+def setup_db():
+    try:
+        setup()
+        logging.info("Database setup completed successfully.")
+    except psycopg2.Error as e:
+        logging.error(f"Database error: {e}")
+    except Exception as e:
+        logging.error(f"Unexpected error: {e}")
 
 if __name__ == "__main__":
-    setup()
+    setup_db()

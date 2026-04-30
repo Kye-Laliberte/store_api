@@ -13,6 +13,8 @@ from api.database import get_db,engine,LocalSession
 from sqlalchemy import text
 models.Base.metadata.create_all(bind=engine)
 Omodels.Base.metadata.create_all(bind=engine)
+import logging
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Inventory API")
 app.include_router(item_router)
@@ -23,7 +25,9 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s | %(levelname)s | %(message)s"
 )
-
+# Set up CORS middleware to allow requests from the frontend
+app.add_middleware( CORSMiddleware, allow_origins=["http://localhost:5173"], allow_methods=["*"], allow_headers=["*"]
+)
 def get_datab():
     bd= LocalSession()
     try:
