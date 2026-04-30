@@ -58,6 +58,19 @@ item_id FK to items
 quantity (amount requested by user) NOT NULL CHECK (quantity > 0)
 PRIMARY KEY (cart_id, item_id)/compound key(cart_id/item_id)
 
+orders
+id Primary key
+total_price NUMERIC(10,2) NOT NULL CHECK(total_price >= 0)
+user_id INT NOT NULL REFERENCES users(id)
+order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
+
+order_items 
+item_id INTEGER NOT NULL REFERENCES  items(id) ON DELETE CASCADE,
+quantity int NOT NULL CHECK (quantity > 0),
+order_id INT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+price_at_order NUMERIC(10,2) NOT NULL CHECK(price_at_order >= 0),
+PRIMARY KEY (order_id, item_id)
+ added a oerder for a record system for past orders. 
 Design notes:
 
 items.quantity represents inventory stock.  cart_items.quantity represents how many units a user wants to purchase.
@@ -98,7 +111,8 @@ Clone repository
 git clone <https://github.com/Kye-Laliberte/store_api.git>
 Install dependencies
 pip install -r requirements.txt
-
+create a .env to pull server conecton info
+run setup.py to seed data if needed.
 
 Start server
 set up a .env or directly conect the database to the server
