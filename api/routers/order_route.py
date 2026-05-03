@@ -20,13 +20,20 @@ def carthome():
 @router.get("/{user_id}/vieworders", response_model=List[pmodels.orders])
 def viewOrders(user_id:int,db: Session=Depends(get_db)):
     """ shows all past orders for a user"""
-    orders= db.query(Omodels.Order).filter(Omodels.Order.user_id==user_id).all()
     
-    if not orders:
-        raise HTTPException(status_code=404,detail=f"no orders found for {user_id}")
-    
-    return orders
+    try:
+        orders= db.query(Omodels.Order).filter(Omodels.Order.user_id==user_id).all()
 
+      
+        return orders
+    
+    except Exception as e:
+        logging(f"faled to conect {e}")
+        raise HTTPException(status_code=400,detail=f"error {e}")
+    except TypeError:
+        raise HTTPException(status_code=404,detail=f"no orders found for {user_id}")# this is for right now it will change
+        
+    
 @router.get("/getallorders", response_model=List[pmodels.orders])
 def getAllOrders(db: Session=Depends(get_db)):
     """returns all orders in the database, for testing purposes only"""
