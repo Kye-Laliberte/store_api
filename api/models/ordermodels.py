@@ -9,7 +9,7 @@ class Order(Base):
     __tablename__ = "orders"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     total_price = Column(Numeric(10, 2), CheckConstraint('total_price >= 0'), nullable=False)
-    user_id =Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id =Column(Integer, ForeignKey("users.id",ondelete="RESTRICT"), nullable=False)
     order_date = Column(DateTime, default=datetime.utcnow)
     
     user = relationship("User", back_populates="orders")

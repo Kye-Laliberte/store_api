@@ -7,7 +7,7 @@ import api.models.sqlAmodels as models
 from typing import List, Optional
 from api.psycopg_models import CartItemsOut,carts,create_cartItem,createCart,purchase,purchaseout
 from datetime import datetime
-from api.services.funct import getcart#bacground
+from api.services.funct import getcart
 router = APIRouter(prefix="/carts", tags=["carts"])
 
 #add item to cart
@@ -22,15 +22,12 @@ def viewCart(user_id:int,db: Session=Depends(get_db)):
     """retreves all items in the cart that relar to the user_id and returns a list of models with the item name, description, price and quantity"""
     
     cart=getcart(user_id=user_id, db=db)
-    if cart is None:
-        raise HTTPException(status_code=404, detail="Cart not found or active for {user_id}")
-        #cart= db.query(models.Cart.id).filter(models.Cart.user_id==user_id).first()
     
+    #if cart is None:
+    #    raise HTTPException(status_code=404, detail="Cart not found or active for {user_id}") 
     
     if not cart:
         raise HTTPException(status_code=404,detail=f"no cart found ")
-
-
 
     cartItems = (db.query(models.CartItem.item_id,
                            models.CartItem.quantity,
@@ -114,6 +111,7 @@ def newCart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
     exists=getcart(user_id, db)
     #exists=db.query(models.Cart).filter(models.Cart.user_id==user_id).first()
     if exists:
+         #return {"mesage": True  }
         #raise HTTPException(status_code=200,detail="cart alredy active")
          return exists
         
@@ -157,7 +155,8 @@ def dropcart(user_id:int,db:Session=Depends(get_db)):
     """removes all items from the cartItems tabel pertaning to the user_id and removes the cart from the Cart tebel"""
     try:
 
-        cart=(db.query(models.Cart).filter(models.Cart.user_id==user_id).first())
+        #cart=(db.query(models.Cart).filter(models.Cart.user_id==user_id).first())
+        cart=getcart(user_id,db)
         if not cart:
             raise HTTPException(status_code=404,detail="no cart active or found")
     
