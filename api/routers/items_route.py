@@ -4,6 +4,7 @@ from api.database import  get_db
 import api.models.sqlAmodels as models
 from api.psycopg_models import item,createitem 
 from typing import List, Optional
+from sqlalchemy import text
 
 router = APIRouter(prefix="/items", tags=["items"])
 

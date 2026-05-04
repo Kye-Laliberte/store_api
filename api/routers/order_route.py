@@ -1,7 +1,8 @@
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session 
+from sqlalchemy import text
 from api.database import get_db
 import api.models.sqlAmodels as models
 import  api.models.ordermodels as Omodels
@@ -9,6 +10,7 @@ from typing import List, Optional
 from api.psycopg_models import users,userOut
 from datetime import datetime
 import api.models.psyc_order as pmodels
+from api.services.funct import getcart
 router = APIRouter(prefix="/orders", tags=["orders"])
 
 #add item to cart
@@ -73,7 +75,8 @@ def createOrder(user_id:int, db: Session=Depends(get_db)):
     """orders all Items in a user's cart, creates an order and orderitems, updates stock quantity, and clears the cart
     returns the order info (order_id,user_id):int ,total_price:float  
      order_date:DateTime,  number_of_items:Int."""
-    cart = db.query(models.Cart).filter(models.Cart.user_id == user_id).first()
+    cart = getcart(user_id,db)
+    
     if not cart:
         raise HTTPException(status_code=404, detail="Cart not found for this user")
    
@@ -83,6 +86,7 @@ def createOrder(user_id:int, db: Session=Depends(get_db)):
     if  not cartItems:
         raise HTTPException(status_code=400,detail="cart is empty")
     
+
     #stop if any item in the cart is more than available in stock
     for cart_item, item in cartItems:
         if item.quantity < cart_item.quantity:

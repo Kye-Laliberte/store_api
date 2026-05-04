@@ -24,3 +24,4 @@ def getcaritem(cart_id:int,item_id:int, db: Session):
     except Exception as e:
         logging(f"error reteving cartitem{e}")
         raise e
+    

@@ -1,5 +1,5 @@
 import logging
-
+from sqlalchemy import text
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from api.database import get_db
@@ -21,33 +21,37 @@ def carthome():
 def viewCart(user_id:int,db: Session=Depends(get_db)):
     """retreves all items in the cart that relar to the user_id and returns a list of models with the item name, description, price and quantity"""
     
-    cart=getcart(user_id=user_id, db=db)
-    
-    #if cart is None:
-    #    raise HTTPException(status_code=404, detail="Cart not found or active for {user_id}") 
-    
+    cart=getcart(user_id, db)
+
     if not cart:
         raise HTTPException(status_code=404,detail=f"no cart found ")
 
-    cartItems = (db.query(models.CartItem.item_id,
-                           models.CartItem.quantity,
-                           models.Item.description,
-                           models.Item.name,
-                           models.Item.price)
+    cart_items = (db.query(models.CartItem.item_id,models.CartItem.quantity,
+                           models.Item.description,models.Item.name,models.Item.price)
                            .join(models.Item, models.CartItem.item_id == models.Item.id)
-                                 .filter(models.CartItem.cart_id == cart.id).all()
-                )
-
-    if not cartItems:
+                                 .filter(models.CartItem.cart_id == cart.id).all())
+    if not cart_items:
         logging.info(f"Cart {cart.id} for user {user_id} is empty.")
         raise HTTPException(status_code=404, detail="Cart is empty")
-        
-    return cartItems
+    
+    return[
+        CartItemsOut(
+            item_id=items.item_id,
+            quantity=items.quantity,
+            description=items.description,
+            price=items.price,
+            name=items.name)
+        for items in cart_items
+        ]
+
 @router.get("/getallcarts",response_model=List[carts])
 def GetCarts(db: Session = Depends(get_db)):
     """retreves all of the carts info and returns a list of cart models"""
-    return db.query(models.Cart).all()
-
+    out=db.query(models.Cart).all()
+    return [carts(id=car.id,
+                  user_id=car.user_id,
+                  purchase_date=car.purchase_date)
+            for car in out]
 
 @router.post("/{user_id}/additem",response_model=CartItemsOut)
 def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
@@ -59,16 +63,13 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
     if quantity<=0:
         raise HTTPException( status_code=400,detail="cant add less than 1 items to a cart")
     
-    try:
-        cart=getcart(user_id=user_id,db=db)
-        Item=(db.query(models.Item).filter(models.Item.id==item_id).first())
-    except Exception as e:
-        logging.error(f"Error retrieving information for user {user_id}: {e}")
-        raise HTTPException(status_code=500, detail="An error occurred while retrieving information from the database")
     
+    cart=getcart(user_id=user_id,db=db)
     if not cart:
             raise HTTPException(status_code=404,detail=" cart not found.")
     
+
+    Item=(db.query(models.Item).filter(models.Item.id==item_id).first())
     if not Item:
             raise HTTPException(status_code=404,detail=f"item with id {item_id} not found")
     
@@ -79,23 +80,21 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
     try:
         existing = (
             db.query(models.CartItem)
-            .filter(models.CartItem.cart_id == cart.id,models.CartItem.item_id == item_id).first())
+            .filter(models.CartItem.cart_id == cart.id, models.CartItem.item_id == item_id).first())
         
         if existing:
             existing.quantity = quantity
             out = existing
         else:
             out =models.CartItem(cart_id=cart.id, item_id=item_id, quantity=quantity)
-        
-        print(Item.quantity, out.quantity)
-        
+             
            
         db.add(out)
         db.commit()
         db.refresh(out)
-
-        return {"item_id": out.item_id, "quantity": out.quantity, "name": Item.name, "description": Item.description, "price": Item.price}
-
+        return CartItemsOut(item_id=out.item_id, quantity=out.quantity,
+                     name=Item.name,description=Item.description,price=Item.price)
+         
     except Exception as e:
         logging.error(f"Error checking for existing cart info for user {user_id} and item {item_id}: {e}")
         db.rollback()
@@ -109,18 +108,21 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
 def newCart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
     """creates a new cart for the user if one does not already exist"""
     exists=getcart(user_id, db)
-    #exists=db.query(models.Cart).filter(models.Cart.user_id==user_id).first()
+    
     if exists:
          #return {"mesage": True  }
-        #raise HTTPException(status_code=200,detail="cart alredy active")
-         return exists
+         raise HTTPException(status_code=200,detail="cart alredy active")
+         #return exists
         
     try:
-        newcart = models.Cart(user_id=user_id, purchase_date=cart.purchase_date)
-        db.add(newcart)
+        new_cart = models.Cart(user_id=user_id, purchase_date=cart.purchase_date)
+        db.add(new_cart)
         db.commit()
-        db.refresh(newcart)
-        return newcart       
+        db.refresh(new_cart)
+        cart_out=carts(id=new_cart.id,
+              purchase_date=new_cart.purchase_date,
+              user_id=new_cart.user_id)
+        return cart_out
     except Exception as e:
         logging.error(f"Error creating new cart for user {user_id}: {e}")
         db.rollback()
@@ -143,6 +145,7 @@ def leaveitem(user_id:int,item_id:int,db:Session=Depends(get_db)):
     try:    
         db.delete(cartitem)
         db.commit()
+        #create_cartItem()
         return cartitem
     except Exception as e:
         logging.error(f"Error occurred while querying cart item for user {user_id} and item {item_id}: {e}")
