@@ -145,8 +145,8 @@ def leaveitem(user_id:int,item_id:int,db:Session=Depends(get_db)):
     try:    
         db.delete(cartitem)
         db.commit()
-        #create_cartItem()
-        return cartitem
+        item=create_cartItem(item_id=cartitem.item_id,quantity=cartitem.quantity)
+        return item
     except Exception as e:
         logging.error(f"Error occurred while querying cart item for user {user_id} and item {item_id}: {e}")
         db.rollback()
