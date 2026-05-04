@@ -3,7 +3,8 @@ CREATE TABLE IF NOT EXISTS users(
     id SERIAL PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT now()
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK(status IN ('suspended','inactive','active')) 
 );
 
 
