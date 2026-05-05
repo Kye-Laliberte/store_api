@@ -3,6 +3,8 @@ from typing import Optional
 from enum import Enum
 from datetime import datetime
 
+
+
 class item(BaseModel):
     id: int
     name: str
@@ -23,13 +25,26 @@ class createitem(BaseModel):
 class users(BaseModel):
     id: int
     email: str
-    password_hash: Optional[str]="private infermaton"
     created_at: datetime
-
+    
+class UserStatus(str, Enum):
+    active = "active"
+    inactive = "inactive"
+    suspended = "suspended"
+class user_in(BaseModel):
+     user_id: int 
+     status: UserStatus
+    
 class login(BaseModel):
      #pasword:int
      email:str
 
+class userinfo(BaseModel):
+    id: int
+    email: str
+    password_hash: Optional[str]="private infermaton"
+    created_at: datetime
+    user_status:UserStatus
 
 class userOut(BaseModel):
       email:str

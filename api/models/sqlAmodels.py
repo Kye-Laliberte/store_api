@@ -3,6 +3,7 @@ from sqlalchemy import Column, Integer, String, Numeric, DateTime, ForeignKey, C
 from  sqlalchemy.orm import relationship, declarative_base,sessionmaker
 from api.database import Base
 from datetime import datetime
+from api.psycopg_models import UserStatus
 
 __table_args__ = (
     CheckConstraint('quantity > 0'),
@@ -16,7 +17,7 @@ class User(Base):
     email = Column(String, unique=True, nullable=False, index=True)
     password_hash = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
-
+    status = Column(String,default=UserStatus.active,nullable=False)
     orders = relationship("Order", back_populates="user")
     cart = relationship("Cart", back_populates="user", uselist=False)
 

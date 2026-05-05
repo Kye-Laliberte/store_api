@@ -25,3 +25,32 @@ def getcaritem(cart_id:int,item_id:int, db: Session):
         logging(f"error reteving cartitem{e}")
         raise e
     
+def get_user(user_id:int,db:Session):
+    try:
+        user=(db.query(models.User).filter(models.User.id==user_id).first())
+        if not user:
+            return None
+        
+        if user.status != pmod.UserStatus.active:
+            return False
+            
+        out=pmod.users(id=user_id,email=user.email,created_at=user.created_at)
+        return out
+    except Exception as e:
+        logging(f"error reteving user {e}")
+        raise e
+
+def get_user_Email(email:int,db:Session):
+    try:
+        user=(db.query(models.User).filter(models.User.email==email).first())
+        if not user:
+            return None
+        
+        if user.status != pmod.UserStatus.active:
+            return False
+            
+        out=pmod.users(id=user.id,email=email,created_at=user.created_at)
+        return out
+    except Exception as e:
+        logging(f"error reteving user {e}")
+        raise e
