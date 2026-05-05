@@ -26,15 +26,16 @@ def getcaritem(cart_id:int,item_id:int, db: Session):
         raise e
     
 def get_user(user_id:int,db:Session):
+    """this gets a user model by there user_id"""
     try:
         user=(db.query(models.User).filter(models.User.id==user_id).first())
         if not user:
             return None
         
-        if user.status != pmod.UserStatus.active:
-            return False
+        #if user.status != pmod.UserStatus.active:
+        #    return False
             
-        out=pmod.users(id=user_id,email=user.email,created_at=user.created_at)
+        out=pmod.userinfo(id=user_id,email=user.email,created_at=user.created_at,user_status=user.status)
         return out
     except Exception as e:
         logging(f"error reteving user {e}")
