@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 def getcart(user_id: int, db: Session):
     """reusable serves to retreave a users carts info and then returns a pydantic model"""
     try:
-        cart=(db.query(models.Cart).filter(models.Cart.user_id==user_id).first())
+        cart=(db.query(models.Cart).filter(models.Cart.user_id == user_id).first())
         if not cart:
             return None
         
@@ -28,7 +28,7 @@ def getcaritem(cart_id:int,item_id:int, db: Session):
 def get_user(user_id:int,db:Session):
     """this gets a user model by there user_id"""
     try:
-        user=(db.query(models.User).filter(models.User.id==user_id).first())
+        user=(db.query(models.User).filter(models.User.id == user_id).first())
         if not user:
             return None
         
@@ -41,9 +41,10 @@ def get_user(user_id:int,db:Session):
         logging(f"error reteving user {e}")
         raise e
 
-def get_user_Email(email:int,db:Session):
+def get_user_Email(email:str,db:Session):
     try:
-        user=(db.query(models.User).filter(models.User.email==email).first())
+        email = email.strip()
+        user=(db.query(models.User).filter(models.User.email == email).first())
         if not user:
             return None
         

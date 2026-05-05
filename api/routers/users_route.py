@@ -106,12 +106,12 @@ def loginn(log: login, db: Session=Depends(get_db)):
         email=log.email
         email=email.strip()
         #AND login.pasword==models.password_hash
-        user=db.query(models.User).filter(email==models.User.email).first()
+        user=db.query(models.User).filter(models.User.email == email).first()
         if not user:
             raise HTTPException(status_code=404, detail="user not found")
         if user.status != "active":
             raise HTTPException(status_code=403, detail=f"User is curently {user.status}")
-        cart=db.query(models.Cart).filter(user.id==models.Cart).first()
+        cart=getcart(user_id=user.id,db=db)
        
         if cart:
             return userOut(id= user.id, email= user.email, cart_id= cart.id)
