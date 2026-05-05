@@ -11,7 +11,7 @@ def getcart(user_id: int, db: Session):
         if not cart:
             return None
         
-        v=pmod.carts(id=cart.id,user_id=user_id,purchase_date=cart.purchase_date)
+        v=pmod.carts(id=cart.id,user_id=user_id,cart_date=cart.cart_date)
         return v
     except Exception as e:
         logging(f"error reteving user cart{e}")

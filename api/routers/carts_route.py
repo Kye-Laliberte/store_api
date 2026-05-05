@@ -50,7 +50,7 @@ def GetCarts(db: Session = Depends(get_db)):
     out=db.query(models.Cart).all()
     return [carts(id=car.id,
                   user_id=car.user_id,
-                  purchase_date=car.purchase_date)
+                  cart_date=car.cart_date)
             for car in out]
 
 @router.post("/{user_id}/additem",response_model=CartItemsOut)
@@ -115,12 +115,12 @@ def newCart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
          #return exists
         
     try:
-        new_cart = models.Cart(user_id=user_id, purchase_date=cart.purchase_date)
+        new_cart = models.Cart(user_id=user_id, cart_date=cart.cart_date)
         db.add(new_cart)
         db.commit()
         db.refresh(new_cart)
         cart_out=carts(id=new_cart.id,
-              purchase_date=new_cart.purchase_date,
+              cart_date=new_cart.cart_date,
               user_id=new_cart.user_id)
         return cart_out
     except Exception as e:

@@ -35,7 +35,7 @@ class Cart(Base):
     __tablename__ = "carts"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
-    purchase_date = Column(DateTime, default=datetime.utcnow)
+    cart_date = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User", back_populates="cart")
     cart_items = relationship("CartItem", back_populates="cart", cascade="all, delete-orphan")

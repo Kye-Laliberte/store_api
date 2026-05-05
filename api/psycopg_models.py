@@ -55,12 +55,12 @@ class userOut(BaseModel):
 class carts(BaseModel):
     id:int
     user_id:int
-    purchase_date: Optional[datetime]=datetime.now()
+    cart_date: Optional[datetime]=datetime.now()
 
 
 class createCart(BaseModel):
       user_id:int
-      purchase_date: Optional[datetime]=datetime.now()
+      cart_date: Optional[datetime]=datetime.now()
 
 class cart_items(BaseModel):
     item_id:int
