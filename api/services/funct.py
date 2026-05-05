@@ -32,8 +32,8 @@ def get_user(user_id:int,db:Session):
         if not user:
             return None
         
-        #if user.status != pmod.UserStatus.active:
-        #    return False
+        if user.status != pmod.UserStatus.active:
+            return False
             
         out=pmod.userinfo(id=user_id,email=user.email,created_at=user.created_at,user_status=user.status)
         return out

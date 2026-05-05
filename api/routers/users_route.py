@@ -65,8 +65,8 @@ def readuser(user_id: int, db: Session = Depends(get_db)):
         user=get_user(user_id=user_id,db=db)
         if user is None:
             raise HTTPException(status_code=404, detail="User not found")
-        if user is False:
-            raise HTTPException(status_code=203, detail="User not active")
+        if not user:
+            raise HTTPException(status_code=400, detail="User not active")
         
         return user
     except Exception as e:
