@@ -27,7 +27,7 @@ export async function getUser(user_id){
     });
     
  if( !response.ok){
-      throw new Error("404, no user at that User_id");}
+      throw new Error("no user at id or not active");}
       const data = await response.json();
       return data;
 }catch(error){
