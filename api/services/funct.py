@@ -21,6 +21,10 @@ def getcaritem(cart_id:int,item_id:int, db: Session):
     try:
         cartitem=(db.query(models.CartItem)
                   .filter(models.CartItem.id==cart_id,models.CartItem.item_id==item_id))
+        if not cartitem:
+            return None
+    
+        return cartitem    
     except Exception as e:
         logging(f"error reteving cartitem{e}")
         raise e

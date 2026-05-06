@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from api.database import get_db
 import api.models.sqlAmodels as models
 from typing import List, Optional
-from api.psycopg_models import CartItemsOut,carts,create_cartItem,createCart,purchase,purchaseout
+from api.psycopg_models import CartItemsOut,carts,create_cartItem,createCart
 from datetime import datetime
 from api.services.funct import getcart
 router = APIRouter(prefix="/carts", tags=["carts"])
@@ -48,10 +48,7 @@ def viewCart(user_id:int,db: Session=Depends(get_db)):
 def GetCarts(db: Session = Depends(get_db)):
     """retreves all of the carts info and returns a list of cart models"""
     out=db.query(models.Cart).all()
-    return [carts(id=car.id,
-                  user_id=car.user_id,
-                  cart_date=car.cart_date)
-            for car in out]
+    return out
 
 @router.post("/{user_id}/additem",response_model=CartItemsOut)
 def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
