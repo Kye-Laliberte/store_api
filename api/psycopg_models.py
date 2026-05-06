@@ -1,31 +1,35 @@
-from pydantic import BaseModel, validator, Field,  conint,confloat
-from typing import Optional
+from pydantic import BaseModel, validator, Field
+from typing import Optional, Annotated 
 from enum import Enum
 from datetime import datetime
 
-
+class ItemSchema(BaseModel):
+    id: int
+    name: str
+    description: str | None = "no description"
+    quantity: int = Field(..., ge=0)
+    price: float = Field(..., gt=0)
+    class Config:
+        from_attributes = True
 
 class item(BaseModel):
     id: int
     name: str
-    description: Optional[str]="no description"
-    quantity:int = conint(ge=0) 
-    price: float = confloat(gt=0)
-    
-class Config:
-        from_attributes = True# allows pydantic to read data from SQLAlchemy models
+    description: str | None = None
+    quantity:int = Field(..., ge=0) 
+    price: float = Field(...,gt=0)
+    # allows pydantic to read data from SQLAlchemy models
 
 class createitem(BaseModel):
     name:str
-    description: Optional[str]="no description"
-    quantity:int = conint(ge=0) 
-    price: float = confloat(gt=0)
+    description: str | None = "no description"
+    quantity:int = Field(0,description="amout of items in stock",ge=0) 
+    price: float = Field(...,gt=0)
 
-class updateitem(BaseModel):# this is very temporary 
-    name:Optional[str]=None
-    description: Optional[str]=None
-    quantity: Optional[int]=None
-    price: Optional[float]=None
+class updateitem(BaseModel):
+    description: str | None = None
+    quantity: Optional[int] = Field(None,ge=0)
+    price: Optional[float] = Field(None,gt=0)
 
 class users(BaseModel):
     id: int
@@ -61,8 +65,9 @@ class userOut(BaseModel):
 class carts(BaseModel):
     id:int
     user_id:int
-    cart_date: Optional[datetime]=datetime.now()
-
+    #cart_date: Optional[datetime]=datetime.now()
+    class Config:
+        from_attributes = True#
 
 class createCart(BaseModel):
       user_id:int
@@ -70,16 +75,15 @@ class createCart(BaseModel):
 
 class cart_items(BaseModel):
     item_id:int
-    quantity: int = conint(ge=0)
+    #quantity: int = Field(...,gt=0)
 
 
 class CartItemsOut(BaseModel):
     item_id: int
     name: str
-    price: float
-    quantity: int = conint(ge=0)
+    #price: float = Field(...,gt=0)
+    #quantity: int = Field(...,gt=0)
     description: Optional[str]="no description"
-
     class Config:
         from_attributes = True# allows pydantic to read data from SQLAlchemy models
 
@@ -87,7 +91,7 @@ class CartItemsOut(BaseModel):
 class create_cartItem(BaseModel):
     #cart_id:Optional[int]=None
     item_id:int
-    quantity: int = conint(ge=0)
+    #quantity: int = Field(...,ge=0)
     
 
 class purchase(BaseModel):
@@ -99,6 +103,6 @@ class purchaseout(BaseModel):
     cart_id: int
     item_id: int
     name: str
-    totalprice: float
-    quantity: int    
+    #totalprice: float = Field(...,gt=0)
+    #quantity: int = Field(...,gt=0)  
 
