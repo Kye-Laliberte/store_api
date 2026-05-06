@@ -45,6 +45,14 @@ def get_user(user_id:int,db:Session):
         logging(f"error reteving user {e}")
         raise e
 
+def get_active_items(item_id:int,db:Session):
+    out=db.query(models.Item).filter(models.Item.id==item_id and models.Item.quantity>0).first()
+    
+    if not out:
+        return None
+    
+    return out
+
 def get_user_Email(email:str,db:Session):
     try:
         email = email.strip()
