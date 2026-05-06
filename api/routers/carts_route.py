@@ -99,7 +99,7 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
     except KeyError as e:
         logging.error(f"Key error while processing cart item for user {user_id} and item {item_id}: {e}")
         db.rollback()
-        raise HTTPException(status_code=500, detail="An error occurred while processing cart item")
+        raise HTTPException(status_code=500, detail=f"An error occurred while processing cart item {e}")
 
 @router.post("/{user_id}/newcart", response_model=carts)
 def newCart(cart:createCart,user_id:int, db: Session = Depends(get_db)):

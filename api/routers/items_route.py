@@ -17,26 +17,26 @@ def readAllItems(db: Session = Depends(get_db)):
 
 
 @router.post("/add_item",response_model=item)
-def create_item(items:createitem, db: Session = Depends(get_db)):
+def create_item(newitems:createitem, db: Session = Depends(get_db)):
     """add a item to the stores inventory"""
-    name=items.name.strip().lower().strip()
-    description=items.description.strip()
+    name=newitems.name.strip().lower().strip()
+    description=newitems.description.strip()
 
     existing = db.query(models.Item).filter(models.Item.name == name).first()
     if existing:
         raise HTTPException(status_code=400, detail="Item already exists")
     try:
-         out = item(name=name, description=description, quantity=item.quantity, price=item.price)
+         out = models.Item(name=name, description=description, quantity=newitems.quantity, price=newitems.price)
          db.add(out)
          db.commit()
-         db.refresh(out)
+         
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail="Error creating item") from e
+        raise HTTPException(status_code=500, detail=f"Error creating item {e}") from e
     return out
 
 # UPDATE an item
-@router.put("/{item_id}/update",response_model=item)
+@router.put("/{item_id}/update",response_model=ItemSchema)
 def update_item(item_id: int,update:updateitem, db: Session = Depends(get_db)):
     """update a items infermation"""
     items = db.query(models.Item).filter(models.Item.id == item_id).first()
@@ -51,7 +51,8 @@ def update_item(item_id: int,update:updateitem, db: Session = Depends(get_db)):
             items.description=update.description
         db.commit()
         db.refresh(items)
-        return item(id=items.id,name=items.name, description=items.description, quantity=items.quantity, price=items.price)
+        
+        return models.Item(id=items.id,name=items.name, description=items.description, quantity=items.quantity, price=items.price)
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error updating item {e}") from e
@@ -68,9 +69,6 @@ def getItem(item_id: int, db: Session = Depends(get_db)):
     out=item(name=items.name, description=items.description, quantity=items.quantity, price=items.price)
     return out
 
-
-#@router.put("/{item_id}/Hold",response_model=item)
-#def holdItem(item_id: int, db: Session =Depends(get_db)):
 
 
 # DELETE an item
