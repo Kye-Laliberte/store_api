@@ -21,12 +21,18 @@ class createitem(BaseModel):
     quantity:int = conint(ge=0) 
     price: float = confloat(gt=0)
 
+class updateitem(BaseModel):# this is very temporary 
+    name:Optional[str]=None
+    description: Optional[str]=None
+    quantity: Optional[int]=None
+    price: Optional[float]=None
 
 class users(BaseModel):
     id: int
     email: str
     created_at: datetime
     
+
 class UserStatus(str, Enum):
     active = "active"
     inactive = "inactive"
