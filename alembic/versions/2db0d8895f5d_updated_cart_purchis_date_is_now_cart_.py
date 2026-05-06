@@ -1,5 +1,5 @@
 """updated Cart: purchis date is now cart_date
-
+so that status can be scalibal and athenticated
 Revision ID: 2db0d8895f5d
 Revises: 785afc63a6c4
 Create Date: 2026-05-05 17:05:24.612016
