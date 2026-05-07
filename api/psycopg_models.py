@@ -10,7 +10,7 @@ class ItemSchema(BaseModel):
     quantity: int = Field(..., ge=0)
     price: float = Field(..., gt=0)
     class Config:
-        from_attributes = True
+        from_attributes = True# allows pydantic to read data from SQLAlchemy models
 
 class item(BaseModel):
     id: int
@@ -18,7 +18,7 @@ class item(BaseModel):
     description: str | None = None
     quantity:int = Field(..., ge=0) 
     price: float = Field(...,gt=0)
-    # allows pydantic to read data from SQLAlchemy models
+    
 
 class createitem(BaseModel):
     name:str
@@ -65,7 +65,7 @@ class userOut(BaseModel):
 class carts(BaseModel):
     id:int
     user_id:int
-    #cart_date: Optional[datetime]=datetime.now()
+    cart_date: Optional[datetime]=datetime.now()
     class Config:
         from_attributes = True#
 
@@ -75,34 +75,34 @@ class createCart(BaseModel):
 
 class cart_items(BaseModel):
     item_id:int
-    #quantity: int = Field(...,gt=0)
+    quantity: int = Field(...,gt=0)
 
 
 class CartItemsOut(BaseModel):
     item_id: int
     name: str
-    #price: float = Field(...,gt=0)
-    #quantity: int = Field(...,gt=0)
+    price: float = Field(...,gt=0)
+    quantity: int = Field(...,gt=0)
     description: Optional[str]="no description"
     class Config:
         from_attributes = True# allows pydantic to read data from SQLAlchemy models
 
 
 class create_cartItem(BaseModel):
-    #cart_id:Optional[int]=None
+    cart_id:Optional[int]=None
     item_id:int
-    #quantity: int = Field(...,ge=0)
+    quantity: int = Field(...,ge=0)
     
 
 class purchase(BaseModel):
      item_id:int
      amout: Optional[int]=None
-    #for changing if ther is to many of few items
+    
 
 class purchaseout(BaseModel):
     cart_id: int
     item_id: int
     name: str
-    #totalprice: float = Field(...,gt=0)
-    #quantity: int = Field(...,gt=0)  
+    totalprice: float = Field(...,gt=0)
+    quantity: int = Field(...,gt=0)  
 
