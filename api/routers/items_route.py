@@ -5,7 +5,7 @@ import api.models.sqlAmodels as models
 from api.psycopg_models import item,createitem, updateitem, ItemSchema
 from typing import List, Optional
 from sqlalchemy import text
-
+from api.services.funct import get_items
 router = APIRouter(prefix="/items", tags=["items"])
 
 # READ all items
@@ -39,7 +39,7 @@ def create_item(newitems:createitem, db: Session = Depends(get_db)):
 @router.put("/{item_id}/update",response_model=ItemSchema)
 def update_item(item_id: int,update:updateitem, db: Session = Depends(get_db)):
     """update a items infermation"""
-    items = db.query(models.Item).filter(models.Item.id == item_id).first()
+    items=get_items(item_id,db)
     if not items:
         raise HTTPException(status_code=404, detail="Item not found")
     try:
@@ -63,7 +63,7 @@ def update_item(item_id: int,update:updateitem, db: Session = Depends(get_db)):
 def getItem(item_id: int, db: Session = Depends(get_db)):
     """gets items infermation"""
     
-    items=db.query(models.Item).filter(models.Item.id ==item_id).first()
+    items=get_items(item_id,db)
     if not items:
         raise HTTPException(status_code=404, detail="Item not found")
     out=item(name=items.name, description=items.description, quantity=items.quantity, price=items.price)
