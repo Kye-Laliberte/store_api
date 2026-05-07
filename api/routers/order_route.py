@@ -10,7 +10,7 @@ from typing import List, Optional
 from api.psycopg_models import users,userOut
 from datetime import datetime
 import api.models.psyc_order as pmodels
-from api.services.funct import getcart
+from api.services.cart_services import getcart
 router = APIRouter(prefix="/orders", tags=["orders"])
 
 #add item to cart

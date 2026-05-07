@@ -1,0 +1,100 @@
+from symtable import Class
+from fastapi import HTTPException
+from api.database import get_db
+import logging
+import api.models.sqlAmodels as models
+import api.psycopg_models as pmod # pydantic models
+from sqlalchemy.orm import Session
+
+class Service:
+    def __init__(self, db: Session):
+        self.db = db
+
+
+def newcart(cart:models.Cart,db:Session):
+    """deletes a users existing cart if it exists then
+      creates a new cart for a user and returns the cart sql model"""
+    user=filter_user(user_id=cart.user_id,status=pmod.UserStatus.active,db=db)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    try:
+        existing_cart = db.query(models.Cart).filter(models.Cart.user_id == cart.user_id).delete()
+        if existing_cart:
+            logging.info(f"Existing cart for user {cart.user_id} deleted.")
+    except Exception as e:
+        logging.error(f"the cart still has cartitems {cart.user_id}: {e}")
+    try:
+        db.add(cart)
+        db.commit()
+        db.refresh(cart)
+        logging.info(f"New cart created for user {cart.user_id} with cart ID {cart.id}.")
+        return cart
+    except Exception as e:
+        logging.error(f"Error creating new cart for user {cart.user_id}: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="An error occurred while creating a new cart")
+    
+    
+def getcart(user_id: int, db: Session):
+    """reusable serves to retreave a users carts info and then returns a pydantic model"""
+    try:
+        cart=(db.query(models.Cart).filter(models.Cart.user_id == user_id).first())
+        if not cart:
+            return None
+        
+        #v=pmod.carts(id=cart.id,user_id=user_id,cart_date=cart.cart_date)
+        return cart
+    except Exception as e:
+        logging(f"error reteving user cart{e}")
+        raise e
+
+def getcaritem(cart_id:int,item_id:int, db: Session):
+    try:
+        cartitem=(db.query(models.CartItem)
+                  .filter(models.CartItem.id==cart_id,models.CartItem.item_id==item_id))
+        if not cartitem:
+            return None
+    
+        return cartitem    
+    except Exception as e:
+        logging(f"error reteving cartitem{e}")
+        raise e
+    
+def get_user(user_id:int,db:Session):
+    """this gets a user model by there user_id even if there status is not active and returns the sql model"""
+    try:
+        user=(db.query(models.User).filter(models.User.id == user_id).first())
+        if not user:
+            return None        
+        return user
+    except Exception as e:
+        logging(f"error reteving user {e}")
+        raise e
+def filter_user(user_id:int,db:Session,status:pmod.UserStatus=pmod.UserStatus.active):
+    """this gets a user model by there user_id but filters by the givin status and returns the sql model status defaults to active."""
+    try:
+        user=(db.query(models.User).filter(models.User.id == user_id).first())
+        if not user:
+            return None        
+        if user.status != status:
+            return False
+        return user
+    except Exception as e:
+        logging(f"error reteving user {e}")
+        raise 
+
+def get_user_Email(email:str,db:Session):
+    try:
+        email = email.strip()
+        user=(db.query(models.User).filter(models.User.email == email).first())
+        if not user:
+            return None
+        
+        if user.status != pmod.UserStatus.active:
+            return False
+            
+        return  user
+    except Exception as e:
+        logging(f"error reteving user {e}")
+        raise e

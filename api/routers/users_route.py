@@ -6,7 +6,7 @@ from passlib.context import CryptContext
 from typing import List, Optional
 from api.psycopg_models import users,userOut, login,user_in,userinfo
 from passlib.hash import bcrypt
-from api.services.funct import get_user, getcart, get_user_Email
+from api.services.cart_services import get_user, getcart, get_user_Email
 
 router = APIRouter(prefix="/users", tags=["users"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

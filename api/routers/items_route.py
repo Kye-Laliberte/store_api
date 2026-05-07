@@ -5,7 +5,7 @@ import api.models.sqlAmodels as models
 from api.psycopg_models import item,createitem, updateitem, ItemSchema
 from typing import List, Optional
 from sqlalchemy import text
-from api.services.funct import get_items
+from api.services.item_s import Serviceitems
 router = APIRouter(prefix="/items", tags=["items"])
 
 # READ all items
@@ -39,7 +39,8 @@ def create_item(newitems:createitem, db: Session = Depends(get_db)):
 @router.put("/{item_id}/update",response_model=ItemSchema)
 def update_item(item_id: int,update:updateitem, db: Session = Depends(get_db)):
     """update a items infermation"""
-    items=get_items(item_id,db)
+    service = Serviceitems(db=db)
+    items=service.get_items(item_id)
     if not items:
         raise HTTPException(status_code=404, detail="Item not found")
     try:
@@ -52,7 +53,7 @@ def update_item(item_id: int,update:updateitem, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(items)
         
-        return models.Item(id=items.id,name=items.name, description=items.description, quantity=items.quantity, price=items.price)
+        return ItemSchema(id=items.id,name=items.name, description=items.description, quantity=items.quantity, price=items.price)
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error updating item {e}") from e
@@ -62,11 +63,13 @@ def update_item(item_id: int,update:updateitem, db: Session = Depends(get_db)):
 @router.get("/{item_id}/details",response_model=item)
 def getItem(item_id: int, db: Session = Depends(get_db)):
     """gets items infermation"""
-    
-    items=get_items(item_id,db)
+    service = Serviceitems(db=db)
+    items=service.get_active_items(item_id)
     if not items:
         raise HTTPException(status_code=404, detail="Item not found")
-    out=item(name=items.name, description=items.description, quantity=items.quantity, price=items.price)
+    #if items.quantity == 0: this is now handled by the get_active_items function
+    #    raise HTTPException(status_code=404, detail="Item is out of stock")
+    out=item(name=items.name, description=items.description, quantity=items.quantity, price=items.price, id=items.id)
     return out
 
 
