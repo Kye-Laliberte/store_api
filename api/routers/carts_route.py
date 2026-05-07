@@ -7,7 +7,7 @@ import api.models.sqlAmodels as models
 from typing import List, Optional
 from api.psycopg_models import CartItemsOut,carts,create_cartItem,createCart
 from datetime import datetime
-from api.services.funct import getcart
+from api.services.cart_services import filter_user, getcart, get_user, newcart
 router = APIRouter(prefix="/carts", tags=["carts"])
 
 #add item to cart
@@ -104,8 +104,12 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
 @router.post("/{user_id}/newcart", response_model=carts)
 def newCart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
     """creates a new cart for the user if one does not already exist"""
-    exists=getcart(user_id, db)
     
+    user=filter_user(user_id=user_id,status=models.UserStatus.active,db=db)
+    if not user:
+        raise HTTPException(status_code=404, detail="user not found or is inactive")
+    
+    exists=getcart(user_id,db) 
     if exists:
          #return {"mesage": True  }
          raise HTTPException(status_code=200,detail="cart alredy active")
@@ -113,6 +117,8 @@ def newCart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
         
     try:
         new_cart = models.Cart(user_id=user_id, cart_date=cart.cart_date)
+        out_cart=newcart(cart=new_cart,db=db)
+        
         db.add(new_cart)
         db.commit()
         db.refresh(new_cart)
