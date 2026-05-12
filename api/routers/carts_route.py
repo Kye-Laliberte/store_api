@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from api.database import get_db
 import api.models.sqlAmodels as models
 from typing import List, Optional
-from api.psycopg_models import CartItemsOut,carts,create_cartItem,createCart
+from api.psycopg_models import CartItemsOut,carts,create_cartItem,createCart,UserStatus
 from datetime import datetime
 from api.services.cart_services import filter_user, getcart, get_user, newcart
 router = APIRouter(prefix="/carts", tags=["carts"])
@@ -25,14 +25,17 @@ def viewCart(user_id:int,db: Session=Depends(get_db)):
 
     if not cart:
         raise HTTPException(status_code=404,detail=f"no cart found ")
-
+    
+    if cart.status != UserStatus.active:
+        raise HTTPException(status_code=400, detail="User is not active. Cannot view cart.")
+    
     cart_items = (db.query(models.CartItem.item_id,models.CartItem.quantity,
                            models.Item.description,models.Item.name,models.Item.price)
                            .join(models.Item, models.CartItem.item_id == models.Item.id)
                                  .filter(models.CartItem.cart_id == cart.id).all())
     if not cart_items:
         logging.info(f"Cart {cart.id} for user {user_id} is empty.")
-        raise HTTPException(status_code=404, detail="Cart is empty")
+        raise HTTPException(status_code=204, detail="Cart is empty")
     
     return[
         CartItemsOut(
@@ -118,14 +121,12 @@ def newCart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
     try:
         new_cart = models.Cart(user_id=user_id, cart_date=cart.cart_date)
         out_cart=newcart(cart=new_cart,db=db)
+
+        if not out_cart:
+            raise HTTPException(status_code=500, detail="Failed to create new cart")
         
-        db.add(new_cart)
-        db.commit()
-        db.refresh(new_cart)
-        cart_out=carts(id=new_cart.id,
-              cart_date=new_cart.cart_date,
-              user_id=new_cart.user_id)
-        return cart_out
+        return out_cart
+    
     except Exception as e:
         logging.error(f"Error creating new cart for user {user_id}: {e}")
         db.rollback()
