@@ -65,9 +65,12 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
     
     
     cart=getcart(user_id=user_id,db=db)
+
     if not cart:
             raise HTTPException(status_code=404,detail=" cart not found.")
     
+    if cart.status != UserStatus.active:
+        raise HTTPException(status_code=400, detail="User is not active. Cannot add items to cart.")
 
     Item=(db.query(models.Item).filter(models.Item.id==item_id).first())
     if not Item:
