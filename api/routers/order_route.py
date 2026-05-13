@@ -109,15 +109,13 @@ def orderCart(user_id:int, db: Session=Depends(get_db)):
     if cart.status != UserStatus.active:
         raise HTTPException(status_code=400, detail="user is not active")
   
-
-    #check stock for each item in the cart,
-    
-
-    
-    # create order and return the order info (order_id,user_id):int ,total_price:float  
+  
     
     try:    
         cartItems=service.prepare_cart_items(cart_id=cart.id)
+        if not cartItems:
+            raise HTTPException(status_code=400, detail="No items in cart to order")
+        
         service.stock_check(cartItems)
         new_order=service.create_order(user_id, cart_items=cartItems)
         service.create_orderItems(order_id=new_order.id, cart_items=cartItems)
