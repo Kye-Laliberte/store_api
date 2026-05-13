@@ -7,10 +7,11 @@ from api.database import get_db
 import api.models.sqlAmodels as models
 import  api.models.ordermodels as Omodels
 from typing import List, Optional
-from api.psycopg_models import users,userOut
+from api.psycopg_models import users,userOut, UserStatus
 from datetime import datetime
 import api.models.psyc_order as pmodels
 from api.services.cart_services import getcart
+from api.services.item_s import Serviceitems, error
 router = APIRouter(prefix="/orders", tags=["orders"])
 
 #add item to cart
@@ -41,6 +42,31 @@ def getAllOrders(db: Session=Depends(get_db)):
     """returns all orders in the database, for testing purposes only"""
     orders = db.query(Omodels.Order).all()
     return orders
+@router.get("/{order_id}/details", response_model=List[pmodels.orderInfo])
+def get_order_details(order_id:int, db: Session=Depends(get_db)):
+    """returns the details of an order including item information and price at order time"""
+    try:
+        order_details = (db.query(Omodels.Order.id,
+                             Omodels.Order.order_date,
+                             Omodels.OrderItem.item_id,
+                             Omodels.OrderItem.quantity,
+                             Omodels.OrderItem.price_at_order,
+                             models.Item.name,
+                             models.Item.description,
+                             )
+                             .join(Omodels.OrderItem, Omodels.Order.id == Omodels.OrderItem.order_id)
+                             .join(models.Item, Omodels.OrderItem.item_id == models.Item.id)
+                             .filter(Omodels.Order.id == order_id).all())
+        if not order_details:
+            raise HTTPException(status_code=404, detail="Order not found")
+        return order_details
+    except Exception as e:
+        logging.error(f"Error retrieving order details for order {order_id}: {e}")
+        raise HTTPException(status_code=500, detail="An error occurred while retrieving order details")
+    except KeyError as e:
+        logging.error(f"Key error while processing order details for order {order_id}: {e}")
+        raise HTTPException(status_code=500, detail="An error occurred while processing order details")
+
 
 @router.get("/{user_id}/vieworderdetails", response_model=List[pmodels.orderInfo])
 def viewOrderDetails(user_id:int,db: Session=Depends(get_db)):
@@ -75,24 +101,26 @@ def createOrder(user_id:int, db: Session=Depends(get_db)):
     """orders all Items in a user's cart, creates an order and orderitems, updates stock quantity, and clears the cart
     returns the order info (order_id,user_id):int ,total_price:float  
      order_date:DateTime,  number_of_items:Int."""
+    service=Serviceitems(db)
     cart = getcart(user_id,db)
-    
     if not cart:
         raise HTTPException(status_code=404, detail="Cart not found for this user")
-   
+    if cart.status != UserStatus.active:
+        raise HTTPException(status_code=400, detail="user is not active")
+    
     cartItems = (db.query(models.CartItem, models.Item)
                  .join(models.Item, models.CartItem.item_id == models.Item.id)
                  .filter(models.CartItem.cart_id==cart.id)).all()
     if  not cartItems:
-        raise HTTPException(status_code=400,detail="cart is empty")
+        raise HTTPException(status_code=204,detail="cart is empty")
     
-
-    #stop if any item in the cart is more than available in stock
-    for cart_item, item in cartItems:
-        if item.quantity < cart_item.quantity:
-            logging.error(f"Insufficient stock for item {item.id} while creating order for user {user_id}")
-            raise HTTPException(status_code=400, detail=f"Insufficient stock for item {item.name}")
-
+   
+    #check stock for each item in the cart, 
+    # if any item is out of stock or does not have enough quantity, 
+    # raise an error and do not create the order
+    service.stock_check(cartItems)
+        
+    
     try:
         # create order
         total_price = sum(cart_item.quantity * item.price for cart_item, item in cartItems)
@@ -103,6 +131,10 @@ def createOrder(user_id:int, db: Session=Depends(get_db)):
     # create order items
         itemNames = []
         order_items =[]
+        
+       
+        
+
         for cart_item, item in cartItems:
             order_item = Omodels.OrderItem(
                 order_id=new_order.id,
@@ -123,8 +155,11 @@ def createOrder(user_id:int, db: Session=Depends(get_db)):
         order = pmodels.ordersout(**v)           
         db.commit()
         db.refresh(new_order)
+        
+        service.process_order(new_order.order_items.all())
+        
         return order
-    
+        
     except Exception as e:
         logging.error(f"Error creating order items for user {user_id}: {e}")
         db.rollback()
@@ -135,6 +170,42 @@ def createOrder(user_id:int, db: Session=Depends(get_db)):
     # Return order details
    
     
+@router.post("/{user_id}/orderCart",response_model=pmodels.ordersout)
+def orderCart(user_id:int, db: Session=Depends(get_db)):
+    """orders all Items in a user's cart, creates an order and orderitems, updates stock quantity, and clears the cart
+    returns the order info (order_id,user_id):int ,total_price:float  
+     order_date:DateTime,  number_of_items:Int."""
+    service=Serviceitems(db)
+    cart=getcart(user_id=user_id,db=db)
+    if not cart:
+        raise HTTPException(status_code=404, detail="Cart not found for this user")
+    if cart.status != UserStatus.active:
+        raise HTTPException(status_code=400, detail="user is not active")
+    cartItems = (db.query(models.CartItem, models.Item)
+                 .join(models.Item, models.CartItem.item_id == models.Item.id)
+                 .filter(models.CartItem.cart_id==cart.id)).all()
+    if  not cartItems:
+        raise HTTPException(status_code=204,detail="cart is empty")
+
+    #check stock for each item in the cart,
+    service.stock_check(cartItems)
+
+    new_order=service.create_order(user_id, cartItems)
+    # create order and return the order info (order_id,user_id):int ,total_price:float  
+    
+    try:    
+        clear_cart = db.query(models.CartItem).filter(models.CartItem.cart_id == cart.id).delete()
+        # clear cart items after order is created
+    except Exception as e:
+        logging.error(f"Error creating order for user {user_id}: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="An error occurred while creating the order")
+    
+    #service.process_order(new_order.order_items.all())
+    # update stock quantity for each item in the cart after order is created
+    number_of_items = db.execute(text("""SELECT SUM(quantity) FROM order_items WHERE order_id = :order_id""").bindparams(order_id=new_order.id)).scalar() or 0
+    
+    return pmodels.ordersout(id=new_order.id, total_price=new_order.total_price, user_id=user_id, order_date=new_order.order_date, number_of_items=number_of_items)
 
     
     
