@@ -108,20 +108,24 @@ def orderCart(user_id:int, db: Session=Depends(get_db)):
         raise HTTPException(status_code=404, detail="Cart not found for this user")
     if cart.status != UserStatus.active:
         raise HTTPException(status_code=400, detail="user is not active")
-    cartItems = (db.query(models.CartItem, models.Item)
-                 .join(models.Item, models.CartItem.item_id == models.Item.id)
-                 .filter(models.CartItem.cart_id==cart.id)).all()
-    if  not cartItems:
-        raise HTTPException(status_code=204,detail="cart is empty")
+  
 
     #check stock for each item in the cart,
-    service.stock_check(cartItems)
+    
 
-    new_order=service.create_order(user_id, cartItems)
+    
     # create order and return the order info (order_id,user_id):int ,total_price:float  
     
     try:    
-        clear_cart = db.query(models.CartItem).filter(models.CartItem.cart_id == cart.id).delete()
+        cartItems=service.prepare_cart_items(cart_id=cart.id)
+        service.stock_check(cartItems)
+        new_order=service.create_order(user_id, cart_items=cartItems)
+        service.create_orderItems(order_id=new_order.id, cart_items=cartItems)
+        service.process_order(order_id=new_order.id, cart_items=cartItems)
+        service.clear_cart(cart_id=cart.id)
+
+        db.commit()# commit the order.
+        db.refresh(new_order)  # refresh to get the order date and total price after commit
         # clear cart items after order is created
     except Exception as e:
         logging.error(f"Error creating order for user {user_id}: {e}")
