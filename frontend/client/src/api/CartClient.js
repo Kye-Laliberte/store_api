@@ -1,4 +1,4 @@
-import { cache } from "react";
+import { cache} from "react";
 
 const BASE_URL = "http://localhost:8000";
 const Cart_URL = `${BASE_URL}/carts`;
@@ -40,7 +40,10 @@ export async function viewCart(user_id) {
     if (!respon.ok) {
       throw new Error("failed request");
     }
-    return await respon.json();    
+    
+        
+    return cartlist=await respon.json();
+
     }catch(err){
         console.error("failed to find cart",err)
     }

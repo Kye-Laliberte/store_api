@@ -3,7 +3,8 @@ CREATE TABLE IF NOT EXISTS users(
     id SERIAL PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT now()
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK(status IN ('suspended','inactive','active')) 
 );
 
 
@@ -18,8 +19,8 @@ CREATE TABLE IF NOT EXISTS items(
 
 CREATE TABLE IF NOT EXISTS carts(
     id SERIAL PRIMARY KEY,
-     user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    purchase_date TIMESTAMP NOT NULL DEFAULT NOW()
+    user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    cart_date TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS cart_items (

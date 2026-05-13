@@ -12,17 +12,31 @@ import AdminPage from './componets/AdminPage';
 import UserWidget from'./componets/UserWidget';
 
 function  App() {
-  //
+  const [showCart, setShowCart] = useState(false);
+  const [user, setUser] = useState(null);
   
-
   const nav = useNavigate();
   return(
     <div>
       <h1>Store</h1>
         <p>sign in</p>
-        <UserWidget/>
-      <ul>
-      <Routes>
+        <UserWidget
+        user={user}
+        setUser={setUser}
+        onOpenCart ={()=> setShowCart(true)}
+        />
+
+        <CartPage useerId={user?.id}
+        onClose={() => setShowCart(false)}
+        />
+      
+    </div>
+  );
+
+
+ //<Route path="/cart" element={<CartPage/>}/>
+ //<li><button onClick={() => nav("/cart")}>ShopPage</button></li> 
+/*<Routes>
         <Route path="/" element={<CartPage/>}/>
         <Route path="/admin" element={<AdminPage/>}/>
         <Route path="/orders" element={<OrderPage/>}/>
@@ -39,13 +53,7 @@ function  App() {
         <li><button onClick={() => nav("/admin")}
           >Admin</button></li>
         
-      </nav>
-      </ul>
-    </div>
-  );
- //<Route path="/cart" element={<CartPage/>}/>
- //<li><button onClick={() => nav("/cart")}>ShopPage</button></li> 
-
+      </nav>*/
 }
  export default App;
 

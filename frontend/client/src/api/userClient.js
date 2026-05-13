@@ -13,7 +13,7 @@ export async function Emaillogin(email) {
     throw new Error("Faled to log in");
   }
   const data = await response.json();
-  if (data.cart_it==null)
+  if (data.cart_id==null)
     alert("a cart is needed before you can shop")
   return data;
 }
@@ -27,7 +27,7 @@ export async function getUser(user_id){
     });
     
  if( !response.ok){
-      throw new Error("404, no user at that User_id");}
+      throw new Error("no user at id or not active");}
       const data = await response.json();
       return data;
 }catch(error){

@@ -3,12 +3,15 @@ from sqlalchemy import Column, Integer, String, Numeric, DateTime, ForeignKey, C
 from  sqlalchemy.orm import relationship, declarative_base,sessionmaker
 from api.database import Base
 from datetime import datetime
+from api.psycopg_models import UserStatus
+from sqlalchemy import Enum
 
 __table_args__ = (
     CheckConstraint('quantity > 0'),
     CheckConstraint('price > 0'),
-    CheckConstraint('quantity_available >= 0'))
-
+    CheckConstraint('quantity_available >= 0')
+    
+    )
 
 class User(Base):
     __tablename__ = "users"
@@ -16,7 +19,7 @@ class User(Base):
     email = Column(String, unique=True, nullable=False, index=True)
     password_hash = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
-
+    status = Column(Enum(UserStatus),default=UserStatus.active,nullable=False)
     orders = relationship("Order", back_populates="user")
     cart = relationship("Cart", back_populates="user", uselist=False)
 
@@ -34,7 +37,7 @@ class Cart(Base):
     __tablename__ = "carts"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
-    purchase_date = Column(DateTime, default=datetime.utcnow)
+    cart_date = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User", back_populates="cart")
     cart_items = relationship("CartItem", back_populates="cart", cascade="all, delete-orphan")
