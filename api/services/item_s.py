@@ -24,12 +24,14 @@ class Serviceitems:
 
 
     def get_active_items(self, item_id:int):
+        """get active item by id, if item is not found or not in stock, return None"""
         out=self.db.query(models.Item).filter(models.Item.id==item_id and models.Item.quantity>0).first()
         if not out:
             return None
         return out
     
     def create_item(self, name:str, description:str, price:float, quantity:int):
+        """create a new item in the database, if an item with the same name already exists, raise an error"""
         if self.db.query(models.Item).filter(models.Item.name==name).first():
             raise error(status_code=400, detail=f"Item with name {name} already exists")
         new_item = models.Item(name=name, description=description, price=price, quantity=quantity)
@@ -39,6 +41,7 @@ class Serviceitems:
         return new_item
     
     def get_items(self, item_id:int):
+        """get item by id, if item is not found return None"""
         out=self.db.query(models.Item).filter(models.Item.id==item_id).first()
         if not out:
             return None
