@@ -71,7 +71,16 @@ class Serviceitems:
         self.clear_cart(cart_items[0][0].cart_id)
         return new_order
         
-    
+    def remove_unavalibale_items(self, cart_items: list[tuple[models.CartItem, models.Item]]):
+        """"if item has a stock quantity of 0, it removes it from the cart and returns a list of the removed items"""
+        removed_items = []
+        for cart_item, item in cart_items:
+            if item.quantity <= 0:
+                self.db.delete(cart_item)
+                removed_items.append(item)
+        self.db.commit()
+        return removed_items
+
     def create_orderItems(self, order_id: int, cart_items: list[tuple[models.CartItem, models.Item]]):
         """create order items for the order and 
         return the order items info (order_id,item_id):int ,quantity:int, price_at_order:float"""
