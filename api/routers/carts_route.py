@@ -163,21 +163,24 @@ def leaveitem(user_id:int,item_id:int,db:Session=Depends(get_db)):
 @router.delete("/{user_id}/dropCart",response_model=carts)
 def dropcart(user_id:int,db:Session=Depends(get_db)):
     """removes all items from the cartItems tabel pertaning to the user_id and removes the cart from the Cart tebel"""
-    try:
-
-        #cart=(db.query(models.Cart).filter(models.Cart.user_id==user_id).first())
-        cart=getcart(user_id,db)
-        if not cart:
-            raise HTTPException(status_code=404,detail="no cart active or found")
+   
+    cart=getcart(user_id,db)
+    if  not cart:
+        raise HTTPException(status_code=404,detail="no cart active or found")
     
-        db.query(models.CartItem).filter(models.CartItem.cart_id==cart.id).delete()
+    if cart.status != UserStatus.active:
+        raise HTTPException(status_code=400, detail="User is not active. Cannot drop cart.")
     
-        db.delete(cart)
+    try:    
+        db.query(models.CartItem,models).filter(models.CartItem.cart_id==cart.id).delete()
+        db.query(models.Cart).filter(models.Cart.id==cart.id,models.Cart.user_id==cart.user_id).delete()
         db.commit()
-
-        return cart
-    except:
+        return carts(id=cart.id,user_id=cart.user_id,cart_date=cart.cart_date)
+    except Exception as e:
+        logging.error(f"Error occurred while dropping the cart for user {user_id}: {e}")
         db.rollback()
+        raise HTTPException(status_code=500, detail="An error occurred while dropping the cart")
+        
 
         
     
