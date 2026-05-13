@@ -29,8 +29,11 @@ def viewCart(user_id:int,db: Session=Depends(get_db)):
     if cart.status != UserStatus.active:
         raise HTTPException(status_code=400, detail="User is not active. Cannot view cart.")
     
-    cart_items = (db.query(models.CartItem.item_id,models.CartItem.quantity,
-                           models.Item.description,models.Item.name,models.Item.price)
+    cart_items = (db.query(models.CartItem.item_id,
+                           models.CartItem.quantity,
+                           models.Item.description,
+                           models.Item.name,
+                           models.Item.price)
                            .join(models.Item, models.CartItem.item_id == models.Item.id)
                                  .filter(models.CartItem.cart_id == cart.id).all())
     if not cart_items:
