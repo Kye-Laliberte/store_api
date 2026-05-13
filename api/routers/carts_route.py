@@ -35,7 +35,7 @@ def viewCart(user_id:int,db: Session=Depends(get_db)):
                                  .filter(models.CartItem.cart_id == cart.id).all())
     if not cart_items:
         logging.info(f"Cart {cart.id} for user {user_id} is empty.")
-        raise HTTPException(status_code=204, detail="Cart is empty")
+        raise HTTPException(status_code=204, detail=f"User {user_id} has an empty cart.")
     
     return[
         CartItemsOut(
