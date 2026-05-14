@@ -7,19 +7,10 @@ const Cart_URL = `${BASE_URL}/carts`;
 export async function addToCart(user_id,item_id,quantity) {
     /**  adds quantity of item_id to user_id cart and returns the cartItem info*/
     try{
-        const out= await fetch(
-            `${Cart_URL}/${user_id}/additem`,{
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({             
-                    item_id,
-                    quantity
-                })});
-    if (!out.ok) {
-      throw new Error("failed request");
-    }
+        const out= await api.post(
+            `carts/${user_id}/additem`,
+            {item_id:item_id,quantity:quantity});
+    
     return await out.json();
     }catch(err){
         console.error("error adding item to cart ", err)
