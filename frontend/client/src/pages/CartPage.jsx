@@ -7,11 +7,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate} from 'react-router-dom';
 import UserWidget from'/src/componets/UserWidget';
 
-const Base_url="http://127.0.0.1:8000";
-const Cart_URL = `${Base_url}/carts`;
-const item_url =`${Base_url}/items`
-
-
 export default function CartPage(){
   /** prints a list of all the items in the database with at least 1 item.
    *  gives the user a input and button interface for each.
@@ -43,12 +38,6 @@ const [cart, setcartitem]= useState({});
           {alert("sign in.");
             return;}
       const quantity = quantities[item.id];
-
-    if (!quantity || quantity <= 0) {
-      alert("enter a valid quantity");
-      return;
-      }
-      
       try{
       const  data= await addToCart(user_id,item.id,quantity)
       
