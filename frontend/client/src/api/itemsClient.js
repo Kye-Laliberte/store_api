@@ -19,7 +19,7 @@ export async function getItem(Item_id) {
 
 export async function getAllItems() {
     try{
-        const response = await api.get(`items/get_all`),;
+        const response = await api.get(`items/get_all`);
         
 
         return response.data;
