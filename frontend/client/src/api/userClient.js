@@ -1,6 +1,4 @@
 import api from "./axios";
-const BASE_URL = "http://localhost:8000";
-const user_URL = `${BASE_URL}/users`;
 
 export async function Emaillogin(email) {
   /** fetches the user info with email*/
@@ -17,8 +15,6 @@ export async function Emaillogin(email) {
     throw error;
 }
 }  
-
-
 export async function getUser(user_id){
   /** retreves user info based on ther user_id*/
   try{
@@ -26,6 +22,9 @@ export async function getUser(user_id){
     `/users/${user_id}`,
     {user_id:user_id});
     
+    if(response.data.UserStatus=='suspended')
+      console.assert("user is suspended")
+
     return response.data;
 
 }catch(error){
@@ -33,4 +32,18 @@ export async function getUser(user_id){
     throw error;
 }
 
+}
+
+export async function UserStatus(user_id,status='active') {
+  try{
+    const respon = await api.put(`/status`,
+    {user_id:user_id,
+      status:status 
+    });
+    return respon.data
+    
+  }catch(error){
+    console.error("failed to change user status",error);
+    throw RTCPeerConnectionIceErrorEvent;
+  }
 }
