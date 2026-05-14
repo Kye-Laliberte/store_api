@@ -1,5 +1,5 @@
 import { cache} from "react";
-
+import api from "./axios";
 const BASE_URL = "http://localhost:8000";
 const Cart_URL = `${BASE_URL}/carts`;
 
@@ -20,47 +20,29 @@ export async function addToCart(user_id,item_id,quantity) {
 export async function viewCart(user_id) {
     /**not tested should return a list[] of Items object in user_ids cart*/
     try{
-        const respon= await fetch(
-            `${Cart_URL}/${user_id}/viewcart`,{
-                method: "get",
-                headers: {"Content-Type": "application/json"},
-               });
-    if (respon==HTMLOutputElement.arguments(400))
-        {console.error()}
-
-    if (!respon.ok) {
-      throw new Error("failed request");
-    }
-    
+        const respon= await api.get(`/carts/${user_id}/viewcart`);
         
-    return cartlist=await respon.json();
+    return respon.data;
 
     }catch(err){
         console.error("failed to find cart",err)
+        throw err;
     }
-    
 }
    
 export async function addCart(user_id){
+    /** creates a new cart for user_id and returns the cart info */
     try{
-        const cart = await fetch(
-        `${Cart_URL}/${user_id}/newcart`,{
-        method: "post",
-        headers:{
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            id,
-            user_id,
-            purchase_dat
-        })});
+        const cart = await api.post(
+            `/carts/${user_id}/newcart`,{
+            id: user_id,
+            cart_date: new Date(),                   
+        });
         
-    if (!respon.ok) {
-      throw new Error("failed request");
-    }
-    return await cart.json
+   
+    return await cart.data;
     }catch(err){
         console.error("failed to add cart", err)
+        throw err;
     }
-    
 } 
