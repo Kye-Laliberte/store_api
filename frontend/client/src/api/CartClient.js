@@ -32,7 +32,7 @@ export async function viewCart(user_id) {
     }
 }
    
-export async function addCart(user_id){
+export async function new_Cart(user_id){
     /** creates a new cart for user_id and returns the cart info */
     try{
         const cart = await api.post(
@@ -50,7 +50,7 @@ export async function addCart(user_id){
     }
 } 
 
-export async function removeItemFromCart(user_id,item_id){
+export async function removeFromCart(user_id,item_id){
     try{
         const response=await api.delete(`/carts/${user_id}/removeitem`,{data:{item_id:item_id}});
         
@@ -61,7 +61,20 @@ export async function removeItemFromCart(user_id,item_id){
     
     }catch(err){
         console.error("failed to remove item from cart", err)
-
         throw err;
     }    
+}
+
+export async function deleatCart(user_id) {
+    try{
+    const response =await api.delete(`/carts/${user_id}/dropCart`,{user_id:user_id});
+
+    if(response.status !== 200){
+            throw new Error(`Failed to remove item from cart: ${response.statusText}`);
+        }
+
+    }catch(error){
+        console.error("error deleating cart",error)
+        throw error;
+    }
 }
