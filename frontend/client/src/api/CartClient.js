@@ -1,7 +1,6 @@
 import { cache} from "react";
 import api from "./axios";
-const BASE_URL = "http://localhost:8000";
-const Cart_URL = `${BASE_URL}/carts`;
+
 
 
 export async function addToCart(user_id,item_id,quantity) {

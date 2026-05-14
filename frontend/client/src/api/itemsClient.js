@@ -1,20 +1,16 @@
-const BASE_URL = "http://localhost:8000";
-const ITEMS_URL = `${BASE_URL}/items`;
+import api from "./axios";
+
+
 //from fastapi.middleware.cors import CORSMiddleware
 // Function to fetch items from the backend
 export async function getItem(Item_id) {
     /**fetches a item */
     try{
-        const response = await fetch(`${ITEMS_URL}/${Item_id}/details`, {
-            method: 'GET',
-            headers: {'Content-Type': 'application/json'}
+        const response = await api.get(`/items/${Item_id}/details`, {
+            Item_id: Item_id
         });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);}
-
-        const data = await response.json();
-        return data;
-
+        
+        return response.data;
     } catch (error) {
         console.error("Error fetching item:", error);
         throw error;
@@ -23,17 +19,14 @@ export async function getItem(Item_id) {
 
 export async function getAllItems() {
     try{
-        const response = await fetch(`${ITEMS_URL}/get_all`, {
-            method: 'GET',
-            headers: {'Content-Type': 'application/json'}
-        });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        return data;
-    } catch (error) {
+        const response = await api.get(`items/get_all`),;
+        
+
+        return response.data;
+    } 
+    catch (error) {
         console.error("Error fetching all items:", error);
         throw error;
     }
 }
+        
