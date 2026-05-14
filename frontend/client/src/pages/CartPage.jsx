@@ -1,11 +1,11 @@
 
-
-import '../App.css';
-import { getItem, getAllItems } from '../api/itemsClient';
-import { addToCart,viewCart } from '../api/CartClient';
+import api from '/src/api/axios';
+import '/src/App.css';
+import { getItem, getAllItems } from '/src/api/itemsClient';
+import { addToCart,viewCart } from '/src/api/CartClient';
 import { useEffect, useState } from 'react';
 import { useNavigate} from 'react-router-dom';
-import UserWidget from'../componets/UserWidget';
+import UserWidget from'/src/componets/UserWidget';
 
 const Base_url="http://127.0.0.1:8000";
 const Cart_URL = `${Base_url}/carts`;

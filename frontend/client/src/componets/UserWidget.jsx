@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import {Emaillogin,getUser} from '../api/userClient';
-const BASE_URL = "http://localhost:8000";
-const user_URL = `${BASE_URL}/users`;
-import '../App.css';
+import {Emaillogin,getUser} from '/src/api/userClient';
+import api from '/src/api/axios';
+import '/src/App.css';
 export default function UserWidget() {
 /**a basic log_in system to get the user_id.
  * you can do it with email, or user_id
