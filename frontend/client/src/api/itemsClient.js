@@ -7,9 +7,7 @@ import api from "/src/api/axios";
 export async function getItem(Item_id) {
     /**fetches a item */
     try{
-        const response = await api.get(`/items/${Item_id}/details`, {
-            Item_id: Item_id
-        });
+        const response = await api.get(`/items/${Item_id}/details`);
         
         return response.data;
     } catch (error) {
