@@ -75,16 +75,11 @@ const [cart, setcartitem]= useState({});
             [item.id]: e.target.value
              
           })
-         
-        }
-        
-      />
+         }/>
 
       <button onClick={() => ToCart(item)}
       className='basic-button'
-      disabled={!quantities[item.id] || quantities[item.id]<=0}
-     
-      >
+      disabled={!Number(quantities[item.id]) || Number(quantities[item.id])<=0}>
         
         Add To Cart
       </button>
@@ -96,12 +91,6 @@ const [cart, setcartitem]= useState({});
   ))
 )}
   </div> 
-
-  <div>
-
-  </div>
-
-
   </div>);
         
        
