@@ -1,15 +1,13 @@
 
-import reactLogo from'./assets/react.svg';
-import viteLogo from './assets/vite.svg';
-import heroImg from './assets/hero.png';
-import './App.css';
+
+import '/src/App.css';
 import {  useState, useEffect } from 'react';
 
 import { Routes, Route, useNavigate} from 'react-router-dom';
-import OrderPage from './componets/OrderPage'; 
-import CartPage from './componets/CartPage';
-import AdminPage from './componets/AdminPage';  
-import UserWidget from'./componets/UserWidget';
+ 
+import CartPage from '/src/pages/CartPage';
+ 
+import UserWidget from'/src/componets/UserWidget';
 
 function  App() {
   const [showCart, setShowCart] = useState(false);
