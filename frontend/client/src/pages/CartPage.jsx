@@ -27,13 +27,8 @@ const [cart, setcartitem]= useState({});
       
 
     useEffect(()=>{
-      /** fetches a list[] of items and set it to items and checks if user_id is in localStorage*/
-      const saved = localStorage.getItem("user_id");
-      if (saved == null)
-        {alert("no user_id")};
-
-      fetch(`${item_url}/get_all`)
-      .then( res=> res.json())
+      /** fetches a list[] of items and set it to items*/
+      getAllItems()
       .then(data=>{console.log("ITEMS:",data);
       setItems(data);})
     .catch(err => console.error(err));
