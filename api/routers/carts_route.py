@@ -171,8 +171,8 @@ def dropcart(user_id:int,db:Session=Depends(get_db)):
     if  not cart:
         raise HTTPException(status_code=404,detail="no cart active or found")
     
-    if cart.status != UserStatus.active:
-        raise HTTPException(status_code=400, detail="User is not active. Cannot drop cart.")
+#    if cart.status != UserStatus.active:
+#        raise HTTPException(status_code=400, detail="User is not active. Cannot drop cart.")
     
     try:    
         db.query(models.CartItem,models).filter(models.CartItem.cart_id==cart.id).delete()
