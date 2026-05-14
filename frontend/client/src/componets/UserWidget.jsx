@@ -15,11 +15,7 @@ const [user, setUser] = useState("");
    useEffect(() => {
     const saved = localStorage.getItem("user_id");
     if (saved !== null)
-         {setUserId(saved)
-        
-         };
-        
-  }, []);
+         {setUserId(saved)};}, []);
     
     //for testing put in user id th sign in
     async function SaveData() {
@@ -35,16 +31,13 @@ const [user, setUser] = useState("");
 
     // this is for email sign in will ad pasword in at a later time
     async function inmail(){
-    
     try{
         const data = await Emaillogin(email);
         localStorage.setItem("user_id", data.id);
         if (!data) {
         alert("Invalid email");
         return;
-      }
-       
-       
+      }  
       alert(`User set to ${data.id}`);
     localStorage.setItem("user_id", data.id);//will set to just data, temporary for testing
     }catch (err) {
