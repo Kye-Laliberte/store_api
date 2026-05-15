@@ -15,11 +15,20 @@ export default function CartPage(){
   */
 const [items, setItems]= useState([]);
 const [quantities, setQuantities] = useState({});
-const [cart, setcartitem]= useState({});
+const [incart, setcartitem]= useState({});
+const user_id=localStorage.getItem("user_id");
 // keeps the user_id up to date if its in localStorage
-    
-      
-      
+    useEffect(()=>{
+    async function lodeCart(){
+      try{
+        
+        //if(user_id){
+          const data = await viewCart(user_id);
+          setCart(data);//}
+      }catch(error){
+        console.error("faled to lode cart",error)}
+    } 
+  })
 
     useEffect(()=>{
       /** fetches a list[] of items and set it to items*/
@@ -28,8 +37,6 @@ const [cart, setcartitem]= useState({});
       setItems(data);})
     .catch(err => console.error(err));
     },[]);
-    
-    
     
 async function ToCart(item){
       /** sends the given items_id to addToCart().js to add the quantity in the input field */
@@ -42,7 +49,6 @@ async function ToCart(item){
       try{
       const  data= await addToCart(user_id,item.id,quantity);
 
-        
       }catch(err){
       console.error(err);
       alert("failed to add item");
@@ -86,7 +92,7 @@ async function ToCart(item){
     return (
         <div className='item-Display'>
 
-            {items.map((item) => (
+            {items?.map((item) => (
                 <ProductCard
                     key={item.id}
                     item={item}
