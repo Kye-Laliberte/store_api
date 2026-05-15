@@ -31,7 +31,7 @@ const [cart, setcartitem]= useState({});
     
     
     
-    async function ToCart(item){
+async function ToCart(item){
       /** sends the given items_id to addToCart().js to add the quantity in the input field */
       const user_id=localStorage.getItem("user_id");
       if(!user_id )
@@ -41,9 +41,7 @@ const [cart, setcartitem]= useState({});
       const quantity = Number(quantities[item.id]);
       try{
       const  data= await addToCart(user_id,item.id,quantity);
-      
-      if(data){
-        alert(`added item ${data.name} to your order`);}
+
         
       }catch(err){
       console.error(err);
@@ -51,6 +49,101 @@ const [cart, setcartitem]= useState({});
       }
     };
     
+    function ProductCard({
+    item,quantity,
+    onQuantityChange,onAddToCart}) {
+    return (
+        <div className="item-block">
+            <h3>{item.name}</h3>
+            <input
+                type="number"
+                inputMode="numeric"
+                min="1"
+                placeholder="quantity"
+                value={quantity ?? ""}
+                onChange={(e) =>
+                    onQuantityChange(
+                        item.id,
+                        e.target.value
+                    )}/>
+            <button
+                className="basic-button"
+                onClick={() => onAddToCart(item)}
+                disabled={!Number(quantity) || Number(quantity) <= 0}>
+                Add To Cart</button>
+              <p>{item.description}</p>
+            <p>price {item.price}$</p>
+            <p>{item.quantity} left</p></div>
+);
+}
+
+    function ItemList({
+    items,quantities,
+    onQuantityChange,onAddToCart}) {
+    if (items.length === 0) {
+        return <p>no items</p>;
+    }
+    return (
+        <div className='item-Display'>
+
+            {items.map((item) => (
+                <ProductCard
+                    key={item.id}
+                    item={item}
+                    quantity={quantities[item.id]}
+                    onQuantityChange={onQuantityChange}
+                    onAddToCart={onAddToCart}
+                />))}
+        </div>
+    );
+}
+function handleQuantityChange(itemId,value){
+        setQuantities((prev) => ({
+            ...prev,[itemId]: value}));}
+
+ async function handleAddToCart(item) {
+        const user_id =
+            localStorage.getItem("user_id");
+
+        if (!user_id) {
+            alert("sign in.");
+            return;}
+
+        const quantity = Number(quantities[item.id]);
+        
+            if (!quantity || quantity <= 0) {
+              alert("enter valid quantity");
+              return;}
+
+        try {
+            const idata = await addToCart(
+              user_id,item.id,quantity);
+
+            if (idata){
+                alert(`${idata.quantity} ${idata.name} now in your order`);}
+
+        } catch (err) {
+            console.error(err);
+            alert("failed to add item");}
+    }
+
+
+  return(
+      <div>
+        <ItemList
+        items={items}
+        quantities={quantities}
+        onQuantityChange={
+          handleQuantityChange}
+        onAddToCart={handleAddToCart}/>
+      </div>
+    )
+
+
+
+
+/*
+
     return(
         <div>
           <h2>Items Available</h2>
@@ -90,5 +183,5 @@ const [cart, setcartitem]= useState({});
   </div>);
         
        
-       
+*/       
 }
