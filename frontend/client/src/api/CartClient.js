@@ -10,11 +10,11 @@ export async function addToCart(user_id,item_id,quantity) {
             `carts/${user_id}/additem`,
             {item_id:item_id,quantity:quantity});
         if(out.status !== 200){
-            throw new Error(`Failed to add item to cart: ${out.statusText}`);
+           throw new Error(`Failed to add item to cart: ${out.statusText}`);
         }
     return out.data;
     }catch(err){
-        console.error("error adding item to cart ", err)
+        console.error("error adding item to cart ", err);
         throw err;
     }
 }    
@@ -28,7 +28,7 @@ export async function viewCart(user_id) {
         }
     return respon.data;
     }catch(err){
-        console.error("failed to find cart",err)
+        console.error("failed to find cart",err);
         throw err;
     }
 }
@@ -46,7 +46,7 @@ export async function new_Cart(user_id){
 
             return await cart.data;
     }catch(err){
-        console.error("failed to add cart", err)
+        console.error("failed to add cart", err);
         throw err;
     }
 } 
@@ -61,7 +61,7 @@ export async function removeFromCart(user_id,item_id){
         return response.data;
     
     }catch(err){
-        console.error("failed to remove item from cart", err)
+        console.error("failed to remove item from cart", err);
         throw err;
     }    
 }
@@ -75,7 +75,7 @@ export async function deleatCart(user_id) {
         }
 
     }catch(error){
-        console.error("error deleating cart",error)
+        console.error("error deleating cart",error);
         throw error;
     }
 }
