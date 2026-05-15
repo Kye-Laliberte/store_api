@@ -36,21 +36,20 @@ const [cart, setcartitem]= useState({});
       const user_id=localStorage.getItem("user_id");
       if(!user_id )
           {alert("sign in.");
-            return;}
-      const quantity = quantities[item.id];
+            return;
+          }
+      const quantity = Number(quantities[item.id]);
       try{
-      const  data= await addToCart(user_id,item.id,quantity)
+      const  data= await addToCart(user_id,item.id,quantity);
       
-      if(data)
-        alert(`added item ${data.name} to your order`)
-      
+      if(data){
+        alert(`added item ${data.name} to your order`);}
+        
       }catch(err){
       console.error(err);
       alert("failed to add item");
       }
-
-    }
-    
+    };
     
     return(
         <div>
