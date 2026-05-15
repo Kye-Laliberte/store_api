@@ -7,9 +7,8 @@ import { useNavigate} from 'react-router-dom';
 
  export default function CartViewer({cart}){
     
-    console.log("Cart-Items",cart) 
-    if(Array.isArray(cart))
-        alert("11111")
+    
+    
     return(
         <div>
             <h3>Your Cart</h3>
@@ -33,8 +32,8 @@ import { useNavigate} from 'react-router-dom';
     return(<div className='item-block'>
             <h4>{item.name}</h4>
             <p>{item.description}</p>
-            <p>price {item.price}$</p>
-            <p>{item.quantity}</p>
+            <p>items cost{item.price}$</p>
+            <p>in Cart: {item.quantity}</p>
     </div>)
 }
 

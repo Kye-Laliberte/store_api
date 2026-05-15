@@ -32,6 +32,7 @@ useEffect(()=>{
           if(!data)
           {alert("no cart")} 
           setCart(data);
+        console.log("CartITEMS",data)
         }
       }catch(error){
         console.error("faled to lode cart",error)}
