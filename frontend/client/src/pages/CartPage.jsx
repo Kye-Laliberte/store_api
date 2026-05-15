@@ -1,6 +1,7 @@
 
 import api from '/src/api/axios';
 import '/src/App.css';
+import CartViewer from '/src/componets/cart_viewer';
 import { getItem, getAllItems } from '/src/api/itemsClient';
 import { addToCart,viewCart } from '/src/api/CartClient';
 import { useEffect, useState } from 'react';
@@ -15,20 +16,32 @@ export default function CartPage(){
   */
 const [items, setItems]= useState([]);
 const [quantities, setQuantities] = useState({});
-const [incart, setcartitem]= useState({});
-const user_id=localStorage.getItem("user_id");
+const [incart, setCart]= useState({});
 // keeps the user_id up to date if its in localStorage
-    useEffect(()=>{
-    async function lodeCart(){
+
+
+ 
+useEffect(()=>{
+     async function LoadCart(){
       try{
-        
-        //if(user_id){
+        const user_id=localStorage.getItem("user_id");
+        if(user_id){
+          alert(user_id)
+
           const data = await viewCart(user_id);
-          setCart(data);//}
+          if(!data)
+          {alert("no cart")} 
+          setCart(data);
+        }
       }catch(error){
         console.error("faled to lode cart",error)}
-    } 
-  })
+    }
+    LoadCart();
+  },[]);
+
+ 
+
+
 
     useEffect(()=>{
       /** fetches a list[] of items and set it to items*/
@@ -142,6 +155,8 @@ function handleQuantityChange(itemId,value){
         onQuantityChange={
           handleQuantityChange}
         onAddToCart={handleAddToCart}/>
+        <CartViewer
+        cart={incart}/>
       </div>
     )
 
