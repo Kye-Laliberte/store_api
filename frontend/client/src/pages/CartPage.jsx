@@ -69,13 +69,10 @@ const [cart, setcartitem]= useState({});
         type="number"
         placeholder="quantity"
         value={quantities[item.id] ?? ""}
-        onChange={(e) =>
-          setQuantities({
-            ...quantities,
-            [item.id]: e.target.value
-             
-          })
-         }/>
+        onChange={(e) => setQuantities(prev=>({
+            ...prev,[item.id]: e.target.value
+          }))
+          }/>
 
       <button onClick={() => ToCart(item)}
       className='basic-button'
