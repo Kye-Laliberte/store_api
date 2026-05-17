@@ -46,10 +46,6 @@ async function refresh() {
  },[]);
 
 
-
-
-
-
 function handleQuantityChange(itemId,value){
       if(!Number(value))
       {
@@ -101,48 +97,4 @@ function handleQuantityChange(itemId,value){
     )
 
 
-
-
-/*
-
-    return(
-        <div>
-          <h2>Items Available</h2>
-        <div className='item-Display'>
-          
-        {items.length === 0 ? (
-  <p>no items</p>
-) : (
-  items.map(item => (
-    
-    <div key={item.id} className='item-block'>
-      <h3>{item.name}</h3>
-      
-      <input
-        type="number"
-        placeholder="quantity"
-        value={quantities[item.id] ?? ""}
-        onChange={(e) => setQuantities(prev=>({
-            ...prev,[item.id]: e.target.value
-          }))
-          }/>
-
-      <button onClick={() => ToCart(item)}
-      className='basic-button'
-      disabled={!Number(quantities[item.id]) || Number(quantities[item.id])<=0}>
-        
-        Add To Cart
-      </button>
-
-      <p>{item.description}</p>
-      <p>price {item.price}$</p>
-      <p>{item.quantity} left</p>
-    </div>
-  ))
-)}
-  </div> 
-  </div>);
-        
-       
-*/       
 }
