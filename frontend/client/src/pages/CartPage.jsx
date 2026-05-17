@@ -2,7 +2,7 @@
 import api from '/src/api/axios';
 import '/src/App.css';
 import CartViewer from '/src/componets/cart_viewer';
-import { getItem, getAllItems } from '/src/api/itemsClient';
+import { getItem, getAllItems} from '/src/api/itemsClient';
 import { addToCart,viewCart } from '/src/api/CartClient';
 import { useEffect, useState } from 'react';
 import { useNavigate} from 'react-router-dom';
@@ -20,43 +20,40 @@ const [incart, setCart]= useState({});
 // keeps the user_id up to date if its in localStorage
 
 
- 
-useEffect(()=>{
-     async function LoadCart(){
-      try{
+
+
+async function refresh() {
+    try{
         const user_id=localStorage.getItem("user_id");
-        if(user_id){
-          alert(user_id)
-
-          const data = await viewCart(user_id);
-          if(!data)
-          {alert("no cart")} 
-          setCart(data);
-        console.log("CartITEMS",data)
+        const itemsData=await getAllItems();
+        setItems(itemsData);
+        if (user_id) {
+            const cartData = await viewCart(user_id);
+            
+            setCart(cartData);
         }
-      }catch(error){
-        console.error("faled to lode cart",error)}
+    } catch (error) {
+        console.error(
+            "failed to refresh",
+            error
+        );   
     }
-    LoadCart();
-  },[]);
-
- 
+}
 
 
+ useEffect(()=>{
+  refresh();
+ },[]);
 
-    useEffect(()=>{
-      /** fetches a list[] of items and set it to items*/
-      getAllItems()
-      .then(data=>{console.log("ITEMS:",data);
-      setItems(data);})
-    .catch(err => console.error(err));
-    },[]);
-    
+
+
+
+
 
 function handleQuantityChange(itemId,value){
-      if(!Number(value) || Number(value)<=0)
+      if(!Number(value))
       {
-        console.error("incorect data type or invalid value",value)
+        console.error("incorect data type",value)
       } 
       setQuantities((prev) => ({
             ...prev,[itemId]: value}));}
