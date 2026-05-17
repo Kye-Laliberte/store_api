@@ -8,9 +8,8 @@ import { useNavigate} from 'react-router-dom';
  export default function CartViewer({cart}){
     
     
-    
     return(
-        <div>
+        <div className='cart-window'>
             <h3>Your Cart</h3>
            
 
@@ -29,11 +28,11 @@ import { useNavigate} from 'react-router-dom';
     );
     
     function CartItems({item}){
-    return(<div className='item-block'>
+    return(<div className='cart-items'>
             <h4>{item.name}</h4>
             <p>{item.description}</p>
-            <p>items cost{item.price}$</p>
-            <p>in Cart: {item.quantity}</p>
+            <p>{item.quantity} in Cart </p>
+            <p>total cost:{item.totalprice}</p>
     </div>)
 }
 

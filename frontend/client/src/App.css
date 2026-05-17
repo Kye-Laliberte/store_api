@@ -11,6 +11,18 @@
   gap: 20px;
 }
 
+.cart-window{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(25px, 1fr));
+  gap:2px;
+}
+
+.cart-items{
+  display: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 2px;
+}
+
 .basic-button{
   width: 100%;
   background-color: rgba(0, 247, 255, 0.562);
