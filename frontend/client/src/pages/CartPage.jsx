@@ -75,6 +75,8 @@ function handleQuantityChange(itemId,value){
 
             if (idata){
                 alert(`${idata.quantity} ${idata.name} now in your order`);}
+            
+                await refresh();
 
         } catch (err) {
             console.error(err);
