@@ -7,7 +7,7 @@ import { addToCart,viewCart } from '/src/api/CartClient';
 import { useEffect, useState } from 'react';
 import { useNavigate} from 'react-router-dom';
 import UserWidget from'/src/componets/UserWidget';
-
+import {ItemList} from'/src/componets/cart_componets'
 export default function CartPage(){
   /** prints a list of all the items in the database with at least 1 item.
    *  gives the user a input and button interface for each.
@@ -52,74 +52,15 @@ useEffect(()=>{
     .catch(err => console.error(err));
     },[]);
     
-async function ToCart(item){
-      /** sends the given items_id to addToCart().js to add the quantity in the input field */
-      const user_id=localStorage.getItem("user_id");
-      if(!user_id )
-          {alert("sign in.");
-            return;
-          }
-      const quantity = Number(quantities[item.id]);
-      try{
-      const  data= await addToCart(user_id,item.id,quantity);
 
-      }catch(err){
-      console.error(err);
-      alert("failed to add item");
-      }
-    };
-    
-    function ProductCard({
-    item,quantity,
-    onQuantityChange,onAddToCart}) {
-    return (
-        <div className="item-block">
-            <h3>{item.name}</h3>
-            <input
-                type="number"
-                inputMode="numeric"
-                min="1"
-                placeholder="quantity"
-                value={quantity ?? ""}
-                onChange={(e) =>
-                    onQuantityChange(
-                        item.id,
-                        e.target.value
-                    )}/>
-            <button
-                className="basic-button"
-                onClick={() => onAddToCart(item)}
-                disabled={!Number(quantity) || Number(quantity) <= 0}>
-                Add To Cart</button>
-              <p>{item.description}</p>
-            <p>price {item.price}$</p>
-            <p>{item.quantity} left</p></div>
-);
-}
-
-    function ItemList({
-    items,quantities,
-    onQuantityChange,onAddToCart}) {
-    if (!Array.isArray(items)&&items.length === 0) {
-        return <p>no items</p>;
-    }
-    return (
-        <div className='item-Display'>
-
-            {items?.map((item) => (
-                <ProductCard
-                    key={item.id}
-                    item={item}
-                    quantity={quantities[item.id]}
-                    onQuantityChange={onQuantityChange}
-                    onAddToCart={onAddToCart}
-                />))}
-        </div>
-    );
-}
 function handleQuantityChange(itemId,value){
-        setQuantities((prev) => ({
+      if(!Number(value) || Number(value)<=0)
+      {
+        console.error("incorect data type or invalid value",value)
+      } 
+      setQuantities((prev) => ({
             ...prev,[itemId]: value}));}
+         
 
  async function handleAddToCart(item) {
         const user_id =
@@ -132,11 +73,11 @@ function handleQuantityChange(itemId,value){
         const quantity = Number(quantities[item.id]);
         
             if (!quantity || quantity <= 0) {
+              console.error("invalid quantity",quantity)
               alert("enter valid quantity");
               return;}
 
-        try {
-            const idata = await addToCart(
+        try {const idata = await addToCart(
               user_id,item.id,quantity);
 
             if (idata){
