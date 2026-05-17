@@ -103,7 +103,7 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
         db.commit()
         db.refresh(out)
         return CartItemsOut(item_id=out.item_id, quantity=out.quantity,
-                     name=Item.name,description=Item.description,price=Item.price)
+                     name=Item.name,description=Item.description,price=Item.price,totalprice=Item.quantity*Item.price)
          
     except Exception as e:
         logging.error(f"Error checking for existing cart info for user {user_id} and item {item_id}: {e}")
