@@ -100,7 +100,7 @@ async function ToCart(item){
     function ItemList({
     items,quantities,
     onQuantityChange,onAddToCart}) {
-    if (items.length === 0) {
+    if (!Array.isArray(items)&&items.length === 0) {
         return <p>no items</p>;
     }
     return (
