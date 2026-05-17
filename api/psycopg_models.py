@@ -84,6 +84,7 @@ class CartItemsOut(BaseModel):
     price: float = Field(...,gt=0)
     quantity: int = Field(...,gt=0)
     description: Optional[str]="no description"
+    totalprice: float =Field(0,gt=0)
     class Config:
         from_attributes = True# allows pydantic to read data from SQLAlchemy models
 

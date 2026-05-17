@@ -40,13 +40,17 @@ def viewCart(user_id:int,db: Session=Depends(get_db)):
         logging.info(f"Cart {cart.id} for user {user_id} is empty.")
         raise HTTPException(status_code=204, detail=f"User {user_id} has an empty cart.")
     
+    
+
     return[
         CartItemsOut(
             item_id=items.item_id,
             quantity=items.quantity,
             description=items.description,
             price=items.price,
-            name=items.name)
+            name=items.name,
+            totalprice=items.quantity*items.price
+            )
         for items in cart_items
         ]
 

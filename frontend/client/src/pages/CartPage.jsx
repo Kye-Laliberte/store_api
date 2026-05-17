@@ -157,6 +157,7 @@ function handleQuantityChange(itemId,value){
           handleQuantityChange}
         onAddToCart={handleAddToCart}/>
         <CartViewer
+        key={1}
         cart={incart}/>
       </div>
     )
