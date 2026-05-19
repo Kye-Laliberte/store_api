@@ -5,9 +5,15 @@ import { addToCart,viewCart } from '/src/api/CartClient';
 import { useNavigate} from 'react-router-dom';
 
 
- export default function CartViewer({cart}){
-    
-    
+ export default function CartViewer({cart,id}){
+    console.log("cart",cart,id)
+    if(id==0 || !id){
+            return(<div>
+                <h3>no cart</h3>
+            </div>);
+           }
+           
+           
     return(
         <div className='cart-window'>
             <h3>Your Cart</h3>
