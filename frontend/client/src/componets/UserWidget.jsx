@@ -70,7 +70,7 @@ const [ email, setEmail] = useState("");
         placeholder="email"
         value={email ?? ""}
         
-        onChange={(e) => setEmail( e.target.value)}
+        onChange={(e) => {setEmail( e.target.value)}}
       />
     <button onClick={() => inmail()}
     className='button2'
