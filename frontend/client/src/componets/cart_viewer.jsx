@@ -6,12 +6,16 @@ import { useNavigate} from 'react-router-dom';
 
 
  export default function CartViewer({cart,id}){
-    console.log("cart",cart,id)
-    if(id==0 || !id){
+    console.log("cart",cart)
+    if(id===null){
             return(<div>
                 <h3>no cart</h3>
             </div>);
            }
+    if(!id){
+         return;
+            }
+
            
            
     return(
