@@ -8,7 +8,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate} from 'react-router-dom';
 import UserWidget from'/src/componets/UserWidget';
 import {ItemList} from'/src/componets/cart_componets'
-export default function CartPage(){
+import { getUser } from '../api/userClient';
+export default function CartPage({user,setUser,incart,setCart}){
   /** prints a list of all the items in the database with at least 1 item.
    *  gives the user a input and button interface for each.
    * input for quantity and the button adds it to your cart.
@@ -16,52 +17,56 @@ export default function CartPage(){
   */
 const [items, setItems]= useState([]);
 const [quantities, setQuantities] = useState({});
-const [incart, setCart]= useState({});
 // keeps the user_id up to date if its in localStorage
 
 
-
-
-async function refresh() {
+async function refresh(User) {
     try{
-        const user_id=localStorage.getItem("user_id");
         const itemsData=await getAllItems();
+        console.log("USER",User)
         setItems(itemsData);
-        if (user_id) {
-            const cartData = await viewCart(user_id);
-            
-            setCart(cartData);
+        console.log("ITEMS",itemsData)
+        if(User.id)
+        {
+             const users= await getUser(User.id)
+                setUser(users)
+        if (!users.cart_id){
+           alert("no cart");
+           setCart(false)     
+        }else{
+        const cartData = await viewCart(User.id);
+        setCart(cartData);
+        console.log("cartItem",cartData)
+        } 
         }
-    } catch (error) {
+         
+    }catch (error) {
         console.error(
             "failed to refresh",
             error
         );   
     }
 }
-
-
  useEffect(()=>{
-  refresh();
+  refresh(user);
  },[]);
 
 
-function handleQuantityChange(itemId,value){
-      if(!Number(value))
-      {
-        console.error("incorect data type",value)
-      } 
+function handleQuantityChange(itemId,value){  
+    
       setQuantities((prev) => ({
-            ...prev,[itemId]: value}));}
+            ...prev,[itemId]: Number(value)}));}
          
 
  async function handleAddToCart(item) {
-        const user_id =
-            localStorage.getItem("user_id");
-
-        if (!user_id) {
+        
+        if (!user) {
             alert("sign in.");
             return;}
+        if (!user.cart_id){
+            alert("No active cart")
+            return;
+        }
 
         const quantity = Number(quantities[item.id]);
         
@@ -71,12 +76,12 @@ function handleQuantityChange(itemId,value){
               return;}
 
         try {const idata = await addToCart(
-              user_id,item.id,quantity);
+              user.id,item.id,quantity);
 
             if (idata){
                 alert(`${idata.quantity} ${idata.name} now in your order`);}
             
-                await refresh();
+                await refresh(user);
 
         } catch (err) {
             console.error(err);
@@ -86,14 +91,24 @@ function handleQuantityChange(itemId,value){
 
   return(
       <div>
+
+         <p>sign in</p>
+        <UserWidget
+        key={2}
+        user={user}
+        setUser={setUser}
+        ref={refresh}
+        onOpenCart ={()=> setShowCart(true)}
+        />
+        
         <ItemList
         items={items}
+        user={user}
         quantities={quantities}
-        onQuantityChange={
-          handleQuantityChange}
+        onQuantityChange={handleQuantityChange}
         onAddToCart={handleAddToCart}/>
         <CartViewer
-        key={1}
+        id={user.cart_id}
         cart={incart}/>
       </div>
     )
