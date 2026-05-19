@@ -10,21 +10,18 @@ import CartPage from '/src/pages/CartPage';
 import UserWidget from'/src/componets/UserWidget';
 
 function  App() {
-  const [showCart, setShowCart] = useState(false);
-  const [user, setUser] = useState(null);
-  
+  const [user, setUser] = useState({});
+  const [incart, setCart]= useState({});
   const nav = useNavigate();
   return(
     <div>
       <h1>Store</h1>
-        <p>sign in</p>
-        <UserWidget
-        user={user}
-        setUser={setUser}
-        onOpenCart ={()=> setShowCart(true)}
-        />
-
+       
         <CartPage useerId={user?.id}
+        incart={incart}
+        setCart={setCart}
+        user = {user}
+        setUser={setUser}
         onClose={() => setShowCart(false)}
         />
       
