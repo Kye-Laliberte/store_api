@@ -46,6 +46,8 @@ const [ email, setEmail] = useState("");
   return (
   
     <div style={{ marginBottom: "20px" }}>
+     
+      {!user.id ?(<p>not loged in</p>):(<p>curent User: {user.id}</p>)}
       
       <input
         type="number"
@@ -65,7 +67,6 @@ const [ email, setEmail] = useState("");
       <p></p>
      
      <input
-      
         type="text"
         placeholder="email"
         value={email ?? ""}
@@ -78,7 +79,7 @@ const [ email, setEmail] = useState("");
     >Set User by email
       
     </button>
-
+      
     </div>
   );
 }
