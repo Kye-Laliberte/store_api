@@ -40,13 +40,17 @@ def viewCart(user_id:int,db: Session=Depends(get_db)):
         logging.info(f"Cart {cart.id} for user {user_id} is empty.")
         raise HTTPException(status_code=204, detail=f"User {user_id} has an empty cart.")
     
+    
+
     return[
         CartItemsOut(
             item_id=items.item_id,
             quantity=items.quantity,
             description=items.description,
             price=items.price,
-            name=items.name)
+            name=items.name,
+            totalprice=items.quantity*items.price
+            )
         for items in cart_items
         ]
 
@@ -99,7 +103,7 @@ def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
         db.commit()
         db.refresh(out)
         return CartItemsOut(item_id=out.item_id, quantity=out.quantity,
-                     name=Item.name,description=Item.description,price=Item.price)
+                     name=Item.name,description=Item.description,price=Item.price,totalprice=Item.quantity*Item.price)
          
     except Exception as e:
         logging.error(f"Error checking for existing cart info for user {user_id} and item {item_id}: {e}")
@@ -171,8 +175,8 @@ def dropcart(user_id:int,db:Session=Depends(get_db)):
     if  not cart:
         raise HTTPException(status_code=404,detail="no cart active or found")
     
-    if cart.status != UserStatus.active:
-        raise HTTPException(status_code=400, detail="User is not active. Cannot drop cart.")
+#    if cart.status != UserStatus.active:
+#        raise HTTPException(status_code=400, detail="User is not active. Cannot drop cart.")
     
     try:    
         db.query(models.CartItem,models).filter(models.CartItem.cart_id==cart.id).delete()

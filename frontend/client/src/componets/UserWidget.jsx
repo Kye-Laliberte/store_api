@@ -1,85 +1,77 @@
 import { useState, useEffect } from "react";
-import {Emaillogin,getUser} from '../api/userClient';
-const BASE_URL = "http://localhost:8000";
-const user_URL = `${BASE_URL}/users`;
-import '../App.css';
-export default function UserWidget() {
+import {Emaillogin,getUser} from '/src/api/userClient';
+import api from '/src/api/axios';
+import '/src/App.css';
+
+export default function UserWidget({user,setUser,ref}) {
 /**a basic log_in system to get the user_id.
  * you can do it with email, or user_id
  * B aware this is a Local storage set up so you have to put ina id or email firt.
  *  */ 
 const [ userId, setUserId] = useState("");
-const user_id = localStorage.getItem("user_id");    
 const [ email, setEmail] = useState("");
-const [user, setUser] = useState("");
-// load saved user on page load
-   useEffect(() => {
-    const saved = localStorage.getItem("user_id");
-    if (saved !== null)
-         {setUserId(saved)
-        
-         };
-        
-  }, []);
-    
+ 
     //for testing put in user id th sign in
     async function SaveData() {
-      const id= await getUser(userId)
-      if(!id){
+      
+      const data= await getUser(userId)
+      
+      if(!data){
         alert(`no user at ${userId}`);
         return;
       }
       
-      localStorage.setItem("user_id", userId);
-      alert(`User set to ${userId}`);
+      console.log("data",data) 
+      await ref(data);  
+      console.log(user) 
+      
     }
 
     // this is for email sign in will ad pasword in at a later time
     async function inmail(){
-    
     try{
         const data = await Emaillogin(email);
-        localStorage.setItem("user_id", data.id);
         if (!data) {
         alert("Invalid email");
         return;
       }
-       
-       
+        
       alert(`User set to ${data.id}`);
-    localStorage.setItem("user_id", data.id);//will set to just data, temporary for testing
+      ref(data);
     }catch (err) {
       console.error(err);
       alert("Login failed");    
     }}
 
   return (
-    
+  
     <div style={{ marginBottom: "20px" }}>
+     
+      {!user.id ?(<p>not loged in</p>):(<p>curent User: {user.id}</p>)}
+      
       <input
         type="number"
         placeholder="user_id"
         value={userId ?? ""}
         
-        onChange={(g) => setUserId( g.target.value)}
+        onChange={(g) => {setUserId( g.target.value)}}
           
       />
       <button
-      onClick={() => SaveData()
+      onClick={() => {SaveData()}
       } className='button2'
-      disabled={!userId} 
+      disabled={!Number(userId)} 
       
       >Set User</button>
       
       <p></p>
      
      <input
-      
         type="text"
         placeholder="email"
         value={email ?? ""}
         
-        onChange={(e) => setEmail( e.target.value)}
+        onChange={(e) => {setEmail( e.target.value)}}
       />
     <button onClick={() => inmail()}
     className='button2'
@@ -87,7 +79,7 @@ const [user, setUser] = useState("");
     >Set User by email
       
     </button>
-
+      
     </div>
   );
 }

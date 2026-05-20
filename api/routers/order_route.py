@@ -24,18 +24,19 @@ def carthome():
 def viewOrders(user_id:int,db: Session=Depends(get_db)):
     """ shows all past orders for a user"""
     
-    try:
-        orders= db.query(Omodels.Order).filter(Omodels.Order.user_id==user_id).all()
+    
+    orders= db.query(Omodels.Order).filter(Omodels.Order.user_id==user_id).all()
 
+    if not orders:
+        raise HTTPException(status_code=204,detail= "no orders")
+    try:    
       
         return orders
     
     except Exception as e:
         logging(f"faled to conect {e}")
         raise HTTPException(status_code=400,detail=f"error {e}")
-    except TypeError:
-        raise HTTPException(status_code=404,detail=f"no orders found for {user_id}")# this is for right now it will change
-        
+    
     
 @router.get("/getallorders", response_model=List[pmodels.orders])
 def getAllOrders(db: Session=Depends(get_db)):
@@ -57,15 +58,12 @@ def get_order_details(order_id:int, db: Session=Depends(get_db)):
                              .join(Omodels.OrderItem, Omodels.Order.id == Omodels.OrderItem.order_id)
                              .join(models.Item, Omodels.OrderItem.item_id == models.Item.id)
                              .filter(Omodels.Order.id == order_id).all())
-        if not order_details:
-            raise HTTPException(status_code=404, detail="Order not found")
-        return order_details
     except Exception as e:
         logging.error(f"Error retrieving order details for order {order_id}: {e}")
         raise HTTPException(status_code=500, detail="An error occurred while retrieving order details")
-    except KeyError as e:
-        logging.error(f"Key error while processing order details for order {order_id}: {e}")
-        raise HTTPException(status_code=500, detail="An error occurred while processing order details")
+    if not order_details:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return order_details
 
 
 @router.get("/{user_id}/vieworderdetails", response_model=List[pmodels.orderInfo])

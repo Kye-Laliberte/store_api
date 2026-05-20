@@ -40,7 +40,7 @@ def create_user(email: str, password: str, db: Session = Depends(get_db)):
 @router.get("/{email}/RetrievebyEmail",response_model=users)
 def getUser(email:str,db:Session=Depends(get_db)):
     """testing not a valid use of pasword retreval"""
-    email=email.strip().lower()
+    email=email.strip()
     user=get_user_Email(email=email,db=db)
     if  user is None:
         raise HTTPException(status_code=404,detail="Email not found")
@@ -58,19 +58,23 @@ def getUsers(db: Session = Depends(get_db)):
             for u in out]
 
 # READ user by ID
-@router.get("/{user_id}",response_model=users)
+@router.get("/{user_id}",response_model=userOut)
 def readuser(user_id: int, db: Session = Depends(get_db)):
     """find a user by ther ID then returns there email id and created_at"""
     try:
         user=get_user(user_id=user_id,db=db)
-        if user is None:
-            raise HTTPException(status_code=404, detail="User not found")
-        if user.status != models.UserStatus.active:
-            raise HTTPException(status_code=400, detail=f"User user is {user.status} and not active")
-        
-        return user
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"error retreving user {e}")
+    
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.status != models.UserStatus.active:
+        raise HTTPException(status_code=400, detail=f"User user is {user.status} and not active")
+    cart=getcart(user_id=user.id,db=db)       
+    if cart:
+        return userOut(id= user.id, email= user.email, cart_id= cart.id)
+    return userOut(id = user.id, email= user.email)
+    
 
 @router.put("/status",response_model=user_in)
 def updateStatus(input:user_in,db:Session=Depends(get_db)):    
@@ -87,22 +91,18 @@ def updateStatus(input:user_in,db:Session=Depends(get_db)):
 def loginn(log: login, db: Session=Depends(get_db)):
     """returns the user_Id, and email and cart_id if the user has one active"""
     try:
-        
         user=get_user_Email(email=log.email,db=db)
-        #AND login.pasword==models.password_hash
-        
-        if user is None:
-            raise HTTPException(status_code=404, detail="user not found")
-        if not user.status:
-            raise HTTPException(status_code=400, detail=f"User is not curently active")
-        cart=getcart(user_id=user.id,db=db)
-       
-        if cart:
-            return userOut(id= user.id, email= user.email, cart_id= cart.id)
-        return userOut(id = user.id, email= user.email)
-        
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"{e}")
-    except KeyError as e:
-        raise HTTPException(status_code=404, detail="f{e}")
+        
+    if user is None:
+        raise HTTPException(status_code=404, detail="user not found")
+    if not user.status:
+        raise HTTPException(status_code=400, detail=f"User is not curently active")
+    cart=getcart(user_id=user.id,db=db)       
+    if cart:
+        return userOut(id= user.id, email= user.email, cart_id= cart.id)
+    return userOut(id = user.id, email= user.email)
+        
+    
     

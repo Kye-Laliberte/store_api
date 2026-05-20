@@ -1,38 +1,49 @@
-const BASE_URL = "http://localhost:8000";
-const user_URL = `${BASE_URL}/users`;
+import api from "./axios";
 
 export async function Emaillogin(email) {
   /** fetches the user info with email*/
-  const response = await fetch(`${user_URL}/login`, {
-    method: "POST",  
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email })
+  const response = await api.post(`/users/login`, {
+    email:email
   });
-  
-  if (!response.ok){
-    throw new Error("Faled to log in");
-  }
-  const data = await response.json();
+  try{
+  const data = response.data;
   if (data.cart_id==null)
     alert("a cart is needed before you can shop")
   return data;
+}catch(error){
+  console.error("Error logging in:", error);
+    throw error;
 }
-
+}  
 export async function getUser(user_id){
   /** retreves user info based on ther user_id*/
   try{
-  const response = await fetch(`${user_URL}/${user_id}`,{
-    method:"GET",
-    headers:{ "Content-Type": "application/json" },
-    });
+  const response = await api.get(
+    `/users/${user_id}`,
+    {user_id:user_id});
     
- if( !response.ok){
-      throw new Error("no user at id or not active");}
-      const data = await response.json();
-      return data;
+    if(response.data.UserStatus=='suspended')
+      console.assert("user is suspended")
+
+    return response.data;
+
 }catch(error){
   console.error("Error fetching user", error);
-        throw error;
+    throw error;
 }
 
+}
+
+export async function UserStatus(user_id,status='active') {
+  try{
+    const respon = await api.put(`/status`,
+    {user_id:user_id,
+      status:status 
+    });
+    return respon.data
+    
+  }catch(error){
+    console.error("failed to change user status",error);
+    throw RTCPeerConnectionIceErrorEvent;
+  }
 }
