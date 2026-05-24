@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS items(
     name TEXT NOT NULL UNIQUE,
     description TEXT DEFAULT "no description",
     quantity INTEGER NOT NULL CHECK(quantity>=0) DEFAULT 0,
-    price NUMERIC(10,2) NOT NULL CHECK(price >= 0)
+    price NUMERIC(10,2) NOT NULL CHECK(price > 0)
     
 );
 
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS cart_items (
 
 CREATE TABLE IF NOT EXISTS orders (
     id SERIAL PRIMARY KEY,
-    total_price NUMERIC(10,2) NOT NULL CHECK(total_price >= 0),
+    total_price NUMERIC(10,2) NOT NULL CHECK(total_price > 0),
     user_id INT NOT NULL REFERENCES users(id),
     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -41,6 +41,6 @@ CREATE TABLE IF NOT EXISTS order_items (
     item_id INTEGER NOT NULL REFERENCES  items(id) ON DELETE CASCADE,
     quantity int NOT NULL CHECK (quantity > 0),
     order_id INT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-    price_at_order NUMERIC(10,2) NOT NULL CHECK(price_at_order >= 0),
+    price_at_order NUMERIC(10,2) NOT NULL CHECK(price_at_order > 0),
     PRIMARY KEY (order_id, item_id)
 );
