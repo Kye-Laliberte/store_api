@@ -4,40 +4,43 @@ Backend,Python,FastAPI,SQLAlchemy ORM,Database,SQL (PostgreSQL)
 Other Tools Pydantic,Uvicorn
 
 SQL schema
-users table
-id INT Primary Key
-password_hash user pasword
-created_at date of creation
+users 
+  id INT (Primary Key)
+  password_hash user (pasword)
+  created_at (date of creation)
+  status VARCHAR(20) (defalts to 'active', sof-del to keep orders data for old users) 
 
-items table
-id Primary Key
-name item name
-description TEXT DEFAULT no description item description is no description by defalt
-quantity (inventory stock)
-price NUMERIC(10,2) item price
+  status has a Enum() that matches it so the words are flexeibe to change.
+
+items 
+  id Primary Key
+  name TEXT (name of item)
+  description TEXT (item description is no description by defalt)
+  quantity (inventory stock)
+  price NUMERIC(10,2) (price of item at time)
 
 carts
-id Primary Key
-user_id FK to carts(user_id)
-purchase_date date of cart creation
+  id Primary Key
+  user_id FK to carts(user_id)
+  cart_date (date of cart creation)
 
 cart_Items
-cart_id FK to Carts(id)
-item_id FK to items(id)
-quantity (amount requested by user) NOT NULL CHECK (quantity > 0)
-PRIMARY KEY (cart_id, item_id)/compound key(cart_id/item_id)
+  cart_id FK to Carts(id)
+  item_id FK to items(id)
+  quantity (amount requested by user) NOT NULL CHECK (quantity > 0)
+  PRIMARY KEY (cart_id, item_id)/compound key(cart_id/item_id)
 
 orders 
     id PRIMARY KEY,
-    total_price NUMERIC(10,2) total price of all order_items in a order,
+    total_price NUMERIC(10,2) (total price of all order_items in a order >0)
     user_id FK to users(id),
-    order_date DEFAULT CURRENT_TIMESTAMP time stamp of order
+    order_date DEFAULT CURRENT_TIMESTAMP (time stamp of order)
 
 order_items 
     item_id FK to items(id) ON DELETE CASCADE, is deleted if item is deleated may change
-    quantity number of item_id that where ordered,
+    quantity (number of item_id ordered),
     order_id FK to orders(id) ON DELETE CASCADE, 
-    price_at_order NUMERIC(10,2), price of item at the order 
+    price_at_order NUMERIC(10,2), (price of item at the order) 
     PRIMARY KEY (order_id, item_id) 
 
 
@@ -70,22 +73,20 @@ Add item to cart
 Remove item from cart removes a CartItem from Cart
   DELETE /cart/{user_id}/removeItem,response_model=create_cartItem
 
-
 Order
 createOrder
   POST "/orders/{user_id}/createorder"
   creates a record of the item in a cart and puts them in a (order=> orderitems) format
   also removes the items from the cart.user_id and item-cartitem.quantity will be set to item.quantity
   will fail if CartItem.quantity > item.quantity
-
 viewOrderDetails
   GET"/orders/{user_id}/vieworderdetails"
   shows all detals of past orders incluting item infermation and price at order time returns a list of OrderItems with item detalies
-
 getAllOrders
   GET "/orders/getallorders"
   returns all orders in the database, for testing purposes only
   may use in admin
+
 
 /(psycopg_models.py and psyc_order for order and orderitem)
 psycopg models are in thes files.
@@ -93,4 +94,4 @@ psycopg models are in thes files.
 sqlAmodels and (ordermodels for orders and orderItems)
 this is where ORM.SQLAlchemy models are created.
 
-Users
+
