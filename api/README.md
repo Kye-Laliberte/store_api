@@ -3,54 +3,16 @@ Tech Stack
 Backend,Python,FastAPI,SQLAlchemy ORM,Database,SQL (PostgreSQL)
 Other Tools Pydantic,Uvicorn
 
-SQL schema
-users 
-  id INT (Primary Key)
-  password_hash user (pasword)
-  created_at (date of creation)
-  status VARCHAR(20) (defalts to 'active', sof-del to keep orders data for old users) 
-
-  status has a Enum() that matches it so the words are flexeibe to change.
-
-items 
-  id Primary Key
-  name TEXT (name of item)
-  description TEXT (item description is no description by defalt)
-  quantity (inventory stock)
-  price NUMERIC(10,2) (price of item at time)
-
-carts
-  id Primary Key
-  user_id FK to carts(user_id)
-  cart_date (date of cart creation)
-
-cart_Items
-  cart_id FK to Carts(id)
-  item_id FK to items(id)
-  quantity (amount requested by user) NOT NULL CHECK (quantity > 0)
-  PRIMARY KEY (cart_id, item_id)/compound key(cart_id/item_id)
-
-orders 
-    id PRIMARY KEY,
-    total_price NUMERIC(10,2) (total price of all order_items in a order >0)
-    user_id FK to users(id),
-    order_date DEFAULT CURRENT_TIMESTAMP (time stamp of order)
-
-order_items 
-    item_id FK to items(id) ON DELETE CASCADE, is deleted if item is deleated may change
-    quantity (number of item_id ordered),
-    order_id FK to orders(id) ON DELETE CASCADE, 
-    price_at_order NUMERIC(10,2), (price of item at the order) 
-    PRIMARY KEY (order_id, item_id) 
-
 
 Design notes:
 
 items.quantity represents inventory stock.  cart_items.quantity represents how many units a user wants to purchase.
+if a user is not active th UI can call them with the get user with ID but not email.
 
 if items.quantity is ever >  cart_items.quantity there is a http to prevent over selling
 /routers
 API Endpoints
+
 Items
 get all items in ther sql omr models
 GET (/items/get_all)
@@ -86,6 +48,14 @@ getAllOrders
   GET "/orders/getallorders"
   returns all orders in the database, for testing purposes only
   may use in admin
+
+
+services/ primarly helper functons and serves level code
+
+services/item_s
+primarly focas on items and the oreder preosses.
+where cart_services focas is on identifying usersers and carts.
+
 
 
 /(psycopg_models.py and psyc_order for order and orderitem)

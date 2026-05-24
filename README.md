@@ -24,6 +24,50 @@ Checkout Logic
 Validates cart items against available inventory, then deducts purchased quantities from stock
 Removes items from cart after Order. then it creates the order->orderItem record so past orders can be seen.
 
+Order System 
+this takes the Cartitems of a cart_id and place tham into a parallel structer (order orderitems.order_id) to act as a record.
+users are now soft del so if a user leaves the data will stay all long as needed. 
+
+SQL schema
+users 
+  id INT (Primary Key)
+  password_hash user (pasword)
+  created_at (date of creation)
+  status VARCHAR(20) (defalts to 'active', sof-del to keep orders data for old users) 
+
+  status has a Enum() that matches it so the words are flexeibe to change.
+
+items 
+  id Primary Key
+  name TEXT (name of item)
+  description TEXT (item description is no description by defalt)
+  quantity (inventory stock)
+  price NUMERIC(10,2) (price of item at time)
+
+carts
+  id Primary Key
+  user_id FK to carts(user_id)
+  cart_date (date of cart creation)
+
+cart_Items
+  cart_id FK to Carts(id)
+  item_id FK to items(id)
+  quantity (amount requested by user) NOT NULL CHECK (quantity > 0)
+  PRIMARY KEY (cart_id, item_id)/compound key(cart_id/item_id)
+
+orders 
+    id PRIMARY KEY,
+    total_price NUMERIC(10,2) (total price of all order_items in a order >0)
+    user_id FK to users(id),
+    order_date DEFAULT CURRENT_TIMESTAMP (time stamp of order)
+
+order_items 
+    item_id FK to items(id) ON DELETE CASCADE, is deleted if item is deleated may change
+    quantity (number of item_id ordered),
+    order_id FK to orders(id) ON DELETE CASCADE, 
+    price_at_order NUMERIC(10,2), (price of item at the order) 
+    PRIMARY KEY (order_id, item_id) 
+
 Error Handling
 
 API returns structured error responses for cases such as:
@@ -50,10 +94,11 @@ api/database.py   #db conecton folder
 api/psycoq_models pydantic models
 
 frontend/
-src/
-components/
-api/
-APP.jsx
+src/components/  jsx React componetss
+src/pages/ the pages.
+src/api/ Javascript that fethes from the API
+src/APP.jsx/ main APP
+src/app.css/ UI and button formating  
 
 BackEnd setup
 cd api
@@ -75,7 +120,7 @@ API docs should be available at http://127.0.0.1:8000/docs for testing
 Frontend (React + Vite):
 open shell power termonal 
  cd frontend 
- npm install if needed 
+ (npm and axios) install if needed 
  npm run dev
 Frontend runs on:http://localhost:5173
 
@@ -83,52 +128,9 @@ How the System Works
 React UI → FastAPI API → Database
 React fetches data using async/await
 FastAPI handles validation and business logic
+the service level now handles user, cart and some order validation/logic. 
 Database stores users, items, carts, and orders
 
-User Session (Important)
-This project uses a simple session system:
-User ID is stored in localStorage
-Set via:
-Manual input
-Email login widget or user_id
-so you must set a user ID 
-
-SQL schema
-Users table
-id INT Primary Key
-password_hash user pasword
-created_at date of creation
-
-Items table
-id Primary Key
-name item name
-description DEFAULT no description item description is no description by defalt
-quantity (inventory stock)
-price NUMERIC(10,2) item price
-
-Carts
-id Primary Key
-user_id FK to users(id)
-purchase_date date this id now by defalt and
-
-Cart_Items
-cart_id FK to Carts
-item_id FK to items
-quantity (amount requested by user) NOT NULL CHECK (quantity > 0)
-PRIMARY KEY (cart_id, item_id)/compound key(cart_id/item_id)
-
-orders 
-id PRIMARY KEY,
-total_price NUMERIC(10,2) total price of all order_items in a order,
-user_id FK to users(id),
-order_date DEFAULT CURRENT_TIMESTAMP time stamp of order
-
-order_items 
-item_id FK to items(id) ON DELETE CASCADE, is deleted if item is deleated may change
-quantity number of item_id that where ordered,
-order_id FK to orders(id) ON DELETE CASCADE, 
-price_at_order NUMERIC(10,2), price of item at the order 
-PRIMARY KEY (order_id, item_id) 
 
 
 Design notes:
@@ -184,22 +186,11 @@ sqlAmodels and (ordermodels for orders and orderItems)
 this is where ORM.SQLAlchemy models are created.
 
 
-frontend/
-APP.jsx
 
-frontend/api/ javascript fetching for difrent JONSON form the fatAPI
-CartClient.js(addToCart(),viewCart(), addCart())
-itemClient.js(getItem(),getAllItems())
-orderClient.js(None)
-userClient.js(Emaillogin())
 
-frontend/componets/
-(AdminPage.jxs,OrderPage.jsx,itemPage.jsx) are not done yet so nothing more than words
-CartPage.jsx
-  a basic set up for displaying all avalibal items and adding them to your cart with a nodes frame work
-UserWidgit.jsx
- a basic log_in system to get the user_id.
- !WARNING log_in is set up with a localhost 
+
+front-end
+frontend/README for more info on the UI and the React structer
 
 
 SET UP
