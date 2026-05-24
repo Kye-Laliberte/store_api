@@ -19,11 +19,19 @@ orderClient.js(None)
 userClient.js(Emaillogin())
 
 frontend/componets/
-(AdminPage.jxs,OrderPage.jsx,itemPage.jsx) Are not done yet so nothing more than words
+cart_componets.jsx
+this is where CartPage prints the items and the add to cart interface
 
-CartPage.jsx
-  a basic set up for displaying all avalibal items and adding them to your cart with a nodes frame work
+cart_viewer.jsx
+this is the 
 
 UserWidgit.jsx 
-Is a basic log_in system to get the user_id in LocalStorage.
-you can do it with email, or ID !WARNING direct ID login will not block you if ID douesnt exist only email will
+you curently log in with email, or ID
+now works on refresh with CartPage 
+
+
+frontend/pages/
+CartPage.jsx
+  this is a page in a nodes frame work where you see a list of all the avaliable items, and the users cart.
+  so you can add thouse items to the cart.
+  it has a refresh so infromaton stays up to date 
