@@ -8,7 +8,7 @@ from datetime import datetime
 
 class ordersout(BaseModel):
     id: int
-    total_price: float = Field(...,ge=0)
+    total_price: float = Field(...,gt=0)
     user_id: int
     order_date: Optional[datetime] = Field(default_factory=datetime.utcnow)
     number_of_items: int = Field(...,gt=0)
@@ -17,7 +17,7 @@ class ordersout(BaseModel):
 
 class orders(BaseModel):
     id: int
-    total_price: float = Field(...,ge=0)
+    total_price: float = Field(...,gt=0)
     user_id: int
     order_date: Optional[datetime] = Field(default_factory=datetime.utcnow)
 
