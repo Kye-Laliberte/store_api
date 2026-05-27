@@ -2,22 +2,21 @@ import api from '/src/api/axios';
 import '/src/App.css';
 import { useState, useEffect } from "react";
 import { addToCart,viewCart } from '/src/api/CartClient';
+import {order_Cart} from '/src/api/orderClient'
 import { useNavigate} from 'react-router-dom';
 
 
- export default function CartViewer({cart,id}){
-    console.log("cart",cart)
-    if(id===null){
+ export default function CartViewer({cart,user}){
+    if(user.id==undefined){
+         return(<p>not loged in</p>);
+            }
+        console.log("USER",user.cart_id)
+    if(user.cart_id==null){
             return(<div>
                 <h3>no cart</h3>
             </div>);
            }
-    if(!id){
-         return;
-            }
-
-           
-           
+    
     return(
         <div className='cart-window'>
             <h3>Your Cart</h3>
@@ -29,6 +28,8 @@ import { useNavigate} from 'react-router-dom';
                     key={item.item_id}
                     item={item}/>
                 ))
+
+                
             
             ) : ( 
                 <p>Cart empty</p>
