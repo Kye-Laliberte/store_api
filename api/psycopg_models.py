@@ -60,6 +60,7 @@ class userOut(BaseModel):
       email:str
       cart_id:Optional[int]=None
       id: int
+      user_status:Optional[UserStatus] = UserStatus.active # this is a temporay format. 
 
 
 class carts(BaseModel):

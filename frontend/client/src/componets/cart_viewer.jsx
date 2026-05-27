@@ -6,7 +6,7 @@ import {order_Cart} from '/src/api/orderClient'
 import { useNavigate} from 'react-router-dom';
 
 
- export default function CartViewer({cart,user}){
+ export default function CartViewer({cart,user,ref}){
     if(user.id==undefined){
          return(<p>not loged in</p>);
             }
@@ -18,9 +18,17 @@ import { useNavigate} from 'react-router-dom';
            }
     
     return(
+            
         <div className='cart-window'>
-            <h3>Your Cart</h3>
+            <h3>Your Cart</h3>       
            
+
+            <button
+           onClick={()=>order_Cart( user={user},ref={ref})}
+           className='button2'
+           disabled={user.user_status != 'active'}>
+            order cart
+           </button>
 
             { Array.isArray(cart) && cart.length>0 ? ( 
                 cart.map( (item) => (
@@ -29,7 +37,7 @@ import { useNavigate} from 'react-router-dom';
                     item={item}/>
                 ))
 
-                
+            
             
             ) : ( 
                 <p>Cart empty</p>
