@@ -47,14 +47,20 @@ transition: background 0.2s ease, transform 0.1s ease;
   cursor: not-allowed;
 }
 
-.item-button{
-  width: 90%;
-  background-color: rgba(0, 247, 255, 0.562);
-  color: rgb(0, 0, 0);
-  padding:5px;
+.order-button{
+  width: 50%;
+  height: 50%;
+  background-color: #11b9cf;
+  color: black;
+  padding:10px;
   border: none;
   cursor: pointer;
 transition: background 0.2s ease, transform 0.1s ease;
+}
+.order-button:disabled{
+  background: #aaa;
+  padding: auto;
+  cursor: not-allowed;
 }
 
 .button2{
