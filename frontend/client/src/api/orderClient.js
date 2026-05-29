@@ -1,12 +1,12 @@
 import api from "/src/api/axios"
 
 
-export async function order_Cart({user, ref}) {
+export async function order_Cart(user) {
     try{
-        console.log(user)
+       
     const out = await api.post(`/orders/${user.id}/orderCart`);
         return out.data;
-        ref(user)
+        
     }catch(error){
         console.error("error ording your cart",error);
         throw error;
