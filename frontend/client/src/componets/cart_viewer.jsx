@@ -21,15 +21,9 @@ import CartWindow from './orderWidget';
     return(
             
         <div className='cart-window'>
-            <h3>Your Cart</h3>       
-           
-
-            <button
-           onClick={()=>order_Cart( user={user},ref={ref})}
-           className='button2'
-           disabled={user.user_status != 'active'}>
-            order cart
-           </button>
+                   
+                       
+        <CartWindow user={user} refresh={refresh}/>
 
             { Array.isArray(cart) && cart.length>0 ? ( 
                 cart.map( (item) => (
