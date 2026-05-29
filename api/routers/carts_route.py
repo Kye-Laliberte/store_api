@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from api.database import get_db
 import api.models.sqlAmodels as models
 from typing import List, Optional
-from api.psycopg_models import CartItemsOut,carts,create_cartItem,createCart,UserStatus
+from api.psycopg_models import CartItemsOut,carts,create_cartItem,createCart,UserStatus,userOut
 from datetime import datetime
 from api.services.cart_services import filter_user, getcart, get_user, newcart
 router = APIRouter(prefix="/carts", tags=["carts"])
@@ -142,8 +142,8 @@ def newCart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=500, detail="An error occurred while creating a new cart")
     
-@router.delete("/{user_id}/removeitem",response_model=create_cartItem)
-def leaveitem(user_id:int,item_id:int,db:Session=Depends(get_db)):
+@router.delete("/{cart_id}/removeitem/{item_id}",response_model=create_cartItem)
+def leaveitem(item_id:int,cart_id:int,db:Session=Depends(get_db)):
     """delete a cartItem that  relats to carts.id== cartitems.cart_id belongs to carts.user_id
     returns item_id quantity of cartitem"""
     cart=getcart(user_id,db)
