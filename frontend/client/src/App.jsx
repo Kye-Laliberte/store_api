@@ -1,16 +1,13 @@
-
-
 import '/src/App.css';
 import {  useState, useEffect } from 'react';
 
 import { Routes, Route, useNavigate} from 'react-router-dom';
  
 import CartPage from '/src/pages/CartPage';
- 
 import UserWidget from'/src/componets/UserWidget';
 
 function  App() {
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState({id:null,email:null,cart_id:null,UserStatus:'inactive'});
   const [incart, setCart]= useState({});
   const nav = useNavigate();
   return(
