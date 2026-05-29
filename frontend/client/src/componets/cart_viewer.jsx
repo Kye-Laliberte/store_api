@@ -1,7 +1,7 @@
 import api from '/src/api/axios';
 import '/src/App.css';
 import { useState, useEffect } from "react";
-import { addToCart,viewCart } from '/src/api/CartClient';
+import { addToCart,viewCart,removeFromCart } from '/src/api/CartClient';
 import {order_Cart} from '/src/api/orderClient'
 import { useNavigate} from 'react-router-dom';
 import CartWindow from './orderWidget';
@@ -36,6 +36,12 @@ import CartWindow from './orderWidget';
             )}
         </div>
     );
+
+    async function remove_item({item,user}){
+        await removeFromCart(user,item.item_id)
+        
+        await refresh(user)
+    }
     
     function CartItems({item}){
     return(<div className='cart-items'>
@@ -43,6 +49,9 @@ import CartWindow from './orderWidget';
             <p>{item.description}</p>
             <p>{item.quantity} in Cart </p>
             <p>total cost:{item.totalprice}</p>
+            <button className='button2' disabled={!item.item_id} 
+            onClick={ ()=> remove_item({item:item,user:user},refresh)}>leave item</button>
+            
     </div>)
 }
 
