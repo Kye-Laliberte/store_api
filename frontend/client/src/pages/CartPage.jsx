@@ -22,22 +22,27 @@ const [quantities, setQuantities] = useState({});
 
 async function refresh(User) {
     try{
-        const itemsData=await getAllItems();
-        console.log("USER",User)
+        const itemsData= await getAllItems();        
         setItems(itemsData);
         console.log("ITEMS",itemsData)
-        if(User.id)
-        {
-             const users= await getUser(User.id)
+        console.log("USER",User)
+        if(User.id??0)
+            {
+             const users = await getUser(User.id)
                 setUser(users)
-        if (!users.cart_id){
-           alert("no cart");
-           setCart(false)     
+                
+
+            if (users.cart_id){
+                const cartData = await viewCart(users.id);
+                setCart(cartData);
+                console.log("cartItem",cartData) 
+            }
+            else{
+                alert("no cart");
+                setCart(null) 
+            } 
         }else{
-        const cartData = await viewCart(User.id);
-        setCart(cartData);
-        console.log("cartItem",cartData)
-        } 
+            alert("no user_id")
         }
          
     }catch (error) {
