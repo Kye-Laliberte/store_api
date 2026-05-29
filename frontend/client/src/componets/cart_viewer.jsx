@@ -4,13 +4,14 @@ import { useState, useEffect } from "react";
 import { addToCart,viewCart } from '/src/api/CartClient';
 import {order_Cart} from '/src/api/orderClient'
 import { useNavigate} from 'react-router-dom';
+import CartWindow from './orderWidget';
 
-
- export default function CartViewer({cart,user,ref}){
+ export default function CartViewer({cart,user,refresh}){
+    
+   
     if(user.id==undefined){
          return(<p>not loged in</p>);
             }
-        console.log("USER",user.cart_id)
     if(user.cart_id==null){
             return(<div>
                 <h3>no cart</h3>
@@ -36,12 +37,8 @@ import { useNavigate} from 'react-router-dom';
                     key={item.item_id}
                     item={item}/>
                 ))
-
-            
-            
             ) : ( 
                 <p>Cart empty</p>
-                
             )}
         </div>
     );
