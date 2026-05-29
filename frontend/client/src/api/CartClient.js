@@ -21,7 +21,7 @@ export async function addToCart(user_id,item_id,quantity) {
 export async function viewCart(user_id) {
     /**not tested should return a list[] of Items object in user_ids cart*/
     try{
-        const respon= await api.get(
+        const respon = await api.get(
             `/carts/${user_id}/viewcart`,);
        
     return respon.data;
