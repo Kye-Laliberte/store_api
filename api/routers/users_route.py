@@ -100,7 +100,7 @@ def loginn(log: login, db: Session=Depends(get_db)):
         raise HTTPException(status_code=400, detail=f"User is not curently active")
     cart=getcart(user_id=user.id,db=db)       
     if cart:
-        return userOut(id= user.id, email= user.email, cart_id= cart.id)
+        return userOut(id= user.id, email= user.email, cart_id= cart.id, user_status=user.status)
     return userOut(id = user.id, email= user.email)
         
     
