@@ -146,13 +146,9 @@ def newCart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
 def leaveitem(item_id:int,cart_id:int,db:Session=Depends(get_db)):
     """delete a cartItem that  relats to carts.id== cartitems.cart_id belongs to carts.user_id
     returns item_id quantity of cartitem"""
-    cart=getcart(user_id,db)
-    
-    if not cart:
-        raise HTTPException(status_code=404,detail=" Cart not found")
     
     cartitem=(db.query(models.CartItem)
-              .filter(cart.id==models.CartItem.cart_id,item_id==models.CartItem.item_id).first())
+              .filter(cart_id==models.CartItem.cart_id,item_id==models.CartItem.item_id).first())
     if not cartitem:
         raise HTTPException(status_code=404, detail="Item not in cart.")
     
@@ -162,7 +158,7 @@ def leaveitem(item_id:int,cart_id:int,db:Session=Depends(get_db)):
         item=create_cartItem(item_id=cartitem.item_id,quantity=cartitem.quantity)
         return item
     except Exception as e:
-        logging.error(f"Error occurred while querying cart item for user {user_id} and item {item_id}: {e}")
+        logging.error(f"Error occurred while querying cart item for cart {cart_id} and item {item_id}: {e}")
         db.rollback()
         raise HTTPException(status_code=500, detail="An error occurred while removing item from cart")
     
