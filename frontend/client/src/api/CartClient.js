@@ -21,7 +21,7 @@ export async function addToCart(user_id,item_id,quantity) {
 export async function viewCart(user_id) {
     /**not tested should return a list[] of Items object in user_ids cart*/
     try{
-        const respon= await api.get(
+        const respon = await api.get(
             `/carts/${user_id}/viewcart`,);
        
     return respon.data;
@@ -49,9 +49,10 @@ export async function new_Cart(user_id){
     }
 } 
 
-export async function removeFromCart(user_id,item_id){
+export async function removeFromCart(user,item_id){
     try{
-        const response=await api.delete(`/carts/${user_id}/removeitem`,);
+        console.log(user.cart_id,item_id)
+        const response = await api.delete(`/carts/${user.cart_id}/removeitem/${item_id}`);
         
         if(response.status !== 200){
             throw new Error(`Failed to remove item from cart: ${response.statusText}`);

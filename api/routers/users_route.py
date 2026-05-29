@@ -68,11 +68,10 @@ def readuser(user_id: int, db: Session = Depends(get_db)):
     
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    if user.status != models.UserStatus.active:
-        raise HTTPException(status_code=400, detail=f"User user is {user.status} and not active")
+    
     cart=getcart(user_id=user.id,db=db)       
     if cart:
-        return userOut(id= user.id, email= user.email, cart_id= cart.id)
+        return userOut(id= user.id, email= user.email, cart_id= cart.id, user_status=user.status)
     return userOut(id = user.id, email= user.email)
     
 
@@ -101,7 +100,7 @@ def loginn(log: login, db: Session=Depends(get_db)):
         raise HTTPException(status_code=400, detail=f"User is not curently active")
     cart=getcart(user_id=user.id,db=db)       
     if cart:
-        return userOut(id= user.id, email= user.email, cart_id= cart.id)
+        return userOut(id= user.id, email= user.email, cart_id= cart.id, user_status=user.status)
     return userOut(id = user.id, email= user.email)
         
     

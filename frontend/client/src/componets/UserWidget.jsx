@@ -3,7 +3,7 @@ import {Emaillogin,getUser} from '/src/api/userClient';
 import api from '/src/api/axios';
 import '/src/App.css';
 
-export default function UserWidget({user,setUser,ref}) {
+export default function UserWidget({user,setUser,refresh}) {
 /**a basic log_in system to get the user_id.
  * you can do it with email, or user_id
  * B aware this is a Local storage set up so you have to put ina id or email firt.
@@ -22,7 +22,7 @@ const [ email, setEmail] = useState("");
       }
       
       console.log("data",data) 
-      await ref(data);  
+      await refresh(data);  
       console.log(user) 
       
     }
@@ -37,7 +37,7 @@ const [ email, setEmail] = useState("");
       }
         
       alert(`User set to ${data.id}`);
-      ref(data);
+      refresh(data);
     }catch (err) {
       console.error(err);
       alert("Login failed");    

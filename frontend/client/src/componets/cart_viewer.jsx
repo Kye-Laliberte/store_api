@@ -1,27 +1,29 @@
 import api from '/src/api/axios';
 import '/src/App.css';
 import { useState, useEffect } from "react";
-import { addToCart,viewCart } from '/src/api/CartClient';
+import { addToCart,viewCart,removeFromCart } from '/src/api/CartClient';
+import {order_Cart} from '/src/api/orderClient'
 import { useNavigate} from 'react-router-dom';
+import CartWindow from './orderWidget';
 
-
- export default function CartViewer({cart,id}){
-    console.log("cart",cart)
-    if(id===null){
+ export default function CartViewer({cart,user,refresh}){
+    
+   
+    if(user.id==undefined){
+         return(<p>not loged in</p>);
+            }
+    if(user.cart_id==null){
             return(<div>
                 <h3>no cart</h3>
             </div>);
            }
-    if(!id){
-         return;
-            }
-
-           
-           
+    
     return(
+            
         <div className='cart-window'>
-            <h3>Your Cart</h3>
-           
+                   
+                       
+        <CartWindow user={user} refresh={refresh}/>
 
             { Array.isArray(cart) && cart.length>0 ? ( 
                 cart.map( (item) => (
@@ -29,13 +31,17 @@ import { useNavigate} from 'react-router-dom';
                     key={item.item_id}
                     item={item}/>
                 ))
-            
             ) : ( 
                 <p>Cart empty</p>
-                
             )}
         </div>
     );
+
+    async function remove_item({item,user}){
+        await removeFromCart(user,item.item_id)
+        
+        await refresh(user)
+    }
     
     function CartItems({item}){
     return(<div className='cart-items'>
@@ -43,6 +49,9 @@ import { useNavigate} from 'react-router-dom';
             <p>{item.description}</p>
             <p>{item.quantity} in Cart </p>
             <p>total cost:{item.totalprice}</p>
+            <button className='button2' disabled={!item.item_id} 
+            onClick={ ()=> remove_item({item:item,user:user},refresh)}>leave item</button>
+            
     </div>)
 }
 

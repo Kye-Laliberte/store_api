@@ -60,6 +60,7 @@ class userOut(BaseModel):
       email:str
       cart_id:Optional[int]=None
       id: int
+      user_status:UserStatus 
 
 
 class carts(BaseModel):
