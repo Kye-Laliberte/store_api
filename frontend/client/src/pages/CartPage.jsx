@@ -99,23 +99,25 @@ function handleQuantityChange(itemId,value){
 
          <p>sign in</p>
         <UserWidget
-        key={2}
+        
         user={user}
         setUser={setUser}
-        ref={refresh}
+        refresh={refresh}
         onOpenCart ={()=> setShowCart(true)}
         />
         
         <ItemList
+        key={2}
         items={items}
         user={user}
         quantities={quantities}
         onQuantityChange={handleQuantityChange}
         onAddToCart={handleAddToCart}/>
         <CartViewer
+        key={1}
         user={user}
         cart={incart}
-        ref={refresh}/>
+        refresh={refresh}/>
       </div>
     )
 
