@@ -2,7 +2,6 @@ import { cache} from "react";
 import api from "./axios";
 
 
-
 export async function addToCart(user_id,item_id,quantity) {
     /**  adds quantity of item_id to user_id cart and returns the cartItem info*/
     try{
