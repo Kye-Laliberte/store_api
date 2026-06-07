@@ -27,7 +27,7 @@ class Serviceitems:
         
         prepared_cart_items = (self.db.query(models.CartItem, models.Item)
                                             .join(models.Item, models.CartItem.item_id == models.Item.id)
-                                            .filter(models.CartItem.cart_id == cart_id and models.Item.quantity > 0).all()
+                                            .filter(models.CartItem.cart_id == cart_id, models.Item.quantity > 0).all()
         )
 
         if not prepared_cart_items:
@@ -36,7 +36,7 @@ class Serviceitems:
     
     def get_active_items(self, item_id:int):
         """get active item by id, if item is not found or not in stock, return None"""
-        out=self.db.query(models.Item).filter(models.Item.id==item_id and models.Item.quantity>0).first()
+        out=self.db.query(models.Item).filter(models.Item.id == item_id, models.Item.quantity > 0).first()
         if not out:
             return None
         return out
