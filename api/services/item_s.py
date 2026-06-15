@@ -17,6 +17,55 @@ class error(HTTPException):
         super().__init__(status_code=status_code, detail=detail)
 
 
+
+class OrderProcessing():
+    """Class to handle order processing logic, including stock checks, order creation, and cart management."""
+    def __init__(self, db: Session,user_id:int ):
+        self.db = db
+        self.user_id = user_id
+
+    def pre_order_checks(self, cart_items: list[tuple[models.CartItem, models.Item]]):
+        """perform pre-order checks such as stock availability and remove unavailable items from the cart"""
+        if not cart_items:
+            return []    
+        
+        try:
+            self.db.begin()  # start a transaction
+            #self.db.execute(text("DELETE FROM cart_items USING items WHERE cart_items.item_id = items.id AND cart_items.cart_id =:cart_id AND items.quantity <=0")).bindparams(cart_id=cart_items[0][0].cart_id)
+            out_of_stock=self.db.query(models.Item.id).filter(models.Item.quantity <= 0).subquery(returned_columns=[models.Item.id])
+            if not out_of_stock:
+                return cart_items
+            removed_items = self.db.query(models.CartItem).filter(models.CartItem.cart_id == cart_items[0][0].cart_id, models.Item.quantity <= 0).delete(synchronize_session=False)# 
+       
+            logging.info(f"Removed {removed_items} unavailable items from cart {cart_items[0][0].cart_id}")
+    
+            self.db.commit()
+            self.db.refresh(cart_items)#refresh the cart items to reflect the changes after removing unavailable items  
+        except Exception as e:
+            self.db.rollback()
+            raise error(status_code=500, detail="An error occurred while processing the order")
+        
+        return cart_items
+    
+    def create_order(self, cart_items: list[tuple[models.CartItem, models.Item]]):
+        """create the order and order items in the database, return the created order and order items info (order_id,item_id):int ,quantity:int, price_at_order:float"""
+
+    def update_stock(self, cart_items: list[tuple[models.CartItem, models.Item]]):
+        """update stock quantity for each item in the cart after order is created"""
+    
+    def clear_cart(self):
+        """clear cart items after order is created"""
+
+    def process_order(self, cart_items: list[tuple[models.CartItem, models.Item]]):
+        """main method to process an order, it calls the pre-order checks and create_order to creat order and order items,
+        then updates stock quantities and clears the cart, it returns the created order and order items info (order_id,item_id):int ,quantity:int, price_at_order:float"""
+        prepared_cart_items=self.pre_order_checks(cart_items)
+        if not prepared_cart_items:
+            raise error(status_code=400, detail="no items in cart to order")
+        new_order=self.create_order(prepared_cart_items)
+
+
+
 class Serviceitems:
 
     def __init__(self, db: Session):
