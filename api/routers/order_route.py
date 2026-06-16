@@ -11,7 +11,7 @@ from api.psycopg_models import users,userOut, UserStatus
 from datetime import datetime
 import api.models.psyc_order as pmodels
 from api.services.cart_services import getcart
-from api.services.item_s import OrderProcessing, Serviceitems, error
+from api.services.item_s import OrderProcessing, error
 router = APIRouter(prefix="/orders", tags=["orders"])
 
 #add item to cart
