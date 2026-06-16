@@ -11,7 +11,7 @@ from api.psycopg_models import users,userOut, UserStatus
 from datetime import datetime
 import api.models.psyc_order as pmodels
 from api.services.cart_services import getcart
-from api.services.item_s import Serviceitems, error
+from api.services.item_s import OrderProcessing, Serviceitems, error
 router = APIRouter(prefix="/orders", tags=["orders"])
 
 #add item to cart
@@ -100,30 +100,33 @@ def orderCart(user_id:int, db: Session=Depends(get_db)):
     """orders all Items in a user's cart, creates an order and orderitems, updates stock quantity, and clears the cart
     returns the order info (order_id,user_id):int ,total_price:float  
      order_date:DateTime,  number_of_items:Int."""
-    service=Serviceitems(db)
+    
+    
+    
     cart=getcart(user_id=user_id,db=db)
+    
     if not cart:
         raise HTTPException(status_code=404, detail="Cart not found for this user")
     if cart.status != UserStatus.active:
         raise HTTPException(status_code=400, detail="user is not active")
-    
-    cartItems=service.prepare_cart_items(cart_id=cart.id)
-    if not cartItems:
+    Service=OrderProcessing(db=db, user_id=user_id,cart_id=cart.id)
+    prepared_cart_items=Service.prepare_cart_items()
+    if not prepared_cart_items:
         raise HTTPException(status_code=204, detail="No items in cart to order")
-    try:   
-        service.stock_check(cartItems)
-        new_order=service.create_order(user_id, cart_items=cartItems)
-        service.create_orderItems(order_id=new_order.id, cart_items=cartItems)
-        service.process_order(order_id=new_order.id, cart_items=cartItems)
-        service.clear_cart(cart_id=cart.id)
-
+    try:
+        Service.pre_order_checks(prepared_cart_items)
+        new_order = Service.create_order(prepared_cart_items)
+        Service.update_stock(prepared_cart_items)
+        Service.clear_cart()
+        
+        
         db.commit()# commit the order.
         db.refresh(new_order)  # refresh to get the order date and total price after commit
         # clear cart items after order is created
     except Exception as e:
         logging.error(f"Error creating order for user {user_id}: {e}")
         db.rollback()
-        raise HTTPException(status_code=500, detail="An error occurred while creating the order")
+        raise HTTPException(status_code=500, detail=f"An error occurred while creating the order {e}")
     
     #service.process_order(new_order.order_items.all())
     # update stock quantity for each item in the cart after order is created
