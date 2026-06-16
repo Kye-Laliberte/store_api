@@ -56,6 +56,14 @@ class OrderProcessing:
     
     def clear_cart(self):
         """clear cart items after order is created"""
+        try:    
+            self.db.query(models.CartItem).filter(models.CartItem.cart_id == self.cart_id).delete()
+            self.db.commit() # this commits the deletion of the cart items and the update of the stock quantities
+            return True
+        except Exception as e:
+            logging.error(f"Error clearing cart {self.cart_id}: {e}")
+            self.db.rollback()
+            raise error(status_code=500, detail="An error occurred while clearing the cart")
 
     def process_order(self, cart_items: list[tuple[models.CartItem, models.Item]]):
         """main method to process an order, it calls the pre-order checks and create_order to creat order and order items,
