@@ -18,9 +18,9 @@ class error(HTTPException):
 
 
 
-class OrderProcessing():
+class OrderProcessing:
     """Class to handle order processing logic, including stock checks, order creation, and cart management."""
-    def __init__(self, db: Session,user_id:int ):
+    def __init__(self, db: Session,user_id:int,cart_id:int):
         self.db = db
         self.user_id = user_id
 
