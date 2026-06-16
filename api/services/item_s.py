@@ -34,26 +34,18 @@ class OrderProcessing:
         
         return prepared_cart_items
     def pre_order_checks(self, cart_items: list[tuple[models.CartItem, models.Item]]):
-        """perform pre-order checks such as stock availability and remove unavailable items from the cart"""
+        """perform pre-order checks such as stock availability and  if cart_items exceed the stock
+        for right now it returns the input and HTTP"""
         if not cart_items:
             return []    
+            
+        invalid_items = (self.db.query(models.CartItem, models.Item)
+        .join(models.Item,models.CartItem.item_id == models.Item.id
+        ).filter(models.CartItem.cart_id == self.cart_id,
+        models.CartItem.quantity > models.Item.quantity).all())
         
-        try:
-            self.db.begin()  # start a transaction
-            #self.db.execute(text("DELETE FROM cart_items USING items WHERE cart_items.item_id = items.id AND cart_items.cart_id =:cart_id AND items.quantity <=0")).bindparams(cart_id=cart_items[0][0].cart_id)
-            out_of_stock=self.db.query(models.Item.id).filter(models.Item.quantity <= 0).subquery(returned_columns=[models.Item.id])
-            if not out_of_stock:
-                return cart_items
-            removed_items = self.db.query(models.CartItem).filter(models.CartItem.cart_id == cart_items[0][0].cart_id, models.Item.quantity <= 0).delete(synchronize_session=False)# 
-       
-            logging.info(f"Removed {removed_items} unavailable items from cart {cart_items[0][0].cart_id}")
-    
-            self.db.commit()
-            self.db.refresh(cart_items)#refresh the cart items to reflect the changes after removing unavailable items  
-        except Exception as e:
-            self.db.rollback()
-            raise error(status_code=500, detail="An error occurred while processing the order")
-        
+        if invalid_items:
+            raise HTTPException(status_code=400,detail="Some cart items exceed available stock.")       
         return cart_items
     
     def create_order(self, cart_items: list[tuple[models.CartItem, models.Item]]):
