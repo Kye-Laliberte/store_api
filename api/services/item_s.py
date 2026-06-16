@@ -123,18 +123,6 @@ class Serviceitems:
 
     def __init__(self, db: Session):
         self.db = db
-
-    def prepare_cart_items(self, cart_id: int):
-        """prepares cart items for order processing by returning a list of tuples (cart_item, item) for each item in the user's cart"""
-        
-        prepared_cart_items = (self.db.query(models.CartItem, models.Item)
-                                            .join(models.Item, models.CartItem.item_id == models.Item.id)
-                                            .filter(models.CartItem.cart_id == cart_id, models.Item.quantity > 0).all()
-        )
-
-        if not prepared_cart_items:
-           return []
-        return prepared_cart_items
     
     def get_active_items(self, item_id:int):
         """get active item by id, if item is not found or not in stock, return None"""
