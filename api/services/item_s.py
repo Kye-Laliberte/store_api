@@ -48,11 +48,51 @@ class OrderProcessing:
             raise HTTPException(status_code=400,detail="Some cart items exceed available stock.")       
         return cart_items
     
+    def CartItems(self,cart_items: list[tuple[models.CartItem, models.Item]] ):
+        """this deletes cart_items where the cart quantity is more that the item quantity"""
+        
+        #removs the cart_items.quantity > item.quantity- cart_items.quantity
+        out_of_stock=self.db.execute(text("""DELETE FROM cart_items USING items"""))
+
     def create_order(self, cart_items: list[tuple[models.CartItem, models.Item]]):
         """create the order and order items in the database, return the created order and order items info (order_id,item_id):int ,quantity:int, price_at_order:float"""
-
+        total_price = self.db.execute(text("""SELECT SUM((cart_items.quantity) * items.price) 
+        FROM cart_items JOIN items ON cart_items.item_id = items.id 
+        WHERE cart_items.cart_id = :cart_id"""), {"cart_id": cart_items[0][0].cart_id}).scalar()
+        new_order = Order(total_price=total_price, user_id=self.user_id)
+        self.db.add(new_order)
+        self.db.flush()
+        order_items = self.create_orderItems(order_id=new_order.id, cart_items=cart_items)
+        self.db.commit()
+        return new_order
+    
+    def create_orderItems(self, order_id:int, cart_items: list[tuple[models.CartItem, models.Item]]):
+        """create order items for a given order"""
+        
+        cart_items_data = self.db.execute(text("""INSERT INTO order_items (order_id, item_id, quantity, price_at_order) 
+                                               SELECT :order_id, cart_items.item_id, cart_items.quantity, items.price 
+                                               FROM cart_items JOIN items ON cart_items.item_id = items.id
+                                               WHERE cart_items.cart_id =:cart_id RETURNING order_id, item_id, quantity, price_at_order"""), 
+                                               {"order_id": order_id, "cart_id": self.cart_id}).fetchall()
+        
+        if not cart_items_data:
+            return []
+        return cart_items_data
+    
     def update_stock(self, cart_items: list[tuple[models.CartItem, models.Item]]):
         """update stock quantity for each item in the cart after order is created"""
+        try:
+            self.db.execute(text("""
+            UPDATE items
+            SET quantity = items.quantity - cart_items.quantity
+            FROM cart_items
+            WHERE items.id = cart_items.item_id
+            AND cart_items.cart_id = :cart_id"""),
+            {"cart_id": self.cart_id})
+            return True
+        except Exception as e:
+            self.db.rollback()
+            #raise error(status_code=500, detail="An error occurred while updating stock quantities", error=str(e))
     
     def clear_cart(self):
         """clear cart items after order is created"""
@@ -72,7 +112,11 @@ class OrderProcessing:
         if not prepared_cart_items:
             raise error(status_code=400, detail="no items in cart to order")
         new_order=self.create_order(prepared_cart_items)
-
+        if not new_order:
+            raise error(status_code=500, detail="An error occurred while creating the order")
+        self.update_stock(prepared_cart_items)
+        self.clear_cart(cart_id=prepared_cart_items[0][0].cart_id)
+        return new_order
 
 
 class Serviceitems:
@@ -89,7 +133,7 @@ class Serviceitems:
         )
 
         if not prepared_cart_items:
-           return None
+           return []
         return prepared_cart_items
     
     def get_active_items(self, item_id:int):
