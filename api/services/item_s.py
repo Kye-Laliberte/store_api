@@ -23,7 +23,16 @@ class OrderProcessing:
     def __init__(self, db: Session,user_id:int,cart_id:int):
         self.db = db
         self.user_id = user_id
-
+        self.cart_id = cart_id
+    def prepare_cart_items(self):
+        """prepares cart items for order processing by returning a list of tuples (cart_item, item) for each item in the user's cart"""
+        
+        prepared_cart_items = (self.db.query(models.CartItem, models.Item)
+                                            .join(models.Item, models.CartItem.item_id == models.Item.id)
+                                            .filter(models.CartItem.cart_id == self.cart_id).all()
+        )
+        
+        return prepared_cart_items
     def pre_order_checks(self, cart_items: list[tuple[models.CartItem, models.Item]]):
         """perform pre-order checks such as stock availability and remove unavailable items from the cart"""
         if not cart_items:
