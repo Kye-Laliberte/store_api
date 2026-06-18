@@ -60,8 +60,8 @@ def GetCarts(db: Session = Depends(get_db)):
     out=db.query(models.Cart).all()
     return out
 
-@router.post("/{user_id}/additem",response_model=CartItemsOut)
-def additem(user_id:int, item:create_cartItem,db:Session=Depends(get_db)):
+@router.post("/{user_id}/additem/{cart_id}",response_model=CartItemsOut)
+def additem(user_id:int,cart_id:int, item:create_cartItem,db:Session=Depends(get_db)):
     """adds a item to the cart if it is alredy there it updates the quantity to the new quantity, returns a item model with item name, description, price and quantity"""
     
     quantity=item.quantity

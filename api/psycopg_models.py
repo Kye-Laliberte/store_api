@@ -91,7 +91,6 @@ class CartItemsOut(BaseModel):
 
 
 class create_cartItem(BaseModel):
-    cart_id:Optional[int]=None
     item_id:int
     quantity: int = Field(...,ge=0)
     

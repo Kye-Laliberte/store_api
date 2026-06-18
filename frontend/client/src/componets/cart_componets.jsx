@@ -39,8 +39,8 @@ export function ItemList({
                 onChange={(e) =>
                     onQuantityChange(
                         item.id,
-                        e.target.value
-                    )}/>
+                        e.target.value,
+                        )}/>
             <button
                 className="basic-button"
                 onClick={() => onAddToCart(item)}

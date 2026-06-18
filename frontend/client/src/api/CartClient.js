@@ -1,12 +1,11 @@
 import { cache} from "react";
 import api from "./axios";
 
-
-export async function addToCart(user_id,item_id,quantity) {
+export async function addToCart(user_id,item_id,quantity,cart_id) {
     /**  adds quantity of item_id to user_id cart and returns the cartItem info*/
     try{
         const out= await api.post(
-            `carts/${user_id}/additem`,
+            `carts/${user_id}/additem/${cart_id}`,
             {item_id:item_id,quantity:quantity});
         if(out.status !== 200){
            throw new Error(`Failed to add item to cart: ${out.statusText}`);

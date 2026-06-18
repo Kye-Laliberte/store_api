@@ -81,7 +81,7 @@ function handleQuantityChange(itemId,value){
               return;}
 
         try {const idata = await addToCart(
-              user.id,item.id,quantity);
+              user.id,item.id,quantity,user.cart_id);
 
             if (idata){
                 alert(`${idata.quantity} ${idata.name} now in your order`);}
@@ -120,6 +120,5 @@ function handleQuantityChange(itemId,value){
         refresh={refresh}/>
       </div>
     )
-
 
 }
