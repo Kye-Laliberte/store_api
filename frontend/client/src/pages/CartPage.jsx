@@ -3,12 +3,12 @@ import api from '/src/api/axios';
 import '/src/App.css';
 import CartViewer from '/src/componets/cart_viewer';
 import { getItem, getAllItems} from '/src/api/itemsClient';
-import { addToCart,viewCart } from '/src/api/CartClient';
+import { addToCart,viewCart,deleatCart} from '/src/api/CartClient';
 import { useEffect, useState } from 'react';
 import { useNavigate} from 'react-router-dom';
 import UserWidget from'/src/componets/UserWidget';
 import {ItemList} from'/src/componets/cart_componets'
-import { getUser } from '../api/userClient';
+import { getUser } from '/src/api/userClient';
 export default function CartPage({user,setUser,incart,setCart}){
   /** prints a list of all the items in the database with at least 1 item.
    *  gives the user a input and button interface for each.
@@ -56,6 +56,18 @@ async function refresh(User) {
   refresh(user);
  },[]);
 
+async function handle_cartRemovel(user){
+    if (!user.cart_id){
+        alert("No active cart")
+        return;}
+        try{
+            await deleatCart(user.id,user.cart_id)         
+            await refresh(user)
+        } catch(err){
+            console.error(err);
+            alert("failed to drop cart");
+        }
+}
 
 function handleQuantityChange(itemId,value){  
     
@@ -117,7 +129,9 @@ function handleQuantityChange(itemId,value){
         key={1}
         user={user}
         cart={incart}
-        refresh={refresh}/>
+        refresh={refresh}
+        dropcart={handle_cartRemovel}/>
+
       </div>
     )
 
