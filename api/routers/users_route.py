@@ -72,7 +72,7 @@ def readuser(user_id: int, db: Session = Depends(get_db)):
     cart=getcart(user_id=user.id,db=db)       
     if cart:
         return userOut(id= user.id, email= user.email, cart_id= cart.id, user_status=user.status)
-    return userOut(id = user.id, email= user.email)
+    return userOut(id = user.id, email= user.email, user_status=user.status)
     
 
 @router.put("/status",response_model=user_in)
@@ -101,7 +101,7 @@ def loginn(log: login, db: Session=Depends(get_db)):
     cart=getcart(user_id=user.id,db=db)       
     if cart:
         return userOut(id= user.id, email= user.email, cart_id= cart.id, user_status=user.status)
-    return userOut(id = user.id, email= user.email)
+    return userOut(id = user.id, email= user.email, user_status= user.status)
         
     
     
