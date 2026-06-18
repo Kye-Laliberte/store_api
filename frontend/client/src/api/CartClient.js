@@ -63,9 +63,9 @@ export async function removeFromCart(user,item_id){
     }    
 }
 
-export async function deleatCart(user_id) {
+export async function deleatCart(user_id,cart_id) {
     try{
-    const response =await api.delete(`/carts/${user_id}/dropCart`,);
+    const response =await api.delete(`/carts/${user_id}/dropCart/${cart_id}`,);
 
     if(response.status !== 200){
             throw new Error(`Failed to remove item from cart: ${response.statusText}`);

@@ -163,8 +163,8 @@ def leaveitem(item_id:int,cart_id:int,db:Session=Depends(get_db)):
         raise HTTPException(status_code=500, detail="An error occurred while removing item from cart")
     
     
-@router.delete("/{user_id}/dropCart",response_model=carts)
-def dropcart(user_id:int,db:Session=Depends(get_db)):
+@router.delete("/{user_id}/dropCart/{cart_id}",response_model=carts)
+def dropcart(user_id:int,cart_id:int,db:Session=Depends(get_db)):
     """removes all items from the cartItems tabel pertaning to the user_id and removes the cart from the Cart tebel"""
    
     cart=getcart(user_id,db)
