@@ -175,7 +175,7 @@ def dropcart(user_id:int,db:Session=Depends(get_db)):
 #        raise HTTPException(status_code=400, detail="User is not active. Cannot drop cart.")
     
     try:    
-        db.query(models.CartItem,models).filter(models.CartItem.cart_id==cart.id).delete()
+        db.query(models.CartItem).filter(models.CartItem.cart_id==cart.id).delete()
         db.query(models.Cart).filter(models.Cart.id==cart.id,models.Cart.user_id==cart.user_id).delete()
         db.commit()
         return carts(id=cart.id,user_id=cart.user_id,cart_date=cart.cart_date)
