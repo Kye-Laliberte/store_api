@@ -21,14 +21,30 @@ function LeaveCart({user, dropcart}){
         </div>);
     }
 
- export default function CartViewer({cart,user,refresh,dropcart}){
+function Addcart({user, new_Cart}){
+    return (
+        <div>
+            <h3>no cart</h3>
+            <button
+            className='button2'
+            disabled ={user?.cart_id}
+            onClick={() => new_Cart(user)}
+            >NEW cart</button>
+        </div>
+    )
+}
+
+ export default function CartViewer({cart,user,refresh,dropcart,new_Cart}){
     
     if(!user?.id){
          return(<p>not loged in</p>);
             }
     if(!user?.cart_id){
             return(<div>
-                <h3>no cart</h3>
+                
+                <Addcart
+                user={user}
+                new_Cart={new_Cart}/>
             </div>);
            }
     

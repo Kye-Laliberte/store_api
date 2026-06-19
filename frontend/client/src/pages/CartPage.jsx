@@ -3,7 +3,7 @@ import api from '/src/api/axios';
 import '/src/App.css';
 import CartViewer from '/src/componets/cart_viewer';
 import { getItem, getAllItems} from '/src/api/itemsClient';
-import { addToCart,viewCart,deleatCart} from '/src/api/CartClient';
+import { addToCart,viewCart,deleatCart,new_Cart} from '/src/api/CartClient';
 import { useEffect, useState } from 'react';
 import { useNavigate} from 'react-router-dom';
 import UserWidget from'/src/componets/UserWidget';
