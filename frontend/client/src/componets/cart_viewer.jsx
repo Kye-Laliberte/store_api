@@ -1,28 +1,45 @@
 import api from '/src/api/axios';
 import '/src/App.css';
 import { useState, useEffect } from "react";
-import { addToCart,viewCart,removeFromCart } from '/src/api/CartClient';
+import { addToCart,viewCart,removeFromCart,deleatCart } from '/src/api/CartClient';
 import {order_Cart} from '/src/api/orderClient'
 import { useNavigate} from 'react-router-dom';
 import CartWindow from './orderWidget';
 
- export default function CartViewer({cart,user,refresh}){
+
+
+function LeaveCart({user, dropcart}){
+        return ( 
+        <div>
+            <h4>remove cart</h4>
+            <button
+            className='button2'
+            disabled ={!user?.cart_id}
+            onClick={() => dropcart(user)}
+            >deleate cart</button>
+            
+        </div>);
+    }
+
+ export default function CartViewer({cart,user,refresh,dropcart}){
     
-   
-    if(user.id==undefined){
+    if(!user?.id){
          return(<p>not loged in</p>);
             }
-    if(user.cart_id==null){
+    if(!user?.cart_id){
             return(<div>
                 <h3>no cart</h3>
             </div>);
            }
     
     return(
-            
+        <div>
+            <LeaveCart
+        user={user}
+        dropcart={dropcart}/>
+             
         <div className='cart-window'>
-                   
-                       
+                                    
         <CartWindow user={user} refresh={refresh}/>
 
             { Array.isArray(cart) && cart.length>0 ? ( 
@@ -34,6 +51,7 @@ import CartWindow from './orderWidget';
             ) : ( 
                 <p>Cart empty</p>
             )}
+        </div>
         </div>
     );
 
