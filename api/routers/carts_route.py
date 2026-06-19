@@ -115,7 +115,7 @@ def additem(user_id:int,cart_id:int, item:create_cartItem,db:Session=Depends(get
         raise HTTPException(status_code=500, detail=f"An error occurred while processing cart item {e}")
 
 @router.post("/{user_id}/newcart", response_model=carts)
-def newCart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
+def newCart(user_id:int, db: Session = Depends(get_db)):
     """creates a new cart for the user if one does not already exist"""
     
     user=filter_user(user_id=user_id,status=models.UserStatus.active,db=db)
@@ -127,9 +127,10 @@ def newCart(cart:createCart,user_id:int, db: Session = Depends(get_db)):
          #return {"mesage": True  }
          raise HTTPException(status_code=200,detail="cart alredy active")
          #return exists
-        
+    cart_date = datetime.now()
     try:
-        new_cart = models.Cart(user_id=user_id, cart_date=cart.cart_date)
+        
+        new_cart = models.Cart(user_id=user_id, cart_date=cart_date)
         out_cart=newcart(cart=new_cart,db=db)
 
         if not out_cart:

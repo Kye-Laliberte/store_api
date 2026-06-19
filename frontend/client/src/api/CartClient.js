@@ -33,9 +33,7 @@ export async function new_Cart(user_id){
     /** creates a new cart for user_id and returns the cart info */
     try{
         const cart = await api.post(
-            `/carts/${user_id}/newcart`,{
-            id: user_id,
-            cart_date: new Date()});
+            `/carts/${user_id}/newcart`);
     
             if(cart.status !== 200){
             throw new Error(`Failed to remove item from cart: ${cart.statusText}`);}
