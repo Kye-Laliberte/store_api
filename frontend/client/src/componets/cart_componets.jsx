@@ -4,7 +4,7 @@ import { addToCart,viewCart } from '/src/api/CartClient';
 
 export function ItemList({
     items,quantities,user,
-    onQuantityChange,onAddToCart}) {
+    onQuantityChange,onAddToCart,newCart}) {
     if (!Array.isArray(items)||items.length === 0) {
         return <p>no items</p>;
     }
@@ -15,10 +15,11 @@ export function ItemList({
                 <ProductCard
                     key={item.id}
                     item={item}
-                    cart_id={user.cart_id}
+                    user={user}
                     quantity={quantities[item.id]}
                     onQuantityChange={onQuantityChange}
                     onAddToCart={onAddToCart}
+                    newCart={newCart}
                 />))}
         </div>
     );
@@ -26,7 +27,7 @@ export function ItemList({
   }
 
   function ProductCard({item,quantity,
-    onQuantityChange,onAddToCart,cart_id}) {
+    onQuantityChange,onAddToCart,user}) {
     return (
         <div className="item-block">
             <h3>{item.name}</h3>
@@ -44,7 +45,7 @@ export function ItemList({
             <button
                 className="basic-button"
                 onClick={() => onAddToCart(item)}
-                disabled={!Number(quantity) || Number(quantity) <= 0 || cart_id===null}>
+                disabled={!Number(quantity) || Number(quantity) <= 0 || !user?.id}>
                 Add To Cart</button>
               <p>{item.description}</p>
             <p>price {item.price}$</p>

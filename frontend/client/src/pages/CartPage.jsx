@@ -69,14 +69,16 @@ async function handle_cartRemovel(user){
         }
 }
 
-async function handleNewCart(user){
-    if(!user?.id){
+async function handleNewCart(User){
+    if(!User?.id){
         alert("not signed in")
         return;}
    
     try{
-        await new_Cart(user.id)
-        await refresh(user)
+        
+       const cart =await new_Cart(User.id)
+        await refresh(User)
+        return cart
     } catch(error){
         console.error(error);
         alert("faled to create new cart")
@@ -95,23 +97,24 @@ function handleQuantityChange(itemId,value){
         if (!user) {
             alert("sign in.");
             return;}
-        if (!user.cart_id){
-            alert("No active cart")
-            return;
-        }
-
+        
         const quantity = Number(quantities[item.id]);
         
             if (!quantity || quantity <= 0) {
               console.error("invalid quantity",quantity)
               alert("enter valid quantity");
               return;}
-
-        try {const idata = await addToCart(
-              user.id,item.id,quantity,user.cart_id);
-
-            if (idata){
-                alert(`${idata.quantity} ${idata.name} now in your order`);}
+        try {
+        
+        if (!user?.cart_id){
+            
+            alert("adding new cart")
+            
+            const cart = await handleNewCart(user)
+            const  idata = await addToCart(user.id,item.id,quantity,cart.id)
+        }else{
+            const idata = await addToCart(user.id,item.id,quantity,user.cart_id);
+        }
             
                 await refresh(user);
 
@@ -140,6 +143,7 @@ function handleQuantityChange(itemId,value){
         quantities={quantities}
         onQuantityChange={handleQuantityChange}
         onAddToCart={handleAddToCart}
+        newCart={handleNewCart}
         />
 
         <CartViewer
