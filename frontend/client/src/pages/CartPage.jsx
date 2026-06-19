@@ -56,13 +56,13 @@ async function refresh(User) {
   refresh(user);
  },[]);
 
-async function handle_cartRemovel(user){
-    if (!user?.cart_id){
+async function handle_cartRemovel(User){
+    if (!User?.cart_id){
         alert("No active cart")
         return;}
         try{
-            await deleatCart(user.id,user.cart_id)         
-            await refresh(user)
+            await deleatCart(User.id,User.cart_id)         
+            await refresh(User)
         } catch(err){
             console.error(err);
             alert("failed to drop cart");
