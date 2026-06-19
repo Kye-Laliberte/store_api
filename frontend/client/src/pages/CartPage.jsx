@@ -57,7 +57,7 @@ async function refresh(User) {
  },[]);
 
 async function handle_cartRemovel(user){
-    if (!user.cart_id){
+    if (!user?.cart_id){
         alert("No active cart")
         return;}
         try{
@@ -67,6 +67,21 @@ async function handle_cartRemovel(user){
             console.error(err);
             alert("failed to drop cart");
         }
+}
+
+async function handleNewCart(user){
+    if(!user?.id){
+        alert("not signed in")
+        return;}
+   
+    try{
+        await new_Cart(user.id)
+        await refresh(user)
+    } catch(error){
+        console.error(error);
+        alert("faled to create new cart")
+    }
+
 }
 
 function handleQuantityChange(itemId,value){  
@@ -124,13 +139,16 @@ function handleQuantityChange(itemId,value){
         user={user}
         quantities={quantities}
         onQuantityChange={handleQuantityChange}
-        onAddToCart={handleAddToCart}/>
+        onAddToCart={handleAddToCart}
+        />
+
         <CartViewer
         key={1}
         user={user}
         cart={incart}
         refresh={refresh}
-        dropcart={handle_cartRemovel}/>
+        dropcart={handle_cartRemovel}
+        new_Cart={handleNewCart}/>
 
       </div>
     )
