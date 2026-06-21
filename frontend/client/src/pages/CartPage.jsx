@@ -24,35 +24,31 @@ async function refresh(User) {
     try{
         const itemsData= await getAllItems();        
         setItems(itemsData);
-        console.log("ITEMS",itemsData)
-        console.log("USER",User)
-        if(User.id??0)
+        console.log("ITEMS",itemsData);
+        console.log("USER",User);
+        if(User?.id)
             {
              const users = await getUser(User.id)
                 setUser(users)
                 
 
-            if (users.cart_id){
+            if (users?.cart_id){
                 const cartData = await viewCart(users.id);
                 setCart(cartData);
                 console.log("cartItem",cartData) 
             }
             else{
-                alert("no cart");
-                setCart(null) 
+                console.warn("No cart"); 
             } 
         }else{
-            alert("no user_id")
+            console.warn("No user_id");
         }
          
     }catch (error) {
-        console.error(
-            "failed to refresh",
-            error
-        );   
-    }
-}
- useEffect(()=>{
+        console.error("failed to refresh",error);
+    }}
+ 
+    useEffect(()=>{
   refresh(user);
  },[]);
 
