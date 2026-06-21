@@ -28,7 +28,7 @@ function Addcart({user, new_Cart}){
             <button
             className='button2'
             disabled ={user?.cart_id}
-            onClick={() => new_Cart(user)}
+            onClick={() => new_Cart(user.id)}
             >NEW cart</button>
         </div>
     )

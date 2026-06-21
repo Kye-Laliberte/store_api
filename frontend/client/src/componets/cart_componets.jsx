@@ -1,6 +1,7 @@
 import api from '/src/api/axios';
 import '/src/App.css';
 import { addToCart,viewCart } from '/src/api/CartClient';
+import CartIcon from '/src/images/Cartsvg';
 
 export function ItemList({
     items,quantities,user,
@@ -42,11 +43,12 @@ export function ItemList({
                         item.id,
                         e.target.value,
                         )}/>
-            <button
+           
+            <CartIcon/> <button
                 className="basic-button"
                 onClick={() => onAddToCart(item)}
                 disabled={!Number(quantity) || Number(quantity) <= 0 || !user?.id}>
-                Add To Cart</button>
+               Add To Cart </button>
               <p>{item.description}</p>
             <p>price {item.price}$</p>
             <p>{item.quantity} left</p></div>
