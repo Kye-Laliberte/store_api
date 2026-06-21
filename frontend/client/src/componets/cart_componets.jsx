@@ -5,7 +5,7 @@ import CartIcon from '/src/images/Cartsvg';
 
 export function ItemList({
     items,quantities,user,
-    onQuantityChange,onAddToCart,newCart}) {
+    onQuantityChange,onAddToCart}) {
     if (!Array.isArray(items)||items.length === 0) {
         return <p>no items</p>;
     }
@@ -20,7 +20,6 @@ export function ItemList({
                     quantity={quantities[item.id]}
                     onQuantityChange={onQuantityChange}
                     onAddToCart={onAddToCart}
-                    newCart={newCart}
                 />))}
         </div>
     );
