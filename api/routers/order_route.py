@@ -8,7 +8,7 @@ import api.models.sqlAmodels as models
 import  api.models.ordermodels as Omodels
 from typing import List, Optional
 from api.psycopg_models import users,userOut, UserStatus
-from datetime import datetime
+from datetime import datetime, timedelta
 import api.models.psyc_order as pmodels
 from api.services.cart_services import getcart
 from api.services.item_s import OrderProcessing, error
@@ -23,20 +23,32 @@ def carthome():
 @router.get("/{user_id}/vieworders", response_model=List[pmodels.orders])
 def viewOrders(user_id:int,db: Session=Depends(get_db)):
     """ shows all past orders for a user"""
-    
-    
     orders= db.query(Omodels.Order).filter(Omodels.Order.user_id==user_id).all()
-
-    if not orders:
-        raise HTTPException(status_code=204,detail= "no orders")
-    try:    
-      
-        return orders
     
+    if not orders:
+        raise HTTPException(status_code=200,detail= "no orders")
+    try:    
+        return orders
     except Exception as e:
         logging(f"faled to conect {e}")
         raise HTTPException(status_code=400,detail=f"error {e}")
     
+@router.get("/{user_id}/TodayOrders/",response_model=List[pmodels.orders])
+def viewNewOrders(user_id:int,db: Session=Depends(get_db)):
+    """gets all orders of a user from before the given datetime"""
+    today = datetime.now().date()
+    orders=db.query(Omodels.Order).filter(Omodels.Order.user_id==user_id, Omodels.Order.order_date >= today).all()
+    return orders
+
+@router.get("/{user_id}/weekOrder/",response_class=List[pmodels.orders])
+def orderWeek(user_id:int,db: Session=Depends(get_db)):
+    """gets all orders in the same week this api request"""
+    week_start = datetime.now() - timedelta(days=7)
+    
+    week=db.query(Omodels.Order).filter(Omodels.Order.user_id == user_id,
+                                   Omodels.Order.order_date >= week_start).all()
+    return week
+
     
 @router.get("/getallorders", response_model=List[pmodels.orders])
 def getAllOrders(db: Session=Depends(get_db)):
