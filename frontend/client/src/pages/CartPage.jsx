@@ -155,7 +155,7 @@ function handleQuantityChange(itemId,value){
             const idata = await addToCart(user.id,item.id,quantity,user.cart_id);
         }
             
-                await refresh(user);
+                trigger_refresh();
 
         } catch (err) {
             console.error(err);

@@ -74,7 +74,7 @@ function Addcart({user, new_Cart}){
     async function remove_item({item,user}){
         await removeFromCart(user,item.item_id)
         
-        await refresh(user)
+        await refresh(user);
     }
     
     function CartItems({item}){
