@@ -17,7 +17,7 @@ def carthome():
     return {"message":"welcome to the store grab a cart"}
 
 
-@router.get("/{user_id}/viewcart",response_model=List[CartItemsOut])
+@router.get("/{user_id}/viewcart/{cart_id}",response_model=List[CartItemsOut])
 def viewCart(user_id:int,db: Session=Depends(get_db)):
     """retreves all items in the cart that relar to the user_id and returns a list of models with the item name, description, price and quantity"""
     
