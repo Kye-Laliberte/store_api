@@ -89,15 +89,16 @@ async function refresh2(user) {
  
     useEffect(()=>{
   refresh(user);
- },[]);
+ },[refreshKey]);
 
 async function handle_cartRemovel(User){
-    if (!User?.cart_id){
-        alert("No active cart")
+    if (!User?.cart_id ){
+        console.warn("No active cart");
         return;}
         try{
             await deleatCart(User.id,User.cart_id)         
-            await refresh(User)
+            trigger_refresh();
+            //await refresh(User)
         } catch(err){
             console.error(err);
             alert("failed to drop cart");
@@ -108,11 +109,15 @@ async function handleNewCart(User){
     if(!User?.id){
         alert("not signed in")
         return;}
-   
+    if(User.user_status != 'active'){
+        console.warn("not active User")
+        return;
+        }
     try{
         
        const cart =await new_Cart(User.id)
-        await refresh(User)
+        trigger_refresh();
+       //await refresh(User)
         return cart
     } catch(error){
         console.error(error);
@@ -129,15 +134,14 @@ function handleQuantityChange(itemId,value){
 
  async function handleAddToCart(item) {
         
-        if (!user) {
-            alert("sign in.");
+        if (!user?.id || user.user_status != 'active') {
+            console.warn("not active user.");
             return;}
         
         const quantity = Number(quantities[item.id]);
         
             if (!quantity || quantity <= 0) {
               console.error("invalid quantity",quantity)
-              alert("enter valid quantity");
               return;}
         try {
         
@@ -167,7 +171,7 @@ function handleQuantityChange(itemId,value){
         
         user={user}
         setUser={setUser}
-        refresh={refresh}
+        refresh={refreshUser}
         onOpenCart ={()=> setShowCart(true)}
         />
         
@@ -178,7 +182,6 @@ function handleQuantityChange(itemId,value){
         quantities={quantities}
         onQuantityChange={handleQuantityChange}
         onAddToCart={handleAddToCart}
-        newCart={handleNewCart}
         />
 
         <CartViewer
