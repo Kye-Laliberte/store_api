@@ -16,11 +16,13 @@ export async function addToCart(user_id,item_id,quantity,cart_id) {
         throw err;
     }
 }    
-export async function viewCart(user_id) {
+export async function viewCart(user_id,cart_id) {
     /**not tested should return a list[] of Items object in user_ids cart*/
     try{
         const respon = await api.get(
-            `/carts/${user_id}/viewcart`,);
+            `/carts/${user_id}/viewcart`);
+       if(respon.status != 200 ){
+        throw new Error(`Failed to get cart infromaton of: ${respon.status}`);}
        
     return respon.data;
     }catch(err){
