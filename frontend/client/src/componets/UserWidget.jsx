@@ -14,15 +14,15 @@ const [ email, setEmail] = useState("");
     //for testing put in user id th sign in
     async function SaveData() {
       
-      const data= await getUser(userId)
+      const userdata = await getUser(userId);
       
-      if(!data){
+      if(!userdata?.id){
         alert(`no user at ${userId}`);
         return;
       }
-      
-      console.log("data",data) 
-      await refresh(data);  
+      console.log("user data",userdata)
+      setUser(userdata)
+      await refresh(userdata.id);  
       console.log(user) 
       
     }
@@ -32,12 +32,16 @@ const [ email, setEmail] = useState("");
     try{
         const data = await Emaillogin(email);
         if (!data) {
-        alert("Invalid email");
+        console.error("Invalid email");
+        return;
+      }
+      if(data.user_status == 'suspended'){
+        console.warn(`user ${user_id} is suspended`);
         return;
       }
         
       alert(`User set to ${data.id}`);
-      refresh(data);
+      refresh(data.id);
     }catch (err) {
       console.error(err);
       alert("Login failed");    
