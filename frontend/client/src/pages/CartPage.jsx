@@ -9,6 +9,8 @@ import { useNavigate} from 'react-router-dom';
 import UserWidget from'/src/componets/UserWidget';
 import {ItemList} from'/src/componets/cart_componets'
 import { getUser } from '/src/api/userClient';
+
+
 export default function CartPage({user,setUser,incart,setCart}){
   /** prints a list of all the items in the database with at least 1 item.
    *  gives the user a input and button interface for each.
@@ -17,18 +19,55 @@ export default function CartPage({user,setUser,incart,setCart}){
   */
 const [items, setItems]= useState([]);
 const [quantities, setQuantities] = useState({});
-// keeps the user_id up to date if its in localStorage
+const [refreshKey, setRefreshKey] = useState(0);
+
+const trigger_refresh=()=>{
+    setRefreshKey(k => k + 1);
+}
+
+function Log_Out({setUser}){
+setUser(null)
+return(
+<button onClick={() => logout(setUser)}>
+  Logout
+</button>
+);
+}
+
+async function refreshUser(user_id){
+    setUser(await getUser(user_id));
+}
+
+async function refreshCart(user){
+    if(user?.cart_id){
+        setCart(await viewCart(user.id,user.cart_id)); 
+    }else{console.warn("no cart")}
+    
+}
+
+async function refreshItems(){
+    setItems(await getAllItems());
+}
 
 
-async function refresh(User) {
+async function refresh(user){
+    await refreshItems();
+    if(user?.id){
+        refreshUser(user.id);
+        refreshCart(user);        
+    }
+    
+}
+
+async function refresh2(user) {
     try{
         const itemsData= await getAllItems();        
         setItems(itemsData);
         console.log("ITEMS",itemsData);
-        console.log("USER",User);
-        if(User?.id)
+        console.log("USER",user);
+        if(user?.id)
             {
-             const users = await getUser(User.id)
+             const users = await getUser(user.id)
                 setUser(users)
                 
 
