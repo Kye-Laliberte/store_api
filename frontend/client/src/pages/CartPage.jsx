@@ -36,6 +36,7 @@ return(
 
 async function refreshUser(user_id){
     setUser(await getUser(user_id));
+    console.log("user",user)
 }
 
 async function refreshCart(user){
@@ -56,36 +57,8 @@ async function refresh(user){
         refreshUser(user.id);
         refreshCart(user);        
     }
-    
 }
 
-async function refresh2(user) {
-    try{
-        const itemsData= await getAllItems();        
-        setItems(itemsData);
-        console.log("ITEMS",itemsData);
-        console.log("USER",user);
-        if(user?.id)
-            {
-             const users = await getUser(user.id)
-                setUser(users)
-                
-
-            if (users?.cart_id){
-                const cartData = await viewCart(users.id);
-                setCart(cartData);
-                console.log("cartItem",cartData) 
-            }
-            else{
-                console.warn("No cart"); 
-            } 
-        }else{
-            console.warn("No user_id");
-        }
-         
-    }catch (error) {
-        console.error("failed to refresh",error);
-    }}
  
     useEffect(()=>{
   refresh(user);
@@ -111,10 +84,8 @@ async function handleNewCart(User){
         return;}
     if(User.user_status != 'active'){
         console.warn("not active User")
-        return;
-        }
-    try{
-        
+        return;}
+    try{   
        const cart =await new_Cart(User.id)
         trigger_refresh();
        //await refresh(User)
@@ -123,7 +94,6 @@ async function handleNewCart(User){
         console.error(error);
         alert("faled to create new cart")
     }
-
 }
 
 function handleQuantityChange(itemId,value){  
