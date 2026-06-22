@@ -96,8 +96,10 @@ def loginn(log: login, db: Session=Depends(get_db)):
         
     if user is None:
         raise HTTPException(status_code=404, detail="user not found")
-    if not user.status:
-        raise HTTPException(status_code=400, detail=f"User is not curently active")
+    
+    if user is False:
+        raise HTTPException(status_code=400, detail="user is not active")
+    
     cart=getcart(user_id=user.id,db=db)       
     if cart:
         return userOut(id= user.id, email= user.email, cart_id= cart.id, user_status=user.status)
