@@ -42,13 +42,14 @@ def viewNewOrders(user_id:int,db: Session=Depends(get_db)):
         HTTPException(status_code=204,detail="no  orders today")
     return orders
 
-@router.get("/{user_id}/weekOrder/",response_class=List[pmodels.orders])
+@router.get("/{user_id}/weekOrder/",response_model=List[pmodels.orders])
 def orderWeek(user_id:int,db: Session=Depends(get_db)):
     """gets all orders in the same week this api request"""
     week_start = datetime.now() - timedelta(days=7)
     
-    week=db.query(Omodels.Order).filter(Omodels.Order.user_id == user_id,
-                                   Omodels.Order.order_date >= week_start).all()
+    week=db.query(Omodels.Order).filter(Omodels.Order.user_id == user_id,Omodels.Order.order_date >= week_start).all()
+    if(not week):
+        HTTPException(status_code=204,detail="no orders this week")
     return week
 
     
@@ -57,8 +58,9 @@ def getAllOrders(db: Session=Depends(get_db)):
     """returns all orders in the database, for testing purposes only"""
     orders = db.query(Omodels.Order).all()
     return orders
+
 @router.get("/{order_id}/details", response_model=List[pmodels.orderInfo])
-def get_order_details(order_id:int, db: Session=Depends(get_db)):
+def get_order_details(order_id:int, db:Session=Depends(get_db)):
     """returns the details of an order including item information and price at order time"""
     try:
         order_details = (db.query(Omodels.Order.id,
