@@ -18,12 +18,10 @@ export async function Emaillogin(email) {
 export async function getUser(user_id){
   /** retreves user info based on ther user_id*/
   try{
-  const response = await api.get(
-    `/users/${user_id}`,
-    {user_id:user_id});
-    
-    if(response.data.UserStatus=='suspended')
-      console.assert("user is suspended")
+  const response = await api.get(`/users/${user_id}`);
+
+    if(response.data.user_status != "active"){
+      console.warn("inactive user",response.data)}
 
     return response.data;
 
