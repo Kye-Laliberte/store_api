@@ -2,7 +2,7 @@ import api from '/src/api/axios';
 import '/src/App.css';
 import { useState, useEffect } from "react";
 import { addToCart,viewCart,removeFromCart,deleatCart } from '/src/api/CartClient';
-import {order_Cart} from '/src/api/orderClient'
+import {order_Cart,todaysOrders} from '/src/api/orderClient'
 import { useNavigate} from 'react-router-dom';
 import CartWindow from './orderWidget';
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import {order_Cart} from '/src/api/orderClient'
+import {order_Cart,todaysOrders} from '/src/api/orderClient'
 export default function CartWindow({ user, refresh, cart}) {
     const [confirmOrder, setConfirmOrder] = useState(false);
 
@@ -7,14 +7,10 @@ export default function CartWindow({ user, refresh, cart}) {
         try {
             
             await order_Cart(user);
-
             //reset checkbox after successful order
-            setConfirmOrder(false);
-            
-            // refresh user/cart data here
-            console.log(user)
+            setConfirmOrder(false);    
             await refresh(user);
-          
+        
         } catch (err) {
             console.error(err);
         }
