@@ -33,7 +33,7 @@ def viewOrders(user_id:int,db: Session=Depends(get_db)):
         logging(f"faled to conect {e}")
         raise HTTPException(status_code=400,detail=f"error {e}")
     
-@router.get("/{user_id}/TodayOrders/",response_model=List[pmodels.orders])
+@router.get("/{user_id}/TodayOrders",response_model=List[pmodels.orders])
 def viewNewOrders(user_id:int,db: Session=Depends(get_db)):
     """gets all orders of a user from before the given datetime"""
     today = datetime.now().date()
@@ -42,7 +42,7 @@ def viewNewOrders(user_id:int,db: Session=Depends(get_db)):
         HTTPException(status_code=204,detail="no  orders today")
     return orders
 
-@router.get("/{user_id}/weekOrder/",response_model=List[pmodels.orders])
+@router.get("/{user_id}/weekOrder",response_model=List[pmodels.orders])
 def orderWeek(user_id:int,db: Session=Depends(get_db)):
     """gets all orders in the same week this api request"""
     week_start = datetime.now() - timedelta(days=7)
