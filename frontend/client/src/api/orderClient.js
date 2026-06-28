@@ -13,16 +13,26 @@ export async function order_Cart(user) {
     }
 }
 
-export async function past_orders(user_id) {
+export async function all_orders(user_id) {
     try{
     const out = await api.get(`/orders/${user_id}/vieworders`);
-
     if (out.status==204){
         return []}    
         return out.data;    
     }catch(error){
         console.error("error ording your cart",error);
         throw error;}
+}
+
+export function todaysOrders(user_id){
+    try{
+        const out = api.get(`/orders/${user_id}/TodayOrders`);
+        if(out.status == 204)
+        {return []}
+        return out.data;
+    
+    }catch(error){
+        console.error("error loding orders")}
 }
 
 export async function orderDetails(order_id) {

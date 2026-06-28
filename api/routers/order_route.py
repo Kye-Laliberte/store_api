@@ -38,6 +38,8 @@ def viewNewOrders(user_id:int,db: Session=Depends(get_db)):
     """gets all orders of a user from before the given datetime"""
     today = datetime.now().date()
     orders=db.query(Omodels.Order).filter(Omodels.Order.user_id==user_id, Omodels.Order.order_date >= today).all()
+    if (not orders):
+        HTTPException(status_code=204,detail="no  orders today")
     return orders
 
 @router.get("/{user_id}/weekOrder/",response_class=List[pmodels.orders])
