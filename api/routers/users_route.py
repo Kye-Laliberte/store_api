@@ -65,8 +65,7 @@ def readuser(user_id: int, db: Session = Depends(get_db)):
 @router.put("{user_id}/status",response_model=user_in)
 def updateStatus(user_id:int,status:models.UserStatus,db:Session=Depends(get_db)):    
     
-    user=db.query(models.User).filter(models.User.id==user_id).first()
-    
+    user=get_user(user_id,db)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
@@ -75,15 +74,12 @@ def updateStatus(user_id:int,status:models.UserStatus,db:Session=Depends(get_db)
     db.refresh(user)
     return user_in(user_id=user.id,status=user.status)
     
-
 @router.post("/login", response_model=userOut)
 def loginn(log: login, db: Session=Depends(get_db)):
     """returns the user_Id, and email and cart_id if the user has one active"""
-    try:
-        user=get_user_Email(email=log.email,db=db)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"{e}")
-        
+    
+    user=get_user_Email(email=log.email,db=db)
+    
     if user is None:
         raise HTTPException(status_code=404, detail="user not found")
     
