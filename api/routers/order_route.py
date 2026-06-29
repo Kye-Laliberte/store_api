@@ -84,7 +84,7 @@ def get_order_details(order_id:int, db:Session=Depends(get_db)):
 
 @router.get("/{user_id}/vieworderdetails", response_model=List[pmodels.orderInfo])
 def viewOrderDetails(user_id:int,db: Session=Depends(get_db)):
-    """ shows all detals of past orders incluting item infermation and price at order time
+    """ shows all detals of past orders by user incluting item infermation and price at order time
     returns a list of OrderItems with item detalies"""
     try:
         orderDetails = (db.query(Omodels.Order.id,

@@ -9,6 +9,7 @@ import { useNavigate} from 'react-router-dom';
 import UserWidget from'/src/componets/UserWidget';
 import {ItemList} from'/src/componets/cart_componets'
 import { getUser } from '/src/api/userClient';
+import ViewOrders from '/src/componets/orderViewer'
 
 
 export default function CartPage({user,setUser,incart,setCart}){
@@ -144,7 +145,7 @@ function handleQuantityChange(itemId,value){
         refresh={refreshUser}
         onOpenCart ={()=> setShowCart(true)}
         />
-        
+        <ViewOrders user={user}/>
         <ItemList
         key={2}
         items={items}
