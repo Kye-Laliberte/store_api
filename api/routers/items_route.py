@@ -5,14 +5,15 @@ import api.models.sqlAmodels as models
 from api.psycopg_models import item,createitem, updateitem, ItemSchema
 from typing import List, Optional
 from sqlalchemy import text
-from api.services.item_s import Serviceitems
+from api.services.item_s import get_items,get_active_items,createItem
 router = APIRouter(prefix="/items", tags=["items"])
 
 # READ all items
 @router.get("/get_all",response_model = List[ItemSchema])
 def readAllItems(db: Session = Depends(get_db)):
     itemlist= db.query(models.Item).filter(models.Item.quantity > 0).all()
-
+    if not itemlist:
+        return []
     return itemlist
 
 
@@ -22,13 +23,10 @@ def create_item(newitems:createitem, db: Session = Depends(get_db)):
     name=newitems.name.strip().lower().strip()
     description=newitems.description.strip()
 
-    existing = db.query(models.Item).filter(models.Item.name == name).first()
-    if existing:
-        raise HTTPException(status_code=400, detail="Item already exists")
+    
     try:
-         out = models.Item(name=name, description=description, quantity=newitems.quantity, price=newitems.price)
-         db.add(out)
-         db.commit()
+        out = createItem(name,description,
+                     newitems.price,newitems.quantity,db)
          
     except Exception as e:
         db.rollback()
@@ -39,8 +37,8 @@ def create_item(newitems:createitem, db: Session = Depends(get_db)):
 @router.put("/{item_id}/update",response_model=ItemSchema)
 def update_item(item_id: int,update:updateitem, db: Session = Depends(get_db)):
     """update a items infermation"""
-    service = Serviceitems(db=db)
-    items=service.get_items(item_id)
+    
+    items=get_items(item_id,db)
     if not items:
         raise HTTPException(status_code=404, detail="Item not found")
     try:
@@ -63,31 +61,11 @@ def update_item(item_id: int,update:updateitem, db: Session = Depends(get_db)):
 @router.get("/{item_id}/details",response_model=item)
 def getItem(item_id: int, db: Session = Depends(get_db)):
     """gets items infermation"""
-    service = Serviceitems(db=db)
-    items=service.get_active_items(item_id)
+    
+    items=get_active_items(item_id)
     if not items:
         raise HTTPException(status_code=404, detail="Item not found")
     #if items.quantity == 0: this is now handled by the get_active_items function
     #    raise HTTPException(status_code=404, detail="Item is out of stock")
     out=item(name=items.name, description=items.description, quantity=items.quantity, price=items.price, id=items.id)
     return out
-
-
-
-# DELETE an item
-"""@router.delete("/{item_id}/delete",response_model=item)
-def deleteItem(item_id: int, db: Session = Depends(get_db)):
-    deletes an item from the inventory
-    item = db.query(models.Item).filter(models.Item.id == item_id).first()
-    if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
-    try:
-       
-        db.delete(item)
-        db.commit()
-        
-        return item
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail="Error deleting item") from e       
-"""    

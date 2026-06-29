@@ -117,35 +117,32 @@ class OrderProcessing:
         self.update_stock(prepared_cart_items)
         self.clear_cart(cart_id=prepared_cart_items[0][0].cart_id)
         return new_order
-
-
-class Serviceitems:
-
-    def __init__(self, db: Session):
-        self.db = db
     
-    def get_active_items(self, item_id:int):
-        """get active item by id, if item is not found or not in stock, return None"""
-        out=self.db.query(models.Item).filter(models.Item.id == item_id, models.Item.quantity > 0).first()
-        if not out:
-            return None
-        return out
     
-    def create_item(self, name:str, description:str, price:float, quantity:int):
-        """create a new item in the database, if an item with the same name already exists, raise an error"""
-        if self.db.query(models.Item).filter(models.Item.name==name).first():
-            raise error(status_code=400, detail=f"Item with name {name} already exists")
-        new_item = models.Item(name=name, description=description, price=price, quantity=quantity)
-        self.db.add(new_item)
-        self.db.flush()  # flush to get the new item ID before returning
-        return new_item
+def get_active_items(item_id:int,db:Session):
+    """get active item by id, if item is not found or not in stock, return None"""
+    out=db.query(models.Item).filter(models.Item.id == item_id, models.Item.quantity > 0).first()
+    if not out:
+        return None
+    return out
     
-    def get_items(self, item_id:int):
-        """get item by id, if item is not found return None"""
-        out=self.db.query(models.Item).filter(models.Item.id==item_id).first()
-        if not out:
-            return None
-        return out
+def createItem(name:str, description:str, price:float, quantity:int,db:Session):
+    """create a new item in the database, if an item with the same name already exists, raise an error"""
+    if db.query(models.Item).filter(models.Item.name == name).first():
+        raise error(status_code=400, detail=f"Item with name {name} already exists")
+    
+    new_item = models.Item(name=name, description=description, price=price, quantity=quantity)
+
+    db.add(new_item)
+    db.commit()
+    return new_item
+    
+def get_items(item_id:int,db:Session):
+    """get item by id, if item is not found return None"""
+    out=db.query(models.Item).filter(models.Item.id==item_id).first()
+    if not out:
+        return None
+    return out
     
     
    
