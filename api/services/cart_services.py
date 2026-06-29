@@ -105,7 +105,7 @@ def new_user(email:str,password:str,db:Session):
     exists=get_user_Email(email=email,db=db)
 
     if(exists is not None):
-        raise
+        raise HTTPException(status_code=400, detail="email already in use")
     
     if len(password.encode('utf-8')) < 8:
         raise HTTPException(status_code=400, detail="Password too short.")
