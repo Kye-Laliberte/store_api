@@ -62,12 +62,15 @@ def readuser(user_id: int, db: Session = Depends(get_db)):
     return userOut(id = user.id, email= user.email, user_status=user.status)
     
 
-@router.put("/status",response_model=user_in)
-def updateStatus(input:user_in,db:Session=Depends(get_db)):    
-    user=db.query(models.User).filter(models.User.id==input.user_id).first()
+@router.put("{user_id}/status",response_model=user_in)
+def updateStatus(user_id:int,status:models.UserStatus,db:Session=Depends(get_db)):    
+    
+    user=db.query(models.User).filter(models.User.id==user_id).first()
+    
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    user.status=input.status
+    
+    user.status=status
     db.commit()
     db.refresh(user)
     return user_in(user_id=user.id,status=user.status)
