@@ -6,10 +6,6 @@ import api.models.sqlAmodels as models
 import api.psycopg_models as pmod # pydantic models
 from sqlalchemy.orm import Session
 
-class Service:
-    def __init__(self, db: Session):
-        self.db = db
-
 
 def newcart(cart:models.Cart,db:Session):
     """deletes a users existing cart if it exists then
@@ -34,7 +30,6 @@ def newcart(cart:models.Cart,db:Session):
         logging.error(f"Error creating new cart for user {cart.user_id}: {e}")
         db.rollback()
         raise HTTPException(status_code=500, detail="An error occurred while creating a new cart")
-    
     
 def getcart(user_id: int, db: Session):
     """reusable serves to retreave a users carts info and then returns a pydantic model"""
