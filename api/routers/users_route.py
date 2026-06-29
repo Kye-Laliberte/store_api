@@ -6,7 +6,7 @@ from passlib.context import CryptContext
 from typing import List, Optional
 from api.psycopg_models import users,userOut, login,user_in,userinfo
 from passlib.hash import bcrypt
-from api.services.cart_services import get_user, getcart, get_user_Email
+from api.services.cart_services import get_user, getcart, get_user_Email,new_user
 
 router = APIRouter(prefix="/users", tags=["users"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -15,25 +15,12 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 @router.post("/addUser",response_model=users)
 def create_user(email: str, password: str, db: Session = Depends(get_db)):
     """create a new user with a hashed pasword and email returning  user_id, email, created_at, hashed_password"""
-    exist = db.query(models.User).filter(models.User.email == email).first()
+    
     email=email.lower().strip()
     password=password.strip()
 
-    if exist:
-        raise HTTPException(status_code=400, detail="Email already registered")
+    user=new_user(email,password,db)
     
-    if len(password.encode('utf-8')) < 9:
-        raise HTTPException(status_code=400, detail="Password too shot.")
-
-    hashed_password = pwd_context.hash(password)
-     
-    if(len(hashed_password)>72):
-        raise HTTPException(status_code=400, detail=f"{len(hashed_password)}Password too long (max 72 bytes).")
-    
-    user = models.User(email=email, password_hash=password)
-    db.add(user)
-    db.commit()
-    db.refresh(user)
     return users( id= user.id, email= user.email, created_at= user.created_at)
 
 

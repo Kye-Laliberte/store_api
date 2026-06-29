@@ -5,7 +5,8 @@ import logging
 import api.models.sqlAmodels as models
 import api.psycopg_models as pmod # pydantic models
 from sqlalchemy.orm import Session
-
+from passlib.context import CryptContext
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def newcart(cart:models.Cart,db:Session):
     """deletes a users existing cart if it exists then
@@ -97,3 +98,25 @@ def get_user_Email(email:str,db:Session):
     except Exception as e:
         logging(f"error reteving user {e}")
         raise e
+    
+
+
+def new_user(email:str,password:str,db:Session):
+    exists=get_user_Email(email=email,db=db)
+
+    if(exists is not None):
+        raise
+    
+    if len(password.encode('utf-8')) < 8:
+        raise HTTPException(status_code=400, detail="Password too short.")
+    
+    hashed_password = pwd_context.hash(password)
+
+    if(len(hashed_password)>72):
+        raise HTTPException(status_code=400, detail=f"{len(hashed_password)}Password too long (max 72 bytes).")
+    
+    user = models.User(email=email, password_hash=password)
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
