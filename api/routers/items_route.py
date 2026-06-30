@@ -3,8 +3,7 @@ from sqlalchemy.orm import Session
 from api.database import  get_db
 import api.models.sqlAmodels as models
 from api.psycopg_models import item,createitem, updateitem, ItemSchema
-from typing import List, Optional
-from sqlalchemy import text
+from typing import List
 from api.services.item_s import get_items,get_active_items,createItem
 router = APIRouter(prefix="/items", tags=["items"])
 
@@ -65,7 +64,6 @@ def getItem(item_id: int, db: Session = Depends(get_db)):
     items=get_active_items(item_id)
     if not items:
         raise HTTPException(status_code=404, detail="Item not found")
-    #if items.quantity == 0: this is now handled by the get_active_items function
-    #    raise HTTPException(status_code=404, detail="Item is out of stock")
+        
     out=item(name=items.name, description=items.description, quantity=items.quantity, price=items.price, id=items.id)
     return out
