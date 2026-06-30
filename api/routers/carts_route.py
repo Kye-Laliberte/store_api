@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from api.database import get_db
 import api.models.sqlAmodels as models
-from typing import List, Optional
+from typing import List
 from api.psycopg_models import CartItemsOut,carts,create_cartItem,createCart,UserStatus
 from api.services.cart_services import filter_user, getcart, newcart,FindCart
 router = APIRouter(prefix="/carts", tags=["carts"])
@@ -125,7 +125,6 @@ def newCart(user_id:int, db: Session = Depends(get_db)):
     
     try:
         
-        new_cart = models.Cart(user_id=user_id)
         out_cart=newcart(user_id,db=db)
 
         if not out_cart:

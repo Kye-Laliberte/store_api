@@ -7,7 +7,20 @@ import { useNavigate} from 'react-router-dom';
 import CartWindow from './orderWidget';
 
 
+ export default function CartViewer({cart,user,refresh,dropcart,new_Cart}){
 
+ function Addcart({user, new_Cart}){
+    return (
+        <div>
+            <h3>no cart</h3>
+            <button
+            className='button2'
+            disabled ={user?.cart_id}
+            onClick={() => new_Cart(user)}
+            >NEW cart</button>
+        </div>
+    )
+}
 function LeaveCart({user, dropcart}){
         return ( 
         <div>
@@ -20,22 +33,7 @@ function LeaveCart({user, dropcart}){
             
         </div>);
     }
-
-function Addcart({user, new_Cart}){
-    return (
-        <div>
-            <h3>no cart</h3>
-            <button
-            className='button2'
-            disabled ={user?.cart_id}
-            onClick={() => new_Cart(user)}
-            >NEW cart</button>
-        </div>
-    )
-}
-
- export default function CartViewer({cart,user,refresh,dropcart,new_Cart}){
-    
+       
     if(!user?.id){
          return(<p>not loged in</p>);
             }
