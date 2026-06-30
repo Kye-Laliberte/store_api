@@ -39,11 +39,12 @@ def FindCart(user_id:int,cart_id:int,db:Session):
     """this gets a cart User info when a user_id and Cart_id are in a relashinship """
     try:
         cart=(db.query(models.Cart.id,models.Cart.cart_date,models.Cart.user_id,models.User.status)
-          .filter(models.Cart.user_id == user_id, models.Cart.id == cart_id)
-          .join(models.User)).first()
+          .filter(models.User.id == user_id, models.Cart.id == cart_id)
+          .join(models.User, models.User.id == user_id)).first()
     
         if not cart:
             return None
+        
         return cart
     
     except Exception as e:
@@ -56,7 +57,7 @@ def getcart(user_id: int, db: Session):
         # this query will join with 
         cart=(db.query(models.Cart.id,models.Cart.cart_date,models.Cart.user_id,models.User.status)
               .filter(models.Cart.user_id == user_id)
-              .join(models.User)).first()
+              .join(models.User, models.User.id == user_id)).first()
 
         if not cart:
             return None
