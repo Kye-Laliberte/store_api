@@ -5,9 +5,8 @@ from sqlalchemy.orm import Session
 from api.database import get_db
 import api.models.sqlAmodels as models
 from typing import List, Optional
-from api.psycopg_models import CartItemsOut,carts,create_cartItem,createCart,UserStatus,userOut
-from datetime import datetime
-from api.services.cart_services import filter_user, getcart, get_user, newcart,FindCart
+from api.psycopg_models import CartItemsOut,carts,create_cartItem,createCart,UserStatus
+from api.services.cart_services import filter_user, getcart, newcart,FindCart
 router = APIRouter(prefix="/carts", tags=["carts"])
 
 #add item to cart
@@ -122,14 +121,12 @@ def newCart(user_id:int, db: Session = Depends(get_db)):
     
     exists=getcart(user_id,db) 
     if exists:
-         #return {"mesage": True  }
          raise HTTPException(status_code=200,detail="cart alredy active")
-         #return exists
-    cart_date = datetime.now()
+    
     try:
         
-        new_cart = models.Cart(user_id=user_id, cart_date=cart_date)
-        out_cart=newcart(cart=new_cart,db=db)
+        new_cart = models.Cart(user_id=user_id)
+        out_cart=newcart(user_id,db=db)
 
         if not out_cart:
             raise HTTPException(status_code=500, detail="Failed to create new cart")

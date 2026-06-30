@@ -6,29 +6,32 @@ import api.models.sqlAmodels as models
 import api.psycopg_models as pmod # pydantic models
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
+from datetime import datetime
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-def newcart(cart:models.Cart,db:Session):
+def newcart(user_id,db:Session):
     """deletes a users existing cart if it exists then
       creates a new cart for a user and returns the cart sql model"""
-    user=filter_user(user_id=cart.user_id,status=pmod.UserStatus.active,db=db)
+    cart_date = datetime.now()
+    new_cart = models.Cart(user_id=user_id, cart_date=cart_date)
+    user=filter_user(user_id=new_cart.user_id,status=pmod.UserStatus.active,db=db)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
     try:
-        existing_cart = db.query(models.Cart).filter(models.Cart.user_id == cart.user_id).delete()
+        existing_cart = db.query(models.Cart).filter(models.Cart.user_id == new_cart.user_id).delete()
         if existing_cart:
-            logging.info(f"Existing cart for user {cart.user_id} deleted.")
+            logging.info(f"Existing cart for user {new_cart.user_id} deleted.")
     except Exception as e:
-        logging.error(f"the cart still has cartitems {cart.user_id}: {e}")
+        logging.error(f"the cart still has cartitems {new_cart.user_id}: {e}")
     try:
-        db.add(cart)
+        db.add(new_cart)
         db.commit()
-        db.refresh(cart)
-        logging.info(f"New cart created for user {cart.user_id} with cart ID {cart.id}.")
-        return cart
+        db.refresh(new_cart)
+        logging.info(f"New cart created for user {new_cart.user_id} with cart ID {new_cart.id}.")
+        return new_cart
     except Exception as e:
-        logging.error(f"Error creating new cart for user {cart.user_id}: {e}")
+        logging.error(f"Error creating new cart for user {new_cart.user_id}: {e}")
         db.rollback()
         raise HTTPException(status_code=500, detail="An error occurred while creating a new cart")
 
