@@ -31,19 +31,33 @@ def newcart(cart:models.Cart,db:Session):
         logging.error(f"Error creating new cart for user {cart.user_id}: {e}")
         db.rollback()
         raise HTTPException(status_code=500, detail="An error occurred while creating a new cart")
+
+def FindCart(user_id:int,cart_id:int,db:Session):
+    """this gets a cart User info when a user_id and Cart_id are in a relashinship """
+    try:
+        cart=(db.query(models.Cart.id,models.Cart.cart_date,models.Cart.user_id,models.User.status)
+          .filter(models.Cart.user_id == user_id, models.Cart.id == cart_id)
+          .join(models.User)).first()
     
+        if not cart:
+            return None
+        return cart
+    
+    except Exception as e:
+        logging.error(f"error retrieving user cart: {e}")
+        raise e
+
 def getcart(user_id: int, db: Session):
     """reusable serves to retreave a users carts info and then returns a pydantic model"""
     try:
         # this query will join with 
-        cart=(db.query(models.Cart.id,models.Cart.cart_date,models.Cart.user_id,models.User.status).filter(models.Cart.user_id == user_id)
+        cart=(db.query(models.Cart.id,models.Cart.cart_date,models.Cart.user_id,models.User.status)
+              .filter(models.Cart.user_id == user_id)
               .join(models.User)).first()
 
-        
         if not cart:
             return None
         
-        #v=pmod.carts(id=cart.id,user_id=user_id,cart_date=cart.cart_date)
         return cart
     except Exception as e:
         logging.error(f"error retrieving user cart: {e}")
