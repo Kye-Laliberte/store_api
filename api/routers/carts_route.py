@@ -7,7 +7,7 @@ import api.models.sqlAmodels as models
 from typing import List, Optional
 from api.psycopg_models import CartItemsOut,carts,create_cartItem,createCart,UserStatus,userOut
 from datetime import datetime
-from api.services.cart_services import filter_user, getcart, get_user, newcart
+from api.services.cart_services import filter_user, getcart, get_user, newcart,FindCart
 router = APIRouter(prefix="/carts", tags=["carts"])
 
 #add item to cart
@@ -18,10 +18,10 @@ def carthome():
 
 
 @router.get("/{user_id}/viewcart/{cart_id}",response_model=List[CartItemsOut])
-def viewCart(user_id:int,db: Session=Depends(get_db)):
+def viewCart(user_id:int,cart_id:int, db: Session=Depends(get_db)):
     """retreves all items in the cart that relar to the user_id and returns a list of models with the item name, description, price and quantity"""
     
-    cart=getcart(user_id, db)
+    cart=FindCart(user_id,cart_id, db)
 
     if not cart:
         raise HTTPException(status_code=404,detail=f"no cart found ")
@@ -40,8 +40,6 @@ def viewCart(user_id:int,db: Session=Depends(get_db)):
         logging.info(f"Cart {cart.id} for user {user_id} is empty.")
         raise HTTPException(status_code=200, detail=f"User {user_id} has an empty cart.")
     
-    
-
     return[
         CartItemsOut(
             item_id=items.item_id,
@@ -71,7 +69,7 @@ def additem(user_id:int,cart_id:int, item:create_cartItem,db:Session=Depends(get
         raise HTTPException( status_code=400,detail="cant add less than 1 items to a cart")
     
     
-    cart=getcart(user_id=user_id,db=db)
+    cart=FindCart(user_id=user_id,cart_id=cart_id,db=db)
 
     if not cart:
             raise HTTPException(status_code=404,detail=" cart not found.")
@@ -163,12 +161,11 @@ def leaveitem(item_id:int,cart_id:int,db:Session=Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=500, detail="An error occurred while removing item from cart")
     
-    
 @router.delete("/{user_id}/dropCart/{cart_id}",response_model=carts)
 def dropcart(user_id:int,cart_id:int,db:Session=Depends(get_db)):
     """removes all items from the cartItems tabel pertaning to the user_id and removes the cart from the Cart tebel"""
    
-    cart=getcart(user_id,db)
+    cart=FindCart(user_id,cart_id,db)
     if  not cart:
         raise HTTPException(status_code=404,detail="no cart active or found")
     
