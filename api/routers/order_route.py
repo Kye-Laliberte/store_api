@@ -6,12 +6,12 @@ from sqlalchemy import text
 from api.database import get_db
 import api.models.sqlAmodels as models
 import  api.models.ordermodels as Omodels
-from typing import List, Optional
-from api.psycopg_models import users,userOut, UserStatus
+from typing import List
+from api.psycopg_models import UserStatus
 from datetime import datetime, timedelta
 import api.models.psyc_order as pmodels
 from api.services.cart_services import getcart
-from api.services.item_s import OrderProcessing, error
+from api.services.item_s import OrderProcessing
 router = APIRouter(prefix="/orders", tags=["orders"])
 
 #add item to cart

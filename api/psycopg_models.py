@@ -41,9 +41,6 @@ class UserStatus(str, Enum):
     active = "active"
     inactive = "inactive"
     suspended = "suspended"
-class user_in(BaseModel):
-     user_id: int 
-     status: UserStatus
     
 class login(BaseModel):
      #pasword:int

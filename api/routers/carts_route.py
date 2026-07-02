@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from api.database import get_db
 import api.models.sqlAmodels as models
 from typing import List
-from api.psycopg_models import CartItemsOut,carts,create_cartItem,createCart,UserStatus
+from api.psycopg_models import CartItemsOut,carts,create_cartItem,UserStatus
 from api.services.cart_services import filter_user, getcart, newcart,FindCart
 router = APIRouter(prefix="/carts", tags=["carts"])
 

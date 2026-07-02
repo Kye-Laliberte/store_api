@@ -3,9 +3,8 @@ from sqlalchemy.orm import Session
 from api.database import get_db
 import api.models.sqlAmodels as models
 from passlib.context import CryptContext
-from typing import List, Optional
-from api.psycopg_models import users,userOut, login,user_in,userinfo
-from passlib.hash import bcrypt
+from typing import List
+from api.psycopg_models import users,userOut, login,userinfo
 from api.services.cart_services import get_user, getcart, get_user_Email,new_user
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -62,7 +61,7 @@ def readuser(user_id: int, db: Session = Depends(get_db)):
     return userOut(id = user.id, email= user.email, user_status=user.status)
     
 
-@router.put("{user_id}/status",response_model=user_in)
+@router.put("{user_id}/status",response_model=userOut)
 def updateStatus(user_id:int,status:models.UserStatus,db:Session=Depends(get_db)):    
     
     user=get_user(user_id,db)
@@ -72,7 +71,7 @@ def updateStatus(user_id:int,status:models.UserStatus,db:Session=Depends(get_db)
     user.status=status
     db.commit()
     db.refresh(user)
-    return user_in(user_id=user.id,status=user.status)
+    return userOut(id= user.id, email= user.email, user_status=user.status)
     
 @router.post("/login", response_model=userOut)
 def loginn(log: login, db: Session=Depends(get_db)):
