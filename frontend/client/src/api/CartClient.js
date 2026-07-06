@@ -50,7 +50,9 @@ export async function new_Cart(user_id){
 export async function removeFromCart(user,item_id){
     try{
         console.log(user.cart_id,item_id)
-        const response = await api.delete(`/carts/${user.cart_id}/removeitem/${item_id}`);
+        var cart_id = user.cart_id;
+        var user_id = user.id;
+        const response = await api.delete(`/carts/${cart_id}/${user_id}/removeitem/${item_id}`);
         
         if(response.status !== 200){
             throw new Error(`Failed to remove item from cart: ${response.statusText}`);

@@ -39,8 +39,8 @@ def FindCart(user_id:int,cart_id:int,db:Session):
     """this gets a cart User info when a user_id and Cart_id are in a relashinship """
     try:
         cart=(db.query(models.Cart.id,models.Cart.cart_date,models.Cart.user_id,models.User.status)
-          .filter(models.User.id == user_id, models.Cart.id == cart_id)
-          .join(models.User, models.User.id == user_id)).first()
+          .filter(models.Cart.user_id == user_id, models.Cart.id == cart_id)
+          .join(models.User, models.User.id == models.Cart.user_id)).first()
     
         if not cart:
             return None
@@ -57,7 +57,7 @@ def getcart(user_id: int, db: Session):
         # this query will join with 
         cart=(db.query(models.Cart.id,models.Cart.cart_date,models.Cart.user_id,models.User.status)
               .filter(models.Cart.user_id == user_id)
-              .join(models.User, models.User.id == user_id)).first()
+              .join(models.User, models.User.id == models.Cart.user_id)).first()
 
         if not cart:
             return None
@@ -69,11 +69,11 @@ def getcart(user_id: int, db: Session):
 
 def getcaritem(cart_id:int,item_id:int, db: Session):
     try:
-        cartitem=(db.query(models.CartItem)
-                  .filter(models.CartItem.cart_id == cart_id,  models.CartItem.item_id == item_id))
+        cartitem = (db.query(models.CartItem)
+                  .filter(models.CartItem.cart_id == cart_id,  models.CartItem.item_id == item_id)).first()
         if not cartitem:
-            return None
-    
+            return False
+        
         return cartitem    
     except Exception as e:
         logging(f"error reteving cartitem{e}")
@@ -120,7 +120,9 @@ def get_user_Email(email:str,db:Session):
 def delete_cart(cart_id:int,db:Session):
     """deletes a cart and all cartitems that are related to the cart_id"""
     try:
-            
+        if not db.query(models.Cart).filter(models.Cart.id == cart_id).first():
+            raise HTTPException(status_code=404, detail=f"Cart with id {cart_id} not found.")    
+        
         db.query(models.CartItem).filter(models.CartItem.cart_id==cart_id).delete()
         db.query(models.Cart).filter(models.Cart.id==cart_id).delete()
         db.commit()
@@ -149,3 +151,54 @@ def new_user(email:str,password:str,db:Session):
     db.commit()
     db.refresh(user)
     return user
+
+def additemCart(item_id:int,user:pmod.cartpacage,quantity:int,db:Session):
+    """adds an item to a users cart if the user is active and the item is in stock"""
+    
+    user_id=user.user_id
+    
+    cart=FindCart(user_id=user_id,cart_id = user.cart_id,db=db)
+
+    if not cart:
+            raise HTTPException(status_code=404,detail=" cart not found.")
+    
+    if cart.status != pmod.UserStatus.active:
+        raise HTTPException(status_code=400, detail="User is not active. Cannot add items to cart.")
+
+    Item=(db.query(models.Item).filter(models.Item.id==item_id, models.Item.quantity > quantity).first())
+    if not Item:
+            raise HTTPException(status_code=404,detail=f"item with id {item_id} not found or out of stock")
+    
+    if Item.quantity < quantity:
+            logging.error(f"Insufficient stock for item {item_id} while adding to cart for user {user_id}")
+            raise HTTPException(status_code=400, detail=f"Insufficient stock for item {item_id}")
+    
+    try:
+        existing = (
+            db.query(models.CartItem)
+            .filter(models.CartItem.cart_id == cart.id, models.CartItem.item_id == item_id).first())
+        
+        if existing:
+            existing.quantity = quantity
+            out = existing
+        else:
+            out =models.CartItem(cart_id=cart.id, item_id=item_id, quantity=quantity)
+             
+           
+        db.add(out)
+        db.commit()
+        db.refresh(out)
+        return pmod.CartItemsOut(item_id=out.item_id, quantity=out.quantity,
+                     name=Item.name,description=Item.description,price=Item.price,totalprice=Item.quantity*Item.price)
+         
+    except Exception as e:
+        logging.error(f"Error checking for existing cart info for user {user_id} and item {item_id}: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="An error occurred while checking for existing cart item")
+    except KeyError as e:
+        logging.error(f"Key error while processing cart item for user {user_id} and item {item_id}: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"An error occurred while processing cart item {e}")
+
+
+
