@@ -71,10 +71,6 @@ class createCart(BaseModel):
       user_id:int
       cart_date: Optional[datetime]=datetime.now()
 
-class cart_items(BaseModel):
-    item_id:int
-    quantity: int = Field(...,gt=0)
-
 
 class CartItemsOut(BaseModel):
     item_id: int
@@ -104,3 +100,10 @@ class purchaseout(BaseModel):
     totalprice: float = Field(...,gt=0)
     quantity: int = Field(...,gt=0)  
 
+class cartpacage(BaseModel):
+    cart_id:int
+    user_id:int
+    status:Optional[UserStatus]=UserStatus.active
+    cart_date: Optional[datetime]=datetime.now()
+    items: list[CartItemsOut] = []
+    totalprice: float = Field(0,gt=0)
