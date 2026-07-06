@@ -22,7 +22,7 @@ const [ email, setEmail] = useState("");
       }
       console.log("user data",userdata)
       setUser(userdata)
-      await refresh(userdata.id);  
+      await refresh(userdata);  
       console.log(user) 
       
     }
@@ -41,7 +41,7 @@ const [ email, setEmail] = useState("");
       }
         
       alert(`User set to ${data.id}`);
-      refresh(data.id);
+      refresh(data);
     }catch (err) {
       console.error(err);
       alert("Login failed");    

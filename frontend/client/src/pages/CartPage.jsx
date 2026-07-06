@@ -142,7 +142,7 @@ function handleQuantityChange(itemId,value){
         
         user={user}
         setUser={setUser}
-        refresh={refreshUser}
+        refresh={refresh}
         onOpenCart ={()=> setShowCart(true)}
         />
         <ViewOrders user={user}/>
