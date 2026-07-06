@@ -117,7 +117,18 @@ def get_user_Email(email:str,db:Session):
         logging(f"error reteving user {e}")
         raise e
     
-
+def delete_cart(cart_id:int,db:Session):
+    """deletes a cart and all cartitems that are related to the cart_id"""
+    try:
+            
+        db.query(models.CartItem).filter(models.CartItem.cart_id==cart_id).delete()
+        db.query(models.Cart).filter(models.Cart.id==cart_id).delete()
+        db.commit()
+        return True
+    except Exception as e:
+        logging.error(f"Error occurred while dropping the cart for cart {cart_id}: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="An error occurred while dropping the cart")
 
 def new_user(email:str,password:str,db:Session):
     exists=get_user_Email(email=email,db=db)

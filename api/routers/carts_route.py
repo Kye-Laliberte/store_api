@@ -6,7 +6,7 @@ from api.database import get_db
 import api.models.sqlAmodels as models
 from typing import List
 from api.psycopg_models import CartItemsOut,carts,create_cartItem,UserStatus
-from api.services.cart_services import filter_user, getcart, newcart,FindCart,getcaritem
+from api.services.cart_services import filter_user, getcart, newcart,FindCart,getcaritem,delete_cart
 router = APIRouter(prefix="/carts", tags=["carts"])
 
 #add item to cart
@@ -161,17 +161,13 @@ def leaveitem(item_id:int,cart_id:int,db:Session=Depends(get_db)):
 def dropcart(user_id:int,cart_id:int,db:Session=Depends(get_db)):
     """removes all items from the cartItems tabel pertaning to the user_id and removes the cart from the Cart tebel"""
    
-    cart=FindCart(user_id,cart_id,db)
-    if  not cart:
-        raise HTTPException(status_code=404,detail="no cart active or found")
-    
-#    if cart.status != UserStatus.active:
-#        raise HTTPException(status_code=400, detail="User is not active. Cannot drop cart.")
-    
-    try:    
-        db.query(models.CartItem).filter(models.CartItem.cart_id==cart.id).delete()
-        db.query(models.Cart).filter(models.Cart.id==cart.id,models.Cart.user_id==cart.user_id).delete()
-        db.commit()
+    try:
+        cart=FindCart(user_id=user_id,cart_id=cart_id,db=db)
+        if not cart:
+            raise HTTPException(status_code=404, detail="Cart not found.")
+            
+        delete_cart(cart_id=cart_id,db=db)
+        
         return carts(id=cart.id,user_id=cart.user_id,cart_date=cart.cart_date)
     except Exception as e:
         logging.error(f"Error occurred while dropping the cart for user {user_id}: {e}")
