@@ -6,7 +6,7 @@ from api.database import get_db
 import api.models.sqlAmodels as models
 from typing import List
 from api.psycopg_models import CartItemsOut,carts,create_cartItem,UserStatus
-from api.services.cart_services import filter_user, getcart, newcart,FindCart
+from api.services.cart_services import filter_user, getcart, newcart,FindCart,getcaritem
 router = APIRouter(prefix="/carts", tags=["carts"])
 
 #add item to cart
@@ -142,8 +142,8 @@ def leaveitem(item_id:int,cart_id:int,db:Session=Depends(get_db)):
     """delete a cartItem that  relats to carts.id== cartitems.cart_id belongs to carts.user_id
     returns item_id quantity of cartitem"""
     
-    cartitem=(db.query(models.CartItem)
-              .filter(cart_id==models.CartItem.cart_id,item_id==models.CartItem.item_id).first())
+    cartitem=getcaritem(cart_id=cart_id,item_id=item_id,db=db)
+    
     if not cartitem:
         raise HTTPException(status_code=404, detail="Item not in cart.")
     
