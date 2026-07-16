@@ -1,5 +1,3 @@
-#venv\Scripts\Activate.ps1
-
 from sqlalchemy import text
 from fastapi import FastAPI
 import logging
@@ -7,7 +5,7 @@ from .routers.items_route import router  as item_router
 from .routers.carts_route import router as cart_router
 from .routers.users_route import router as user_router
 from .routers.order_route import router as order_router 
-from .database import LocalSession, engine
+from database import LocalSession, engine
 import uvicorn
 #models.Base.metadata.create_all(bind=engine)
 #Omodels.Base.metadata.create_all(bind=engine)
@@ -38,31 +36,5 @@ def home():
     return {"message":"Welcome to the shping API its a work in progress."}
 
 
-def testConnection():
-    """Test the database connection."""
-    try:
-        with engine.connect() as connection:
-            result = connection.execute(text("SELECT 1 "))
-            print("Database connection test result:", result.fetchone())
-            logging.info("Database connection test successful.", extra={"result": result.fetchone()})
-    except Exception as e:
-        logging.error("Database connection test failed.", exc_info=True)
-        print("Database connection test failed:", e)
-
-def test_sqlalchemy():
-    """Test SQLAlchemy session."""
-    try:
-        with LocalSession() as session:
-            result = session.execute(text("SELECT 1"))
-            print("SQLAlchemy session test result:", result.fetchone())
-            logging.info("SQLAlchemy session test successful.", extra={"result": result.fetchone()})
-    except Exception as e:
-        logging.error("SQLAlchemy session test failed.", exc_info=True)
-        print("SQLAlchemy session test failed:", e)
-
-if __name__ == "__main__":
-    testConnection()     
-    test_sqlalchemy()
-    
     
 #uvicorn api.main:app --reload
