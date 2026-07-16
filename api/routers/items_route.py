@@ -61,7 +61,7 @@ def update_item(item_id: int,update:updateitem, db: Session = Depends(get_db)):
 def getItem(item_id: int, db: Session = Depends(get_db)):
     """gets items infermation"""
     
-    items=get_active_items(item_id)
+    items=get_active_items(item_id,db)
     if not items:
         raise HTTPException(status_code=404, detail="Item not found")
         

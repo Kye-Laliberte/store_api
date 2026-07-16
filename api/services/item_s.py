@@ -1,6 +1,4 @@
-from symtable import Class
 from fastapi import HTTPException
-from api.database import get_db
 import logging
 import api.models.sqlAmodels as models
 import api.psycopg_models as pmod # pydantic models

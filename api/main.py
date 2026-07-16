@@ -3,11 +3,11 @@
 from sqlalchemy import text
 from fastapi import FastAPI
 import logging
-from api.routers.items_route import router  as item_router 
-from api.routers.carts_route import router as cart_router
-from api.routers.users_route import router as user_router
-from api.routers.order_route import router as order_router 
-from api.database import LocalSession, engine
+from .routers.items_route import router  as item_router 
+from .routers.carts_route import router as cart_router
+from .routers.users_route import router as user_router
+from .routers.order_route import router as order_router 
+from .database import LocalSession, engine
 import uvicorn
 #models.Base.metadata.create_all(bind=engine)
 #Omodels.Base.metadata.create_all(bind=engine)
