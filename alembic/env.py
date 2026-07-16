@@ -1,9 +1,11 @@
 import os
 import sys 
 from logging.config import fileConfig
+import alembic
 from sqlalchemy import engine_from_config,pool
 from alembic import context, config
 from dotenv import load_dotenv
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from api.models.sqlAmodels import Base
@@ -12,10 +14,9 @@ load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Alembic Config object
-#alembic_cfg = Config(os.path.join(os.path.dirname(__file__),"..","alembic.ini"))
-#alembic_cfg = config(os.path.join(...))
-context_cfg = context.config
+#Alembic Config object
+alembic_cfg = alembic.config.Config(os.path.join(os.path.dirname(__file__),"..","alembic.ini"))
+context_cfg = alembic.context.config
 print(f"{context_cfg}  this is alembic_cfg")
 print(f"{DATABASE_URL} this is DATABASE_URL")
 
