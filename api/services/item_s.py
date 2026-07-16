@@ -1,9 +1,8 @@
 from fastapi import HTTPException
 import logging
 import api.models.sqlAmodels as models
-import api.psycopg_models as pmod # pydantic models
 from sqlalchemy.orm import Session
-from api.models.ordermodels import OrderItem, Order
+from api.models.ordermodels import Order
 from sqlalchemy import text
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
