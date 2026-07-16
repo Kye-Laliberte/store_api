@@ -1,19 +1,17 @@
 #venv\Scripts\Activate.ps1
 
-from fastapi import FastAPI, Depends, HTTPException, APIRouter
-from sqlalchemy.orm import Session
-import  api.models.sqlAmodels as models
-import  api.models.ordermodels as Omodels 
+from sqlalchemy import text
+from fastapi import FastAPI
 import logging
 from api.routers.items_route import router  as item_router 
 from api.routers.carts_route import router as cart_router
 from api.routers.users_route import router as user_router
 from api.routers.order_route import router as order_router 
-from api.database import get_db,engine,LocalSession
-from sqlalchemy import text
-models.Base.metadata.create_all(bind=engine)
-Omodels.Base.metadata.create_all(bind=engine)
-import logging
+from api.database import LocalSession, engine
+import uvicorn
+#models.Base.metadata.create_all(bind=engine)
+#Omodels.Base.metadata.create_all(bind=engine)
+
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Inventory API")
@@ -38,6 +36,7 @@ def get_datab():
 @app.get("/")
 def home():
     return {"message":"Welcome to the shping API its a work in progress."}
+
 
 def testConnection():
     """Test the database connection."""
