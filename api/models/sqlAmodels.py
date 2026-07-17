@@ -21,7 +21,7 @@ class Item(Base):
     __tablename__ = "items"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, nullable=False)
-    description = Column(String, default="no description")
+    description = Column(String)
     quantity= Column(Integer, CheckConstraint('quantity_available  >= 0'), nullable=False, default=0,)
     price = Column(Numeric(10, 2),CheckConstraint('price > 0'), nullable=False)
     order_items = relationship("OrderItem", back_populates="item")
