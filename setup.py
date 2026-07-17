@@ -1,27 +1,21 @@
+
 from api.connect import get_connection
 from os.path import exists 
 import random
 import psycopg2
 import logging
 from datetime import datetime
-def setup(schema_path="sql/schema.sql"):
-    
-    if not exists(schema_path):
-        raise FileNotFoundError(f"file not found: {schema_path}")
-    
-    with open(schema_path, "r", encoding="utf-8") as file:
-            sql = file.read()
-    
-    with get_connection()as conn:
+def seed_data():
+   """   Seeds the database with initial data for users, items, carts, and orders.
+    This function connects to the database, and inserts sample data into the users, items, carts, and orders tables."""
+   with get_connection()as conn:
         with conn.cursor() as cursor:
-            cursor.execute(sql)
             
-            # Users
             cursor.execute("""
-                INSERT INTO users (email, password_hash, created_at)
+                INSERT INTO users (email, password_hash, created_at, status)
                 VALUES
-                ('alice@gmail.com', 'hash_alice', %s),
-                       ('bob@outlook.com', 'hash_bob', %s)
+                ('alice@gmail.com', 'hash_alice', %s, 'active'),
+                       ('bob@outlook.com', 'hash_bob', %s, 'active')
                 ON CONFLICT (email) DO NOTHING;
             """, (datetime.now(), datetime.now()))
 
@@ -37,7 +31,7 @@ def setup(schema_path="sql/schema.sql"):
 
             # Carts (one per user)
             cursor.execute("""
-                INSERT INTO carts (user_id, purchase_date)
+                INSERT INTO carts (user_id, cart_date)
                 SELECT id, %s FROM users
                 ON CONFLICT (user_id) DO NOTHING;
             """, (datetime.now(),))
@@ -69,7 +63,7 @@ def setup(schema_path="sql/schema.sql"):
             """)
 def setup_db():
     try:
-        setup()
+        seed_data()
         logging.info("Database setup completed successfully.")
     except psycopg2.Error as e:
         logging.error(f"Database error: {e}")
