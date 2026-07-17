@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: Datastore-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: Datastore
+    ports:
+      - "5432:5432"
+    volumes:
+      - Datastore:/var/lib/postgresql/data
+
+volumes:
+  Datastore:
