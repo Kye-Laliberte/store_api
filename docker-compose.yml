@@ -11,5 +11,21 @@ services:
     volumes:
       - Datastore:/var/lib/postgresql/data
 
+  fastapi:
+    build: .
+    container_name: store-api
+    ports:
+      - "8000:8000"
+
+    environment:
+      DATABASE_URL: postgresql://postgres:12342@postgres:5432/Datastore
+
+    depends_on:
+      - postgres
+
+    volumes:
+      - .:/app
+
+
 volumes:
   Datastore:
