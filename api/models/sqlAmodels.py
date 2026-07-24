@@ -22,7 +22,7 @@ class Item(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, nullable=False)
     description = Column(String)
-    quantity= Column(Integer, CheckConstraint('quantity_available  >= 0'), nullable=False, default=0,)
+    quantity = Column(Integer, CheckConstraint('quantity >= 0'), nullable=False, default=0,)
     price = Column(Numeric(10, 2),CheckConstraint('price > 0'), nullable=False)
     order_items = relationship("OrderItem", back_populates="item")
     cart_items = relationship("CartItem", back_populates="item")
@@ -42,6 +42,5 @@ class CartItem(Base):
     item_id = Column(Integer, ForeignKey("items.id"), primary_key=True)
     quantity = Column(Integer, CheckConstraint('quantity > 0'), nullable=False)
     
-    item = relationship("Item") 
     cart = relationship("Cart", back_populates="cart_items")
     item = relationship("Item", back_populates="cart_items")

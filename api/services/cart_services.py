@@ -146,7 +146,7 @@ def new_user(email:str,password:str,db:Session):
     if(len(hashed_password)>72):
         raise HTTPException(status_code=400, detail=f"{len(hashed_password)}Password too long (max 72 bytes).")
     
-    user = models.User(email=email, password_hash=password)
+    user = models.User(email=email, password_hash=hashed_password)
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -165,7 +165,7 @@ def additemCart(item_id:int,user:pmod.cartpacage,quantity:int,db:Session):
     if cart.status != pmod.UserStatus.active:
         raise HTTPException(status_code=400, detail="User is not active. Cannot add items to cart.")
 
-    Item=(db.query(models.Item).filter(models.Item.id==item_id, models.Item.quantity > quantity).first())
+    Item=(db.query(models.Item).filter(models.Item.id==item_id, models.Item.quantity >= quantity).first())
     if not Item:
             raise HTTPException(status_code=404,detail=f"item with id {item_id} not found or out of stock")
     

@@ -26,7 +26,7 @@ def viewOrders(user_id:int,db: Session=Depends(get_db)):
     orders= db.query(Omodels.Order).filter(Omodels.Order.user_id==user_id).all()
     
     if not orders:
-        raise HTTPException(status_code=200,detail= "no orders")
+        raise HTTPException(status_code=404,detail= "no orders")
     try:    
         return orders
     except Exception as e:
@@ -39,7 +39,7 @@ def viewNewOrders(user_id:int,db: Session=Depends(get_db)):
     today = datetime.now().date()
     orders=db.query(Omodels.Order).filter(Omodels.Order.user_id==user_id, Omodels.Order.order_date >= today).all()
     if (not orders):
-        HTTPException(status_code=204,detail="no  orders today")
+        raise HTTPException(status_code=404,detail="no  orders today")
     return orders
 
 @router.get("/{user_id}/weekOrder",response_model=List[pmodels.orders])
@@ -49,7 +49,7 @@ def orderWeek(user_id:int,db: Session=Depends(get_db)):
     
     week=db.query(Omodels.Order).filter(Omodels.Order.user_id == user_id,Omodels.Order.order_date >= week_start).all()
     if(not week):
-        HTTPException(status_code=204,detail="no orders this week")
+        raise HTTPException(status_code=404,detail="no orders this week")
     return week
 
     
@@ -116,9 +116,7 @@ def orderCart(user_id:int, db: Session=Depends(get_db)):
     """orders all Items in a user's cart, creates an order and orderitems, updates stock quantity, and clears the cart
     returns the order info (order_id,user_id):int ,total_price:float  
      order_date:DateTime,  number_of_items:Int."""
-    
-    
-    
+
     cart=getcart(user_id=user_id,db=db)
     
     if not cart:

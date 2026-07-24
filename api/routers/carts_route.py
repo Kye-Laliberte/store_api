@@ -67,38 +67,16 @@ def addtoCart(user_id:int,cart_id:int, item:create_cartItem,db:Session=Depends(g
     if quantity<=0:
         raise HTTPException( status_code=400,detail="cant add less than 1 items to a cart")
     
-
-    
     try:
         
         cartitem=additemCart(item_id=item_id, user=cartpacage(user_id=user_id, cart_id=cart_id), quantity=quantity, db=db)
-    
-        existing = (
-            db.query(models.CartItem)
-            .filter(models.CartItem.cart_id == cart_id, models.CartItem.item_id == item_id).first())
-        
-        if existing:
-            existing.quantity = quantity
-            out = existing
-        else:
-            out =models.CartItem(cart_id= cart_id, item_id=item_id, quantity=quantity)
-             
-           
-        db.add(out)
-        db.commit()
-        db.refresh(out)
-        return CartItemsOut(item_id=out.item_id, quantity=out.quantity,name=cartitem.name,
-                            description=cartitem.description,price=cartitem.price,
-                            totalprice=cartitem.quantity*cartitem.price)
-         
+        return cartitem
+       
     except Exception as e:
         logging.error(f"Error checking for existing cart info for user {user_id} and item {item_id}: {e}")
         db.rollback()
         raise HTTPException(status_code=500, detail="An error occurred while checking for existing cart item")
-    except KeyError as e:
-        logging.error(f"Key error while processing cart item for user {user_id} and item {item_id}: {e}")
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"An error occurred while processing cart item {e}")
+    
 
 @router.post("/{user_id}/newcart", response_model=carts)
 def newCart(user_id:int, db: Session = Depends(get_db)):
@@ -130,9 +108,9 @@ def newCart(user_id:int, db: Session = Depends(get_db)):
 def leaveitem(item_id:int,cart_id:int,user_id:int,db:Session=Depends(get_db)):
     """delete a cartItem that  relats to carts.id== cartitems.cart_id belongs to carts.user_id
     returns item_id quantity of cartitem"""
-    print(f"Received request to remove item {item_id} from cart {cart_id} for user {user_id}")
+    
     cart = FindCart(cart_id=cart_id,user_id=user_id,db=db)
-    if not cart.id:# Ensure the cart exists user_id is not needed for this check
+    if not cart:# Ensure the cart exists user_id is not needed for this check
         raise HTTPException(status_code=404, detail="Cart not found.")
     
     cartitem = getcaritem(cart_id=cart_id,item_id=item_id,db=db)

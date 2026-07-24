@@ -61,7 +61,7 @@ def readuser(user_id: int, db: Session = Depends(get_db)):
     return userOut(id = user.id, email= user.email, user_status=user.status)
     
 
-@router.put("{user_id}/status",response_model=userOut)
+@router.put("/{user_id}/status",response_model=userOut)
 def updateStatus(user_id:int,status:models.UserStatus,db:Session=Depends(get_db)):    
     
     user=get_user(user_id,db)
