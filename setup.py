@@ -1,7 +1,6 @@
 
 from api.connect import get_connection
 from os.path import exists 
-import random
 import psycopg2
 import logging
 from datetime import datetime
