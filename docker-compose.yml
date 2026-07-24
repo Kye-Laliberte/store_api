@@ -12,7 +12,7 @@ services:
       - Datastore:/var/lib/postgresql/data
 
   fastapi:
-    build: ./api
+    build: /api
     container_name: store-api
     ports:
       - "8000:8000"
@@ -24,13 +24,13 @@ services:
       - postgres
 
     volumes:
-      - .:/app
+      - /app:/app
   
   
   frontend:
     build:
       context: ./frontend/client
-    container_name: store-frontend
+    container_name: frontend
     ports:
     - "5173:5173"
     depends_on:
