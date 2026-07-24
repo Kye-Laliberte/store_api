@@ -3,15 +3,15 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session 
 from sqlalchemy import text
-from api.database import get_db
-import api.models.sqlAmodels as models
-import  api.models.ordermodels as Omodels
+from database import get_db
+import models.sqlAmodels as models
+import  models.ordermodels as Omodels
 from typing import List
-from api.psycopg_models import UserStatus
+from psycopg_models import UserStatus
 from datetime import datetime, timedelta
-import api.models.psyc_order as pmodels
-from api.services.cart_services import getcart
-from api.services.item_s import OrderProcessing
+import models.psyc_order as pmodels
+from services.cart_services import getcart
+from services.item_s import OrderProcessing
 router = APIRouter(prefix="/orders", tags=["orders"])
 
 #add item to cart

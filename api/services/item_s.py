@@ -1,8 +1,8 @@
 from fastapi import HTTPException
 import logging
-import api.models.sqlAmodels as models
+import models.sqlAmodels as models
 from sqlalchemy.orm import Session
-from api.models.ordermodels import Order
+from models.ordermodels import Order
 from sqlalchemy import text
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

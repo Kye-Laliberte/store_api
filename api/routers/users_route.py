@@ -1,11 +1,11 @@
 from fastapi import APIRouter,Path, Depends, HTTPException
 from sqlalchemy.orm import Session
-from api.database import get_db
-import api.models.sqlAmodels as models
+from database import get_db
+import models.sqlAmodels as models
 from passlib.context import CryptContext
 from typing import List
-from api.psycopg_models import users,userOut, login,userinfo
-from api.services.cart_services import get_user, getcart, get_user_Email,new_user
+from psycopg_models import users,userOut, login,userinfo
+from services.cart_services import get_user, getcart, get_user_Email,new_user
 
 router = APIRouter(prefix="/users", tags=["users"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

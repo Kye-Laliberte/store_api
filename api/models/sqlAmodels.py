@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, String, Numeric, DateTime, ForeignKey, CheckConstraint
 from  sqlalchemy.orm import relationship
-from api.database import Base
+from database import Base
 from datetime import datetime
-from api.psycopg_models import UserStatus
+from psycopg_models import UserStatus
 from sqlalchemy import Enum
 
 

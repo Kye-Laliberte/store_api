@@ -2,11 +2,11 @@ import logging
 from sqlalchemy import text
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from api.database import get_db
-import api.models.sqlAmodels as models
+from database import get_db
+import models.sqlAmodels as models
 from typing import List
-from api.psycopg_models import CartItemsOut, cartpacage,carts,create_cartItem,UserStatus
-from api.services.cart_services import additemCart, filter_user, getcart, newcart,FindCart,getcaritem,delete_cart
+from psycopg_models import CartItemsOut, cartpacage,carts,create_cartItem,UserStatus
+from services.cart_services import additemCart, filter_user, getcart, newcart,FindCart,getcaritem,delete_cart
 router = APIRouter(prefix="/carts", tags=["carts"])
 
 #add item to cart

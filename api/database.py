@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 import os
 from dotenv import load_dotenv 
 from pathlib import Path
-from api.core.config import settings
+from core.config import settings
 dotenv_path = Path(".env")
 load_dotenv(dotenv_path=dotenv_path)
 

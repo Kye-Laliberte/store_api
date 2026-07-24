@@ -1,9 +1,9 @@
 from symtable import Class
 from fastapi import HTTPException
-from api.database import get_db
+from database import get_db
 import logging
-import api.models.sqlAmodels as models
-import api.psycopg_models as pmod # pydantic models
+import models.sqlAmodels as models
+import psycopg_models as pmod # pydantic models
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from datetime import datetime
