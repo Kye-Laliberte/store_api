@@ -30,6 +30,7 @@ class OrderProcessing:
         )
         
         return prepared_cart_items
+    
     def pre_order_checks(self, cart_items: list[tuple[models.CartItem, models.Item]]):
         """perform pre-order checks such as stock availability and  if cart_items exceed the stock
         for right now it returns the input and HTTP"""
@@ -39,7 +40,7 @@ class OrderProcessing:
         invalid_items = (self.db.query(models.CartItem, models.Item)
         .join(models.Item,models.CartItem.item_id == models.Item.id
         ).filter(models.CartItem.cart_id == self.cart_id,
-        models.CartItem.quantity >= models.Item.quantity).all())
+        models.CartItem.quantity > models.Item.quantity).all())
         
         if invalid_items:
             logging.error("status_code 400 a cart items exceed available stock")
@@ -119,23 +120,26 @@ class OrderProcessing:
 
         # Use the session transaction to make the whole operation atomic
         try:
-            with self.db.begin():
-                new_order = self.create_order(prepared_cart_items)
-                if not new_order:
-                    raise error(status_code=500, detail="An error occurred while creating the order")
-                # update stock (will raise on failure)
-                self.update_stock(prepared_cart_items)
-                # clear cart rows
-                self.clear_cart()
-            # transaction committed successfully
-            return new_order
-        except Exception as e:
             
-            if isinstance(e, HTTPException) or isinstance(e, error):
-                raise
+            new_order = self.create_order(prepared_cart_items)
+
+            if not new_order:
+                raise HTTPException(status_code=500,detail="An error occurred while creating the order")
+            
+                # update stock (will raise on failure)
+            self.update_stock(prepared_cart_items)
+                # clear cart rows
+            
+            self.clear_cart()
+            self.db.commit()
+            # transaction committed successfully
+            
+            return new_order
+            
+        except Exception as e:
             logging.error(f"Order processing failed for user {self.user_id}, cart {self.cart_id}: {e}")
+            self.db.rollback()
             raise error(status_code=500, detail=f"An error occurred while processing the order: {e}") from e
-    
     
 def get_active_items(item_id:int,db:Session):
     """get active item by id, if item is not found or not in stock, return None"""

@@ -70,10 +70,11 @@ def addtoCart(user_id:int,cart_id:int, item:create_cartItem,db:Session=Depends(g
     
     try:
         cartitem = additemCart(item_id=item_id, user=cartpacage(user_id=user_id, cart_id=cart_id), quantity=quantity, db=db)
+        
         return cartitem
-    except HTTPException:
+    except HTTPException as err:
         # service raises HTTPException for expected client errors (e.g., 404, 400) — propagate them unchanged
-        raise
+        raise err
     except Exception as e:
         logging.exception(f"Unexpected error while adding item {item_id} to cart {cart_id} for user {user_id}")
         db.rollback()

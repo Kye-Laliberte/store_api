@@ -124,7 +124,9 @@ def orderCart(user_id:int, db: Session=Depends(get_db)):
     if cart.status != UserStatus.active:
         raise HTTPException(status_code=400, detail="user is not active")
     Service=OrderProcessing(db=db, user_id=user_id,cart_id=cart.id)
+
     prepared_cart_items=Service.prepare_cart_items()
+    
     if not prepared_cart_items:
         raise HTTPException(status_code=400, detail="No items in cart to order")
     try:
@@ -132,12 +134,11 @@ def orderCart(user_id:int, db: Session=Depends(get_db)):
         new_order = Service.process_order(prepared_cart_items)
     except Exception as e:
         logging.error(f"Error creating order for user {user_id}: {e}")
-        # Service.process_order manages its own transaction; just propagate a 500 to the client
+        
         raise HTTPException(status_code=500, detail=f"An error occurred while creating the order {e}")
-    # refresh the order to ensure ORM fields like order_date are populated
+    
     db.refresh(new_order)  # refresh to get the order date and total price after commit
     
-    #service.process_order(new_order.order_items.all())
     # update stock quantity for each item in the cart after order is created
     number_of_items = db.execute(text("""SELECT SUM(quantity) FROM order_items WHERE order_id = :order_id""").bindparams(order_id=new_order.id)).scalar() or 0
     
