@@ -159,6 +159,8 @@ def additemCart(item_id:int,user:pmod.cartpacage,quantity:int,db:Session):
     
     cart=FindCart(user_id=user_id,cart_id = user.cart_id,db=db)
 
+    logging.info(f"FindCart result for user {user_id}, cart {user.cart_id}: {cart}")
+
     if not cart:
             raise HTTPException(status_code=404,detail=" cart not found.")
     
@@ -166,6 +168,7 @@ def additemCart(item_id:int,user:pmod.cartpacage,quantity:int,db:Session):
         raise HTTPException(status_code=400, detail="User is not active. Cannot add items to cart.")
 
     Item=(db.query(models.Item).filter(models.Item.id==item_id, models.Item.quantity >= quantity).first())
+    logging.info(f"Item query result for item_id={item_id}, required_qty={quantity}: {Item}")
     if not Item:
             raise HTTPException(status_code=404,detail=f"item with id {item_id} not found or out of stock")
     
@@ -188,13 +191,25 @@ def additemCart(item_id:int,user:pmod.cartpacage,quantity:int,db:Session):
         db.add(out)
         db.commit()
         db.refresh(out)
-        return pmod.CartItemsOut(item_id=out.item_id, quantity=out.quantity,
-                     name=Item.name,description=Item.description,price=Item.price,totalprice=Item.quantity*Item.price)
+        # convert Decimal price values to float for pydantic and compute total using the cart item's quantity
+        return pmod.CartItemsOut(
+            item_id=out.item_id,
+            quantity=out.quantity,
+            name=str(Item.name),
+            description=Item.description,
+            price=float(Item.price),
+            totalprice=float(out.quantity) * float(Item.price)
+        )
          
     except Exception as e:
-        logging.error(f"Error checking for existing cart info for user {user_id} and item {item_id}: {e}")
+        # Log full stack trace to help diagnose the server-side failure
+        logging.exception(f"Error checking for existing cart info for user {user_id} and item {item_id}")
+       
+        traceback.print_exc()
         db.rollback()
-        raise HTTPException(status_code=500, detail="An error occurred while checking for existing cart item")
+
+        
+        raise HTTPException(status_code=500, detail=f"Internal error")
     except KeyError as e:
         logging.error(f"Key error while processing cart item for user {user_id} and item {item_id}: {e}")
         db.rollback()
