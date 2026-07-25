@@ -39,7 +39,7 @@ class OrderProcessing:
         invalid_items = (self.db.query(models.CartItem, models.Item)
         .join(models.Item,models.CartItem.item_id == models.Item.id
         ).filter(models.CartItem.cart_id == self.cart_id,
-        models.CartItem.quantity > models.Item.quantity).all())
+        models.CartItem.quantity >= models.Item.quantity).all())
         
         if invalid_items:
             logging.error("status_code 400 a cart items exceed available stock")
@@ -130,7 +130,7 @@ class OrderProcessing:
             # transaction committed successfully
             return new_order
         except Exception as e:
-            # re-raise well-formed HTTPException-like errors or wrap unexpected ones
+            
             if isinstance(e, HTTPException) or isinstance(e, error):
                 raise
             logging.error(f"Order processing failed for user {self.user_id}, cart {self.cart_id}: {e}")

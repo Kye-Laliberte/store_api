@@ -162,17 +162,18 @@ def additemCart(item_id:int,user:pmod.cartpacage,quantity:int,db:Session):
     logging.info(f"FindCart result for user {user_id}, cart {user.cart_id}: {cart}")
 
     if not cart:
-            raise HTTPException(status_code=404,detail=" cart not found.")
+        raise HTTPException(status_code=404,detail=" cart not found.")
     
     if cart.status != pmod.UserStatus.active:
         raise HTTPException(status_code=400, detail="User is not active. Cannot add items to cart.")
 
-    Item=(db.query(models.Item).filter(models.Item.id==item_id, models.Item.quantity >= quantity).first())
-    logging.info(f"Item query result for item_id={item_id}, required_qty={quantity}: {Item}")
-    if not Item:
+    item=(db.query(models.Item).filter(models.Item.id==item_id).first())
+    logging.info(f"Item query result for item_id={item_id}, required_qty={quantity}: {item}")
+
+    if not item:
             raise HTTPException(status_code=404,detail=f"item with id {item_id} not found or out of stock")
     
-    if Item.quantity < quantity:
+    if item.quantity < quantity:
             logging.error(f"Insufficient stock for item {item_id} while adding to cart for user {user_id}")
             raise HTTPException(status_code=400, detail=f"Insufficient stock for item {item_id}")
     
@@ -187,19 +188,6 @@ def additemCart(item_id:int,user:pmod.cartpacage,quantity:int,db:Session):
         else:
             out =models.CartItem(cart_id=cart.id, item_id=item_id, quantity=quantity)
              
-           
-        db.add(out)
-        db.commit()
-        db.refresh(out)
-        # convert Decimal price values to float for pydantic and compute total using the cart item's quantity
-        return pmod.CartItemsOut(
-            item_id=out.item_id,
-            quantity=out.quantity,
-            name=str(Item.name),
-            description=Item.description,
-            price=float(Item.price),
-            totalprice=float(out.quantity) * float(Item.price)
-        )
          
     except Exception as e:
         # Log full stack trace to help diagnose the server-side failure
@@ -207,13 +195,22 @@ def additemCart(item_id:int,user:pmod.cartpacage,quantity:int,db:Session):
        
         traceback.print_exc()
         db.rollback()
-
         
         raise HTTPException(status_code=500, detail=f"Internal error")
     except KeyError as e:
         logging.error(f"Key error while processing cart item for user {user_id} and item {item_id}: {e}")
         db.rollback()
         raise HTTPException(status_code=500, detail=f"An error occurred while processing cart item {e}")
+    db.add(out)
+    db.commit() 
+    db.refresh(out)
+            # convert Decimal price values to float for pydantic and compute total using the cart item's quantity
+    return pmod.CartItemsOut(item_id=out.item_id,
+                             quantity=out.quantity,
+                            name=str(item.name),
+                            description=item.description,
+                            price=float(item.price),
+                            totalprice=float(out.quantity) * float(item.price))
 
 
 
