@@ -126,21 +126,16 @@ def orderCart(user_id:int, db: Session=Depends(get_db)):
     Service=OrderProcessing(db=db, user_id=user_id,cart_id=cart.id)
     prepared_cart_items=Service.prepare_cart_items()
     if not prepared_cart_items:
-        raise HTTPException(status_code=204, detail="No items in cart to order")
+        raise HTTPException(status_code=400, detail="No items in cart to order")
     try:
-        Service.pre_order_checks(prepared_cart_items)
-        new_order = Service.create_order(prepared_cart_items)
-        Service.update_stock(prepared_cart_items)
-        Service.clear_cart()
-        
-        
-        db.commit()# commit the order.
-        db.refresh(new_order)  # refresh to get the order date and total price after commit
-        # clear cart items after order is created
+        # process the whole order atomically inside the service
+        new_order = Service.process_order(prepared_cart_items)
     except Exception as e:
         logging.error(f"Error creating order for user {user_id}: {e}")
-        db.rollback()
+        # Service.process_order manages its own transaction; just propagate a 500 to the client
         raise HTTPException(status_code=500, detail=f"An error occurred while creating the order {e}")
+    # refresh the order to ensure ORM fields like order_date are populated
+    db.refresh(new_order)  # refresh to get the order date and total price after commit
     
     #service.process_order(new_order.order_items.all())
     # update stock quantity for each item in the cart after order is created

@@ -5,7 +5,7 @@ export async function addToCart(user_id,item_id,quantity,cart_id) {
     /**  adds quantity of item_id to user_id cart and returns the cartItem info*/
     try{
         const out= await api.post(
-            `carts/${user_id}/additem/${cart_id}`,
+            `/carts/${user_id}/additem/${cart_id}`,
             {item_id:item_id,quantity:quantity});
         if(out.status !== 200){
            throw new Error(`Failed to add item to cart: ${out.statusText}`);
@@ -67,7 +67,7 @@ export async function removeFromCart(user,item_id){
 
 export async function deleatCart(user_id,cart_id) {
     try{
-    const response =await api.delete(`/carts/${user_id}/dropCart/${cart_id}`,);
+    const response = await api.delete(`/carts/${user_id}/dropCart/${cart_id}`);
 
     if(response.status !== 200){
             throw new Error(`Failed to remove item from cart: ${response.statusText}`);

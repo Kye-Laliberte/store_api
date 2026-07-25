@@ -2,19 +2,19 @@ import api from "./axios";
 
 export async function Emaillogin(email) {
   /** fetches the user info with email*/
-  const response = await api.post(`/users/login`, {
-    email:email
-  });
-  try{
-  const data = response.data;
-  if (data.cart_id==null)
-    alert("a cart is needed before you can shop")
-  return data;
-}catch(error){
-  console.error("Error logging in:", error);
+  try {
+    const response = await api.post(`/users/login`, { email });
+    const data = response.data;
+    if (data.cart_id == null) {
+      alert("A cart is needed before you can shop");
+    }
+    return data;
+  } catch (error) {
+    console.error("Error logging in:", error);
     throw error;
+  }
 }
-}  
+
 export async function getUser(user_id){
   /** retreves user info based on ther user_id*/
   try{
@@ -32,16 +32,12 @@ export async function getUser(user_id){
 
 }
 
-export async function UserStatus(user_id,status='active') {
-  try{
-    const respon = await api.put(`/status`,
-    {user_id:user_id,
-      status:status 
-    });
-    return respon.data
-    
-  }catch(error){
-    console.error("failed to change user status",error);
-    throw RTCPeerConnectionIceErrorEvent;
+export async function UserStatus(user_id, status = 'active') {
+  try {
+    const respon = await api.put(`/users/${user_id}/status`, { status });
+    return respon.data;
+  } catch (error) {
+    console.error("failed to change user status", error);
+    throw error;
   }
 }

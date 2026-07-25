@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import api from "/src/api/axios";
+import api from "./axios";
 
 
 //from fastapi.middleware.cors import CORSMiddleware

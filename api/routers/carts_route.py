@@ -37,7 +37,8 @@ def viewCart(user_id:int,cart_id:int, db: Session=Depends(get_db)):
                                  .filter(models.CartItem.cart_id == cart.id).all())
     if not cart_items:
         logging.info(f"Cart {cart.id} for user {user_id} is empty.")
-        raise HTTPException(status_code=200, detail=f"User {user_id} has an empty cart.")
+        # return empty list for an empty cart (200 OK)
+        return []
     
     return[
         CartItemsOut(
@@ -88,7 +89,7 @@ def newCart(user_id:int, db: Session = Depends(get_db)):
     
     exists=getcart(user_id,db) 
     if exists:
-         raise HTTPException(status_code=200,detail="cart alredy active")
+         raise HTTPException(status_code=400, detail="Cart already active")
     
     try:
         

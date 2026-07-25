@@ -1,4 +1,4 @@
-import api from "/src/api/axios"
+import api from "./axios"
 
 
 export async function order_Cart(user) {
@@ -29,7 +29,9 @@ export async function todaysOrders(user_id){
         return out.data;
     
     }catch(error){
-        console.error("error loding orders")}
+        console.error("error loading orders", error);
+        throw error;
+    }
 }
 
 export async function orderDetails(order_id) {

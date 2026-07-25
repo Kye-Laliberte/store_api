@@ -52,15 +52,21 @@ class OrderProcessing:
         out_of_stock=self.db.execute(text("""DELETE FROM cart_items USING items"""))
 
     def create_order(self, cart_items: list[tuple[models.CartItem, models.Item]]):
-        """create the order and order items in the database, return the created order and order items info (order_id,item_id):int ,quantity:int, price_at_order:float"""
+        """Create the order and order items in the database without committing.
+        This function prepares the Order ORM object, flushes to populate its id,
+        creates the order_items rows, and returns the Order object. The caller
+        is responsible for transaction management (commit/rollback) or should
+        call process_order which wraps the whole flow in a transaction.
+        """
         total_price = self.db.execute(text("""SELECT SUM((cart_items.quantity) * items.price) 
         FROM cart_items JOIN items ON cart_items.item_id = items.id 
-        WHERE cart_items.cart_id = :cart_id"""), {"cart_id": cart_items[0][0].cart_id}).scalar()
+        WHERE cart_items.cart_id = :cart_id"""), {"cart_id": cart_items[0][0].cart_id}).scalar() or 0
         new_order = Order(total_price=total_price, user_id=self.user_id)
         self.db.add(new_order)
+        # flush so new_order.id is available for returning and for any dependent SQL
         self.db.flush()
+        # create order items rows (INSERT ... RETURNING)
         order_items = self.create_orderItems(order_id=new_order.id, cart_items=cart_items)
-        self.db.commit()
         return new_order
     
     def create_orderItems(self, order_id:int, cart_items: list[tuple[models.CartItem, models.Item]]):
@@ -77,9 +83,11 @@ class OrderProcessing:
         return cart_items_data
     
     def update_stock(self, cart_items: list[tuple[models.CartItem, models.Item]]):
-        """update stock quantity for each item in the cart after order is created"""
+        """Update stock quantity for each item in the cart after order is created.
+        Raises an error on failure so the caller can rollback the transaction.
+        """
         try:
-            self.db.execute(text("""
+            result = self.db.execute(text("""
             UPDATE items
             SET quantity = items.quantity - cart_items.quantity
             FROM cart_items
@@ -88,32 +96,48 @@ class OrderProcessing:
             {"cart_id": self.cart_id})
             return True
         except Exception as e:
-            self.db.rollback()
-            #raise error(status_code=500, detail="An error occurred while updating stock quantities", error=str(e))
+            # Propagate the failure so a surrounding transaction will be rolled back
+            logging.error(f"Error updating stock for cart {self.cart_id}: {e}")
+            raise error(status_code=500, detail=f"An error occurred while updating stock quantities: {e}") from e
     
     def clear_cart(self):
-        """clear cart items after order is created"""
-        try:    
+        """Clear cart items after order is created. Does not commit; expects caller to manage the transaction."""
+        try:
             self.db.query(models.CartItem).filter(models.CartItem.cart_id == self.cart_id).delete()
-            self.db.commit() # this commits the deletion of the cart items and the update of the stock quantities
             return True
         except Exception as e:
             logging.error(f"Error clearing cart {self.cart_id}: {e}")
-            self.db.rollback()
             raise error(status_code=500, detail="An error occurred while clearing the cart")
 
     def process_order(self, cart_items: list[tuple[models.CartItem, models.Item]]):
-        """main method to process an order, it calls the pre-order checks and create_order to creat order and order items,
-        then updates stock quantities and clears the cart, it returns the created order and order items info (order_id,item_id):int ,quantity:int, price_at_order:float"""
-        prepared_cart_items=self.pre_order_checks(cart_items)
+        """Process an order as a single atomic transaction: run pre-order checks,
+        create the order and order_items rows, update stock, and clear the cart.
+        Uses a transactional context so either everything commits or everything
+        is rolled back.
+        """
+        # perform pre-order checks first
+        prepared_cart_items = self.pre_order_checks(cart_items)
         if not prepared_cart_items:
-            raise error(status_code=400, detail="no items in cart to order")
-        new_order=self.create_order(prepared_cart_items)
-        if not new_order:
-            raise error(status_code=500, detail="An error occurred while creating the order")
-        self.update_stock(prepared_cart_items)
-        self.clear_cart(cart_id=prepared_cart_items[0][0].cart_id)
-        return new_order
+            raise error(status_code=400, detail="No items in cart to order")
+
+        # Use the session transaction to make the whole operation atomic
+        try:
+            with self.db.begin():
+                new_order = self.create_order(prepared_cart_items)
+                if not new_order:
+                    raise error(status_code=500, detail="An error occurred while creating the order")
+                # update stock (will raise on failure)
+                self.update_stock(prepared_cart_items)
+                # clear cart rows
+                self.clear_cart()
+            # transaction committed successfully
+            return new_order
+        except Exception as e:
+            # re-raise well-formed HTTPException-like errors or wrap unexpected ones
+            if isinstance(e, HTTPException) or isinstance(e, error):
+                raise
+            logging.error(f"Order processing failed for user {self.user_id}, cart {self.cart_id}: {e}")
+            raise error(status_code=500, detail=f"An error occurred while processing the order: {e}") from e
     
     
 def get_active_items(item_id:int,db:Session):
