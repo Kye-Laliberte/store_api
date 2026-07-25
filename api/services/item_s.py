@@ -42,14 +42,11 @@ class OrderProcessing:
         models.CartItem.quantity > models.Item.quantity).all())
         
         if invalid_items:
-            raise HTTPException(status_code=400,detail="Some cart items exceed available stock.")       
+            logging.error("status_code 400 a cart items exceed available stock")
+            raise HTTPException(status_code=400,detail="A cart items exceed available stock.")       
         return cart_items
     
-    def CartItems(self,cart_items: list[tuple[models.CartItem, models.Item]] ):
-        """this deletes cart_items where the cart quantity is more that the item quantity"""
-        
-        #removs the cart_items.quantity > item.quantity- cart_items.quantity
-        out_of_stock=self.db.execute(text("""DELETE FROM cart_items USING items"""))
+   
 
     def create_order(self, cart_items: list[tuple[models.CartItem, models.Item]]):
         """Create the order and order items in the database without committing.
