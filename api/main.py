@@ -23,6 +23,23 @@ logging.basicConfig(
 # Set up CORS middleware to allow requests from the frontend
 app.add_middleware( CORSMiddleware, allow_origins=["http://localhost:5173"], allow_methods=["*"], allow_headers=["*"]
 )
+
+# Global exception-logging middleware to capture uncaught exceptions and print tracebacks to stdout
+from fastapi.responses import JSONResponse
+import traceback
+
+@app.middleware("http")
+async def catch_exceptions_middleware(request, call_next):
+    try:
+        response = await call_next(request)
+        return response
+    except Exception as e:
+        # Log full exception and force traceback to stdout so container logs capture it
+        logging.exception("Unhandled exception while processing request")
+        traceback.print_exc()
+        return JSONResponse(status_code=500, content={"detail": "Internal server error"})
+
+
 def get_datab():
     bd= LocalSession()
     try:
