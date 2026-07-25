@@ -69,12 +69,13 @@ def addtoCart(user_id:int,cart_id:int, item:create_cartItem,db:Session=Depends(g
         raise HTTPException( status_code=400,detail="cant add less than 1 items to a cart")
     
     try:
-        
-        cartitem=additemCart(item_id=item_id, user=cartpacage(user_id=user_id, cart_id=cart_id), quantity=quantity, db=db)
+        cartitem = additemCart(item_id=item_id, user=cartpacage(user_id=user_id, cart_id=cart_id), quantity=quantity, db=db)
         return cartitem
-       
+    except HTTPException:
+        # service raises HTTPException for expected client errors (e.g., 404, 400) — propagate them unchanged
+        raise
     except Exception as e:
-        logging.error(f"Error checking for existing cart info for user {user_id} and item {item_id}: {e}")
+        logging.exception(f"Unexpected error while adding item {item_id} to cart {cart_id} for user {user_id}")
         db.rollback()
         raise HTTPException(status_code=500, detail="An error occurred while checking for existing cart item")
     
