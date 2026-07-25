@@ -10,7 +10,7 @@ from typing import List
 from psycopg_models import UserStatus
 from datetime import datetime, timedelta
 import models.psyc_order as pmodels
-from services.cart_services import getcart
+from services.cart_services import getcart, FindCart
 from services.item_s import OrderProcessing
 router = APIRouter(prefix="/orders", tags=["orders"])
 
@@ -111,18 +111,20 @@ def viewOrderDetails(user_id:int,db: Session=Depends(get_db)):
     return orderDetails
   
     
-@router.post("/{user_id}/orderCart",response_model=pmodels.ordersout)
-def orderCart(user_id:int, db: Session=Depends(get_db)):
+@router.post("/{user_id}/orderCart/{cart_id}",response_model=pmodels.ordersout)
+def orderCart(user_id:int,cart_id:int, db: Session=Depends(get_db)):
     """orders all Items in a user's cart, creates an order and orderitems, updates stock quantity, and clears the cart
     returns the order info (order_id,user_id):int ,total_price:float  
      order_date:DateTime,  number_of_items:Int."""
 
-    cart=getcart(user_id=user_id,db=db)
-    
+    #cart=getcart(user_id=user_id,db=db)
+    cart = FindCart(user_id=user_id,cart_id=cart_id,db=db)
     if not cart:
         raise HTTPException(status_code=404, detail="Cart not found for this user")
+
     if cart.status != UserStatus.active:
         raise HTTPException(status_code=400, detail="user is not active")
+
     Service=OrderProcessing(db=db, user_id=user_id,cart_id=cart.id)
 
     prepared_cart_items=Service.prepare_cart_items()

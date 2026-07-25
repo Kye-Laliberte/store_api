@@ -3,8 +3,8 @@ import api from "./axios"
 
 export async function order_Cart(user) {
     try{
-       
-    const out = await api.post(`/orders/${user.id}/orderCart`);
+    
+    const out = await api.post(`/orders/${user.id}/orderCart/${user.cart_id}`);
         return out.data;
         
     }catch(error){
