@@ -27,11 +27,8 @@ def create_user(email: str, password: str, db: Session = Depends(get_db)):
 def getUser(email:str,db:Session=Depends(get_db)):
     """testing not a valid use of pasword retreval"""
     email=email.strip()
-    user=get_user_Email(email=email,db=db)
-    if  user is None:
-        raise HTTPException(status_code=404,detail="Email not found")
-    if user is False:
-            raise HTTPException(status_code=203, detail="User not active")
+    user=UserService(db,email=email).user
+
     return users(id= user.id,email= user.email,created_at= user.created_at)
 
 
@@ -48,12 +45,9 @@ def getUsers(db: Session = Depends(get_db)):
 def readuser(user_id: int, db: Session = Depends(get_db)):
     """find a user by ther ID then returns there email id and created_at"""
     try:
-        user=get_user(user_id=user_id,db=db)
+        user=UserService(db,user_id).user
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"error retreving user {e}")
-    
-    if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
     
     cart=getcart(user_id=user.id,db=db)       
     if cart:
@@ -77,7 +71,7 @@ def updateStatus(user_id:int,status:models.UserStatus,db:Session=Depends(get_db)
 def loginn(log: login, db: Session=Depends(get_db)):
     """returns the user_Id, and email and cart_id if the user has one active"""
     
-    user=get_user_Email(email=log.email,db=db)
+    user=UserService(db,log.email).user
     
     if user is None:
         raise HTTPException(status_code=404, detail="user not found")
