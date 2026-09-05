@@ -35,4 +35,4 @@ class orderInfo(BaseModel):
     quantity: int = Field(...,gt=0)
     price_at_order: float = Field(...,ge=0)
     name: str
-    description:str= Optional[str] == "no description"
+    description: Optional[str] = "no description"

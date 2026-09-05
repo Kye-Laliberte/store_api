@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 import logging
-from api.services.cart_services import CartService
+from services.cart_services import CartService
 import models.sqlAmodels as models
 from sqlalchemy.orm import Session
 from models.ordermodels import Order
