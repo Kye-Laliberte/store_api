@@ -5,6 +5,7 @@ import models.sqlAmodels as models
 from psycopg_models import item,createitem, updateitem, ItemSchema
 from typing import List
 from services.item_s import createItem,ItemService
+from core.security import get_current_user
 router = APIRouter(prefix="/items", tags=["items"])
 
 # READ all items

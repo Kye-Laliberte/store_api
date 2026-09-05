@@ -70,10 +70,10 @@ class OrderProcessing:
         # flush so new_order.id is available for returning and for any dependent SQL
         self.db.flush()
         # create order items rows (INSERT ... RETURNING)
-        order_items = self.create_orderItems(order_id=new_order.id, cart_items=cart_items)
+        order_items = self.create_orderItems(order_id=new_order.id)
         return new_order
     
-    def create_orderItems(self, order_id:int, cart_items: list[tuple[models.CartItem, models.Item]]):
+    def create_orderItems(self, order_id:int):
         """create order items for a given order"""
         
         cart_items_data = self.db.execute(text("""INSERT INTO order_items (order_id, item_id, quantity, price_at_order) 
@@ -84,9 +84,10 @@ class OrderProcessing:
         
         if not cart_items_data:
             return []
+        
         return cart_items_data
     
-    def update_stock(self, cart_items: list[tuple[models.CartItem, models.Item]]) -> bool:
+    def update_stock(self) -> bool:
         """Update stock quantity for each item in the cart after order is created.
         Raises an error on failure so the caller can rollback the transaction.
         """
@@ -102,7 +103,7 @@ class OrderProcessing:
         except Exception as e:
             # Propagate the failure so a surrounding transaction will be rolled back
             logging.error(f"Error updating stock for cart {self.cart.id}: {e}")
-            raise error(status_code=500, detail=f"An error occurred while updating stock quantities: {e}") from e
+            raise HTTPException(status_code=500, detail=f"An error occurred while updating stock quantities: {e}") from e
     
     def clear_cart(self):
         """Clear cart items after order is created. Does not commit; expects caller to manage the transaction."""
@@ -111,7 +112,7 @@ class OrderProcessing:
             return True
         except Exception as e:
             logging.error(f"Error clearing cart {self.cart.id}: {e}")
-            raise error(status_code=500, detail="An error occurred while clearing the cart")
+            raise HTTPException(status_code=500, detail="An error occurred while clearing the cart")
 
     def process_order(self, cart_items: list[tuple[models.CartItem, models.Item]]) -> Order:
         """Process an order as a single atomic transaction: run pre-order checks,
@@ -119,10 +120,14 @@ class OrderProcessing:
         Uses a transactional context so either everything commits or everything
         is rolled back.
         """
+        
+        if self.cartsev.is_cart_empty():
+            raise HTTPException(status_code=400, detail="No items in cart to order")
+
         # perform pre-order checks first
         prepared_cart_items = self.pre_order_checks(cart_items)
         if not prepared_cart_items:
-            raise error(status_code=400, detail="No items in cart to order")
+            raise HTTPException(status_code=400, detail="No items in cart to order")
 
         # Use the session transaction to make the whole operation atomic
         try:
@@ -130,10 +135,10 @@ class OrderProcessing:
             new_order = self.create_order(prepared_cart_items)
 
             if not new_order:
-                raise HTTPException(status_code=500,detail="An error occurred while creating the order")
+                raise HTTPException(status_code=500, detail="Failed to create new order")
             
                 # update stock (will raise on failure)
-            self.update_stock(prepared_cart_items)
+            self.update_stock()
                 # clear cart rows
             
             self.clear_cart()
@@ -145,7 +150,7 @@ class OrderProcessing:
         except Exception as e:
             logging.error(f"Order processing failed for user {self.user_id}, cart {self.cart_id}: {e}")
             self.db.rollback()
-            raise error(status_code=500, detail=f"An error occurred while processing the order: {e}") from e
+            raise HTTPException(status_code=500, detail=f"An error occurred while processing the order: {e}") from e
 
 
 class ItemService:
