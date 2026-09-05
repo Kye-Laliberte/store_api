@@ -1,4 +1,3 @@
-import { cache} from "react";
 import api from "./axios";
 
 export async function addToCart(user_id,item_id,quantity,cart_id) {
@@ -67,7 +66,7 @@ export async function removeFromCart(user,item_id){
 
 export async function deleatCart(user_id,cart_id) {
     try{
-    await api.delete(`/carts/${user_id}/dropCart/${cart_id}`);
+    const response = await api.delete(`/carts/${user_id}/dropCart/${cart_id}`);
 
     if(response.status !== 204){
             throw new Error(`Failed to remove item from cart: ${response.statusText}`);
