@@ -104,6 +104,15 @@ class CartService:
             raise HTTPException(status_code=404, detail="Cart not found for this user")
         self.cart = cart
 
+    def clear_cart(self):
+            """Clear cart items in a cart, Does not commit; expects caller to manage the transaction."""
+            try:
+                self.db.query(models.CartItem).filter(models.CartItem.cart_id == self.cart.id).delete()
+                return True
+            except Exception as e:
+                logging.error(f"Error clearing cart {self.cart.id}: {e}")
+                raise HTTPException(status_code=500, detail="An error occurred while clearing the cart")
+    
     def is_cart_empty(self) -> bool:
         """Check if the cart is empty. Returns True if empty, False otherwise."""
         try:

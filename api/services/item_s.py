@@ -105,15 +105,7 @@ class OrderProcessing:
             logging.error(f"Error updating stock for cart {self.cart.id}: {e}")
             raise HTTPException(status_code=500, detail=f"An error occurred while updating stock quantities: {e}") from e
     
-    def clear_cart(self):
-        """Clear cart items after order is created. Does not commit; expects caller to manage the transaction."""
-        try:
-            self.db.query(models.CartItem).filter(models.CartItem.cart_id == self.cart.id).delete()
-            return True
-        except Exception as e:
-            logging.error(f"Error clearing cart {self.cart.id}: {e}")
-            raise HTTPException(status_code=500, detail="An error occurred while clearing the cart")
-
+    
     def process_order(self, cart_items: list[tuple[models.CartItem, models.Item]]) -> Order:
         """Process an order as a single atomic transaction: run pre-order checks,
         create the order and order_items rows, update stock, and clear the cart.
@@ -141,7 +133,7 @@ class OrderProcessing:
             self.update_stock()
                 # clear cart rows
             
-            self.clear_cart()
+            self.cartsev.clear_cart()
             self.db.commit()
             # transaction committed successfully
             
