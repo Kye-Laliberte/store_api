@@ -43,8 +43,8 @@ class UserStatus(str, Enum):
     suspended = "suspended"
     
 class login(BaseModel):
-     #pasword:int
-     email:str
+    email: str
+    password: str
 
 class userinfo(BaseModel):
     id: int
@@ -58,6 +58,11 @@ class userOut(BaseModel):
       cart_id:Optional[int]=None
       id: int
       user_status:UserStatus 
+
+
+class loginResponse(userOut):
+    access_token: str
+    token_type: str = "bearer"
 
 
 class carts(BaseModel):

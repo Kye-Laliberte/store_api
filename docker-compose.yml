@@ -21,6 +21,7 @@ services:
 
     environment:
       DATABASE_URL: postgresql://postgres:12342@postgres:5432/Datastore
+      JWT_SECRET_KEY: change-this-in-production
 
     depends_on:
       - postgres
