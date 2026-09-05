@@ -10,7 +10,22 @@ from datetime import datetime
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
+def getcart(user_id: int, db: Session):
+    return db.query(models.Cart).filter(models.Cart.user_id == user_id).first()
 
+def FindCart(user_id: int, cart_id: int, db: Session):
+    """this gets a cart User info when a user_id and Cart_id are in a relashinship """
+    try:
+        cart=(db.query(models.Cart.id,models.Cart.cart_date,models.Cart.user_id,models.User.status)
+      .filter(models.Cart.user_id == user_id, models.Cart.id == cart_id)
+      .join(models.User, models.User.id == models.Cart.user_id)).first()
+    except Exception as e:
+        logging.error(f"error retrieving user cart: {e}")
+        raise e
+    
+    if not cart:
+        raise HTTPException(status_code=404, detail="Cart not found for this user")
+    return cart
         
 
 def newcart(db: Session, user_id: int):
@@ -19,7 +34,7 @@ def newcart(db: Session, user_id: int):
     cart_date = datetime.now()
     new_cart = models.Cart(user_id=user_id, cart_date=cart_date)
     
-    if not UserService(db,user_id).filter_user(status=pmod.UserStatus.active):
+    if not UserService(db=db, user_id=user_id).filter_user(status=pmod.UserStatus.active):
         raise HTTPException(status_code=404, detail="User not found")
     
     try:
@@ -40,7 +55,7 @@ def newcart(db: Session, user_id: int):
         raise HTTPException(status_code=500, detail="An error occurred while creating a new cart")
 
 
-def getcaritem(cart_id:int,item_id:int, db: Session):
+def getcart_item(cart_id:int,item_id:int, db: Session):
     try:
         cartitem = (db.query(models.CartItem)
                   .filter(models.CartItem.cart_id == cart_id,  models.CartItem.item_id == item_id)).first()

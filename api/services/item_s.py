@@ -152,14 +152,16 @@ class ItemService:
     """Service class for item-related operations."""
     def __init__(self, db: Session,item_id:int):
         self.db = db
-        self.item = self.get_active_items(item_id)
+        
+        self.item = self.get_items(item_id)
 
-    def get_active_items(self, item_id: int) -> models.Item:
-        """get active item by id, if item is not found or not in stock, return None"""
+    def get_active_items(self, item_id: int) -> bool:
+        """get active item by id, if item is not found or quantity is 0 return False"""
         out = self.db.query(models.Item).filter(models.Item.id == item_id, models.Item.quantity > 0).first()
-        if not out:
-            raise HTTPException(status_code=404, detail=f"Item with id {item_id} not found or out of stock")
-        return out
+        if out:
+            return True
+        return False
+        
 
     def createItem(self, name:str, description:str, price:float, quantity:int) -> models.Item:
         """create a new item in the database, if an item with the same name already exists, raise an error"""
