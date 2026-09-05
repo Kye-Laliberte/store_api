@@ -7,6 +7,7 @@ import models.sqlAmodels as models
 from typing import List
 from psycopg_models import CartItemsOut,carts,create_cartItem,UserStatus
 from services.cart_services import CartService, UserService, newcart, getcart_item, getcart,FindCart
+from core.security import get_current_user
 router = APIRouter(prefix="/carts", tags=["carts"])
 
 #add item to cart
@@ -56,9 +57,12 @@ def GetCarts(db: Session = Depends(get_db)):
     return out
 
 @router.post("/{user_id}/additem/{cart_id}",response_model=CartItemsOut, status_code=201)
-def addtoCart(user_id:int,cart_id:int, item:create_cartItem,db:Session=Depends(get_db)):
+def addtoCart(user_id:int,cart_id:int, item:create_cartItem,db:Session=Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """adds a item to the cart if it is alredy there it updates the quantity to the new quantity, returns a item model with item name, description, price and quantity"""
     
+    if current_user.id != user_id:
+        raise HTTPException(status_code=403, detail="Cannot modify another user's cart")
+
     quantity=item.quantity
     item_id=item.item_id
     
@@ -79,9 +83,12 @@ def addtoCart(user_id:int,cart_id:int, item:create_cartItem,db:Session=Depends(g
     
 
 @router.post("/{user_id}/newcart", response_model=carts, status_code=201)
-def newCart(user_id:int, db: Session = Depends(get_db)):
+def newCart(user_id:int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """creates a new cart for the user if one does not already exist"""
     
+    if current_user.id != user_id:
+        raise HTTPException(status_code=403, detail="Cannot create another user's cart")
+
     user = UserService(db, user_id=user_id).filter_user(status=models.UserStatus.active)
     if not user:
         raise HTTPException(status_code=404, detail="user not found or is inactive")
@@ -107,9 +114,12 @@ def newCart(user_id:int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail="An error occurred while creating a new cart")
     
 @router.delete("/{cart_id}/{user_id}/removeitem/{item_id}",response_model=create_cartItem, status_code=200)
-def leaveitem(item_id:int,cart_id:int,user_id:int,db:Session=Depends(get_db)):
+def leaveitem(item_id:int,cart_id:int,user_id:int,db:Session=Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """delete a cartItem that  relats to carts.id== cartitems.cart_id belongs to carts.user_id
     returns item_id quantity of cartitem"""
+
+    if current_user.id != user_id:
+        raise HTTPException(status_code=403, detail="Cannot modify another user's cart")
 
     cart = CartService(db, user_id, cart_id).cart
     if not cart:
@@ -129,9 +139,12 @@ def leaveitem(item_id:int,cart_id:int,user_id:int,db:Session=Depends(get_db)):
         raise HTTPException(status_code=500, detail="An error occurred while removing item from cart")
     
 @router.delete("/{user_id}/dropCart/{cart_id}",status_code=204)
-def dropcart(user_id:int,cart_id:int,db:Session=Depends(get_db)):
+def dropcart(user_id:int,cart_id:int,db:Session=Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """removes all items from the cartItems tabel pertaning to the user_id and removes the cart from the Cart tebel"""
    
+    if current_user.id != user_id:
+        raise HTTPException(status_code=403, detail="Cannot delete another user's cart")
+
     try:
         CartService(db,user_id,cart_id).delete_cart(cart_id=cart_id)
         

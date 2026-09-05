@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 import models.psyc_order as pmodels
 from services.cart_services import CartService
 from services.item_s import OrderProcessing
+from core.security import get_current_user
 router = APIRouter(prefix="/orders", tags=["orders"])
 
 #add item to cart
@@ -112,10 +113,13 @@ def viewOrderDetails(user_id:int,db: Session=Depends(get_db)):
   
     
 @router.post("/{user_id}/orderCart/{cart_id}",response_model=pmodels.ordersout, status_code=201)
-def orderCart(user_id:int,cart_id:int, db: Session=Depends(get_db)):
+def orderCart(user_id:int,cart_id:int, db: Session=Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """orders all Items in a user's cart, creates an order and orderitems, updates stock quantity, and clears the cart
     returns the order info (order_id,user_id):int ,total_price:float  
      order_date:DateTime,  number_of_items:Int."""
+
+    if current_user.id != user_id:
+        raise HTTPException(status_code=403, detail="Cannot order another user's cart")
 
     #cart=getcart(user_id=user_id,db=db)
     cart = CartService(db, user_id, cart_id).cart

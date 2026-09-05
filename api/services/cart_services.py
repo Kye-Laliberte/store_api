@@ -72,7 +72,7 @@ def getcart_item(cart_id:int,item_id:int, db: Session):
   
 
 def new_user(email:str,password:str,db:Session):
-    if not UserService(db, user_id=None, email=email).user:
+    if db.query(models.User).filter(models.User.email == email).first():
         raise HTTPException(status_code=400, detail="email already in use")
     
     if len(password.encode('utf-8')) < 8:
@@ -99,15 +99,16 @@ class CartService:
         if not self.userService.filter_user(status=pmod.UserStatus.active):  # Filter user by active status
             raise HTTPException(status_code=400, detail="User is not active. Cannot modify cart.")
 
-        self.cart = self.FindCart(cart_id=cart_id)
-        if not self.cart:
+        cart = self.FindCart(cart_id=cart_id)
+        if not cart:
             raise HTTPException(status_code=404, detail="Cart not found for this user")
-        
+        self.cart = cart
+
     def FindCart(self,cart_id:int):
         """this gets a cart User info when a user_id and Cart_id are in a relashinship """
         try:
             cart=(self.db.query(models.Cart.id,models.Cart.cart_date,models.Cart.user_id,models.User.status)
-          .filter(models.Cart.user_id == self.UserService.user.id, models.Cart.id == cart_id)
+          .filter(models.Cart.user_id == self.userService.user.id, models.Cart.id == cart_id)
           .join(models.User, models.User.id == models.Cart.user_id)).first()
         except Exception as e:
             logging.error(f"error retrieving user cart: {e}")
