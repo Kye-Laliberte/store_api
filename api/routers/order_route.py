@@ -20,7 +20,7 @@ router = APIRouter(prefix="/orders", tags=["orders"])
 def carthome():
     return {"message":"order route is under construction"}
 
-@router.get("/{user_id}/vieworders", response_model=List[pmodels.orders])
+@router.get("/{user_id}/vieworders", response_model=List[pmodels.orders], status_code=200)
 def viewOrders(user_id:int,db: Session=Depends(get_db)):
     """ shows all past orders for a user"""
     orders= db.query(Omodels.Order).filter(Omodels.Order.user_id==user_id).all()
@@ -33,7 +33,7 @@ def viewOrders(user_id:int,db: Session=Depends(get_db)):
         logging(f"faled to conect {e}")
         raise HTTPException(status_code=400,detail=f"error {e}")
     
-@router.get("/{user_id}/TodayOrders",response_model=List[pmodels.orders])
+@router.get("/{user_id}/TodayOrders",response_model=List[pmodels.orders], status_code=200)
 def viewNewOrders(user_id:int,db: Session=Depends(get_db)):
     """gets all orders of a user from before the given datetime"""
     today = datetime.now().date()
@@ -42,7 +42,7 @@ def viewNewOrders(user_id:int,db: Session=Depends(get_db)):
         raise HTTPException(status_code=404,detail="no  orders today")
     return orders
 
-@router.get("/{user_id}/weekOrder",response_model=List[pmodels.orders])
+@router.get("/{user_id}/weekOrder",response_model=List[pmodels.orders], status_code=200)
 def orderWeek(user_id:int,db: Session=Depends(get_db)):
     """gets all orders in the same week this api request"""
     week_start = datetime.now() - timedelta(days=7)
@@ -53,13 +53,13 @@ def orderWeek(user_id:int,db: Session=Depends(get_db)):
     return week
 
     
-@router.get("/getallorders", response_model=List[pmodels.orders])
+@router.get("/getallorders", response_model=List[pmodels.orders], status_code=200)
 def getAllOrders(db: Session=Depends(get_db)):
     """returns all orders in the database, for testing purposes only"""
     orders = db.query(Omodels.Order).all()
     return orders
 
-@router.get("/{order_id}/details", response_model=List[pmodels.orderInfo])
+@router.get("/{order_id}/details", response_model=List[pmodels.orderInfo], status_code=200)
 def get_order_details(order_id:int, db:Session=Depends(get_db)):
     """returns the details of an order including item information and price at order time"""
     try:
@@ -82,7 +82,7 @@ def get_order_details(order_id:int, db:Session=Depends(get_db)):
     return order_details
 
 
-@router.get("/{user_id}/vieworderdetails", response_model=List[pmodels.orderInfo])
+@router.get("/{user_id}/vieworderdetails", response_model=List[pmodels.orderInfo], status_code=200)
 def viewOrderDetails(user_id:int,db: Session=Depends(get_db)):
     """ shows all detals of past orders by user incluting item infermation and price at order time
     returns a list of OrderItems with item detalies"""
@@ -111,7 +111,7 @@ def viewOrderDetails(user_id:int,db: Session=Depends(get_db)):
     return orderDetails
   
     
-@router.post("/{user_id}/orderCart/{cart_id}",response_model=pmodels.ordersout)
+@router.post("/{user_id}/orderCart/{cart_id}",response_model=pmodels.ordersout, status_code=201)
 def orderCart(user_id:int,cart_id:int, db: Session=Depends(get_db)):
     """orders all Items in a user's cart, creates an order and orderitems, updates stock quantity, and clears the cart
     returns the order info (order_id,user_id):int ,total_price:float  

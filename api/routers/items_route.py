@@ -16,7 +16,7 @@ def readAllItems(db: Session = Depends(get_db)):
     return itemlist
 
 
-@router.post("/add_item",response_model=item)
+@router.post("/add_item",response_model=item, status_code=201)
 def create_item(newitems:createitem, db: Session = Depends(get_db)):
     """add a item to the stores inventory"""
     name=newitems.name.strip().lower().strip()
@@ -33,7 +33,7 @@ def create_item(newitems:createitem, db: Session = Depends(get_db)):
     return out
 
 # UPDATE an item
-@router.put("/{item_id}/update",response_model=ItemSchema)
+@router.put("/{item_id}/update",response_model=ItemSchema, status_code=200)
 def update_item(item_id: int,update:updateitem, db: Session = Depends(get_db)):
     """update a items infermation"""
     
@@ -57,7 +57,7 @@ def update_item(item_id: int,update:updateitem, db: Session = Depends(get_db)):
     
 
 #get items details
-@router.get("/{item_id}/details",response_model=item)
+@router.get("/{item_id}/details",response_model=item, status_code=200)
 def getItem(item_id: int, db: Session = Depends(get_db)):
     """gets items infermation"""
     

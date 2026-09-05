@@ -6,7 +6,7 @@ from database import get_db
 import models.sqlAmodels as models
 from typing import List
 from psycopg_models import CartItemsOut, cartpacage,carts,create_cartItem,UserStatus
-from services.cart_services import additemCart, filter_user, getcart, newcart,FindCart,getcaritem,delete_cart
+from services.cart_services import CartService, additemCart, newcart,getcaritem
 router = APIRouter(prefix="/carts", tags=["carts"])
 
 #add item to cart
@@ -16,7 +16,7 @@ def carthome():
     return {"message":"welcome to the store grab a cart"}
 
 
-@router.get("/{user_id}/viewcart/{cart_id}",response_model=List[CartItemsOut])
+@router.get("/{user_id}/viewcart/{cart_id}",response_model=List[CartItemsOut], status_code=200)
 def viewCart(user_id:int,cart_id:int, db: Session=Depends(get_db)):
     """retreves all items in the cart that relar to the user_id and returns a list of models with the item name, description, price and quantity"""
     
@@ -52,13 +52,13 @@ def viewCart(user_id:int,cart_id:int, db: Session=Depends(get_db)):
         for items in cart_items
         ]
 
-@router.get("/getallcarts",response_model=List[carts])
+@router.get("/getallcarts",response_model=List[carts], status_code=200)
 def GetCarts(db: Session = Depends(get_db)):
     """retreves all of the carts info and returns a list of cart models"""
     out=db.query(models.Cart).all()
     return out
 
-@router.post("/{user_id}/additem/{cart_id}",response_model=CartItemsOut)
+@router.post("/{user_id}/additem/{cart_id}",response_model=CartItemsOut, status_code=201)
 def addtoCart(user_id:int,cart_id:int, item:create_cartItem,db:Session=Depends(get_db)):
     """adds a item to the cart if it is alredy there it updates the quantity to the new quantity, returns a item model with item name, description, price and quantity"""
     
@@ -81,7 +81,7 @@ def addtoCart(user_id:int,cart_id:int, item:create_cartItem,db:Session=Depends(g
         raise HTTPException(status_code=500, detail="An error occurred while checking for existing cart item")
     
 
-@router.post("/{user_id}/newcart", response_model=carts)
+@router.post("/{user_id}/newcart", response_model=carts, status_code=201)
 def newCart(user_id:int, db: Session = Depends(get_db)):
     """creates a new cart for the user if one does not already exist"""
     
@@ -107,7 +107,7 @@ def newCart(user_id:int, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=500, detail="An error occurred while creating a new cart")
     
-@router.delete("/{cart_id}/{user_id}/removeitem/{item_id}",response_model=create_cartItem)
+@router.delete("/{cart_id}/{user_id}/removeitem/{item_id}",response_model=create_cartItem, status_code=200)
 def leaveitem(item_id:int,cart_id:int,user_id:int,db:Session=Depends(get_db)):
     """delete a cartItem that  relats to carts.id== cartitems.cart_id belongs to carts.user_id
     returns item_id quantity of cartitem"""
@@ -130,7 +130,7 @@ def leaveitem(item_id:int,cart_id:int,user_id:int,db:Session=Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=500, detail="An error occurred while removing item from cart")
     
-@router.delete("/{user_id}/dropCart/{cart_id}",response_model=carts)
+@router.delete("/{user_id}/dropCart/{cart_id}",status_code=204)
 def dropcart(user_id:int,cart_id:int,db:Session=Depends(get_db)):
     """removes all items from the cartItems tabel pertaning to the user_id and removes the cart from the Cart tebel"""
    
@@ -139,7 +139,7 @@ def dropcart(user_id:int,cart_id:int,db:Session=Depends(get_db)):
         if not cart:
             raise HTTPException(status_code=404, detail="Cart not found.")
             
-        delete_cart(cart_id=cart_id,db=db)
+        CartService(db,user_id,cart_id).delete_cart(cart_id=cart_id,db=db)
         
         return carts(id=cart.id,user_id=cart.user_id,cart_date=cart.cart_date)
     except Exception as e:
