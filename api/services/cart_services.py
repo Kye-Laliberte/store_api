@@ -66,12 +66,13 @@ def getcart_item(cart_id:int,item_id:int, db: Session):
     except Exception as e:
         logging.error(f"error retrieving cartitem: {e}")
         raise e
+
+
+    getcaritem = getcart_item
   
 
 def new_user(email:str,password:str,db:Session):
-    exists=UserService(db, email=email)
-
-    if(exists is not None):
+    if not UserService(db, user_id=None, email=email).user:
         raise HTTPException(status_code=400, detail="email already in use")
     
     if len(password.encode('utf-8')) < 8:
@@ -112,7 +113,7 @@ class CartService:
             logging.error(f"error retrieving user cart: {e}")
             raise e
         
-        if not self.cart:
+        if not cart:
             raise HTTPException(status_code=404, detail="Cart not found for this user")
         return cart
         
@@ -126,6 +127,8 @@ class CartService:
             self.db.query(models.Cart).filter(models.Cart.id==cart_id).delete()
             self.db.commit()
             return True
+        except HTTPException:
+            raise
         except Exception as e:
             logging.error(f"Error occurred while dropping the cart for cart {cart_id}: {e}")
             self.db.rollback()
@@ -186,11 +189,39 @@ class CartService:
                             description=item.description,
                             price=float(item.price),
                             totalprice=float(out.quantity) * float(item.price))
-        
+
+    def get_cart_items(self):
+        """retrieves all items in the cart that relate to the user_id and returns a list of models with the item name, description, price and quantity"""
+        try:
+            cart_items = (self.db.query(models.CartItem.item_id,
+                                   models.CartItem.quantity,
+                                   models.Item.description,
+                                   models.Item.name,models.Item.price)
+                                   .join(models.Item, models.CartItem.item_id == models.Item.id)
+                                         .filter(models.CartItem.cart_id == self.cart.id).all())
+            if not cart_items:
+                logging.info(f"Cart {self.cart.id} for user {self.userService.user.id} is empty.")
+                # return empty list for an empty cart (200 OK)
+                return []
+            
+            return[
+                pmod.CartItemsOut(
+                    item_id=items.item_id,
+                    quantity=items.quantity,
+                    description=items.description,
+                    price=items.price,
+                    name=items.name,
+                    totalprice=items.quantity*items.price
+                    )
+                for items in cart_items
+                ]
+        except Exception as e:
+            logging.error(f"Error retrieving cart items for cart {self.cart.id}: {e}")
+            raise HTTPException(status_code=500, detail="An error occurred while retrieving cart items")
 
 
 class UserService:
-    def __init__(self, db: Session, user_id: int|None, email: str|None):
+    def __init__(self, db: Session, user_id: int|None = None, email: str|None = None):
         self.db = db
         if user_id is not None and email is not None:
             raise ValueError("Provide either user_id or email, not both.")
@@ -202,7 +233,7 @@ class UserService:
         if not self.user:
             raise HTTPException(status_code=404, detail="User not found")
         
-        return self.user.status != status
+        return self.user.status == status
 
     def get_user(self, user_id: int | None = None, email: str | None = None):
         """Retrieve the user model for the given user_id."""
@@ -218,6 +249,8 @@ class UserService:
             if not user:
                 raise HTTPException(status_code=404, detail="User not found")
             return user
+        except HTTPException as err:
+            raise HTTPException(status_code=err.status_code, detail=err.detail)
         except Exception as e:
             logging.error(f"Error retrieving user {user_id or email}: {e}")
             raise HTTPException(status_code=500, detail="An error occurred while retrieving the user")

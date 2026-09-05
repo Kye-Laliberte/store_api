@@ -10,7 +10,7 @@ from typing import List
 from psycopg_models import UserStatus
 from datetime import datetime, timedelta
 import models.psyc_order as pmodels
-from services.cart_services import getcart, FindCart
+from services.cart_services import CartService
 from services.item_s import OrderProcessing
 router = APIRouter(prefix="/orders", tags=["orders"])
 
@@ -118,7 +118,7 @@ def orderCart(user_id:int,cart_id:int, db: Session=Depends(get_db)):
      order_date:DateTime,  number_of_items:Int."""
 
     #cart=getcart(user_id=user_id,db=db)
-    cart = FindCart(user_id=user_id,cart_id=cart_id,db=db)
+    cart = CartService(db, user_id, cart_id).cart
     if not cart:
         raise HTTPException(status_code=404, detail="Cart not found for this user")
 
@@ -134,6 +134,8 @@ def orderCart(user_id:int,cart_id:int, db: Session=Depends(get_db)):
     try:
         # process the whole order atomically inside the service
         new_order = Service.process_order(prepared_cart_items)
+    except HTTPException:
+        raise
     except Exception as e:
         logging.error(f"Error creating order for user {user_id}: {e}")
         

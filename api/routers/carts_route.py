@@ -66,9 +66,7 @@ def addtoCart(user_id:int,cart_id:int, item:create_cartItem,db:Session=Depends(g
         raise HTTPException( status_code=400,detail="cant add less than 1 items to a cart")
     
     try:
-        if not CartService(db,user_id,cart_id).userService.filter_user(status=UserStatus.active):
-
-            cartitem = CartService(db,user_id,cart_id).add_item(item_id=item_id, quantity=quantity)
+        cartitem = CartService(db, user_id, cart_id).additemCart(item_id=item_id, quantity=quantity)
         
         return cartitem
     except HTTPException as err:
@@ -84,23 +82,25 @@ def addtoCart(user_id:int,cart_id:int, item:create_cartItem,db:Session=Depends(g
 def newCart(user_id:int, db: Session = Depends(get_db)):
     """creates a new cart for the user if one does not already exist"""
     
-    user=CartService(db,user_id).userService.filter_user(status=models.UserStatus.active)
+    user = UserService(db, user_id=user_id).filter_user(status=models.UserStatus.active)
     if not user:
         raise HTTPException(status_code=404, detail="user not found or is inactive")
     
-    exists=CartService(db,user_id).get_cart()
+    exists = getcart(user_id=user_id, db=db)
     if exists:
          raise HTTPException(status_code=400, detail="Cart already active")
     
     try:
         
-        out_cart=newcart(user_id,db=db)
+        out_cart = newcart(db=db, user_id=user_id)
 
         if not out_cart:
             raise HTTPException(status_code=500, detail="Failed to create new cart")
         
         return out_cart
     
+    except HTTPException:
+        raise
     except Exception as e:
         logging.error(f"Error creating new cart for user {user_id}: {e}")
         db.rollback()
@@ -110,16 +110,19 @@ def newCart(user_id:int, db: Session = Depends(get_db)):
 def leaveitem(item_id:int,cart_id:int,user_id:int,db:Session=Depends(get_db)):
     """delete a cartItem that  relats to carts.id== cartitems.cart_id belongs to carts.user_id
     returns item_id quantity of cartitem"""
-    
-    cartitem = CartService(db, user_id, cart_id).getcaritem(cart_id=cart_id, item_id=item_id)
+
+    cart = CartService(db, user_id, cart_id).cart
+    if not cart:
+        raise HTTPException(status_code=404, detail="Cart not found for this user")
+        
+    cartitem = getcart_item(cart_id=cart_id, item_id=item_id, db=db)
     if not cartitem:
         raise HTTPException(status_code=404, detail="Item not in cart.")
     
     try:    
         db.delete(cartitem)
         db.commit()
-        item=CartService(db, user_id, cart_id).create_cartItem(item_id=cartitem.item_id, quantity=cartitem.quantity)
-        return item
+        return create_cartItem(item_id=cartitem.item_id, quantity=cartitem.quantity)
     except Exception as e:
         logging.error(f"Error occurred while querying cart item for cart {cart_id} and item {item_id}: {e}")
         db.rollback()
@@ -130,8 +133,6 @@ def dropcart(user_id:int,cart_id:int,db:Session=Depends(get_db)):
     """removes all items from the cartItems tabel pertaning to the user_id and removes the cart from the Cart tebel"""
    
     try:
-        
-            
         CartService(db,user_id,cart_id).delete_cart(cart_id=cart_id)
         
         

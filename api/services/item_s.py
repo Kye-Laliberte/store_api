@@ -189,6 +189,18 @@ class ItemService:
         if item.quantity < required_quantity:
             raise error(status_code=400, detail=f"Insufficient stock for item {item_id}. Available: {item.quantity}, Required: {required_quantity}")
         return True
+
+
+
+
+
+def createItem(name: str, description: str | None, price: float, quantity: int, db: Session) -> models.Item:
+    service = ItemService.__new__(ItemService)
+    service.db = db
+    return service.createItem(name, description, price, quantity)
+
+
+
     
     
    

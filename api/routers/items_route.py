@@ -4,7 +4,7 @@ from database import  get_db
 import models.sqlAmodels as models
 from psycopg_models import item,createitem, updateitem, ItemSchema
 from typing import List
-from services.item_s import get_items,get_active_items,createItem
+from services.item_s import createItem,ItemService
 router = APIRouter(prefix="/items", tags=["items"])
 
 # READ all items
@@ -20,13 +20,14 @@ def readAllItems(db: Session = Depends(get_db)):
 def create_item(newitems:createitem, db: Session = Depends(get_db)):
     """add a item to the stores inventory"""
     name=newitems.name.strip().lower().strip()
-    description=newitems.description.strip()
-
+    description=newitems.description.strip() if newitems.description else None
     
     try:
         out = createItem(name,description,
                      newitems.price,newitems.quantity,db)
          
+    except HTTPException:
+        raise HTTPException(status_code=400, detail="Item already exists")
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error creating item {e}") from e
@@ -37,7 +38,7 @@ def create_item(newitems:createitem, db: Session = Depends(get_db)):
 def update_item(item_id: int,update:updateitem, db: Session = Depends(get_db)):
     """update a items infermation"""
     
-    items=get_items(item_id,db)
+    items=ItemService(db,item_id).item
     if not items:
         raise HTTPException(status_code=404, detail="Item not found")
     try:
@@ -61,7 +62,7 @@ def update_item(item_id: int,update:updateitem, db: Session = Depends(get_db)):
 def getItem(item_id: int, db: Session = Depends(get_db)):
     """gets items infermation"""
     
-    items=get_active_items(item_id,db)
+    items=ItemService(db,item_id).item
     if not items:
         raise HTTPException(status_code=404, detail="Item not found")
         
