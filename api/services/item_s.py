@@ -20,11 +20,14 @@ class OrderProcessing:
     """Class to handle order processing logic, including stock checks, order creation, and cart management."""
     def __init__(self, db: Session,user_id:int,cart_id:int):
         self.db = db
+        self.user_id = user_id
+        self.cart_id = cart_id
         self.cartsev = CartService(db, user_id, cart_id)
+        self.cart = self.cartsev.cart
+        
+
         if not self.cart:
             raise HTTPException(status_code=404, detail="Cart not found for this user")
-
-        self.cart=self.cartsev.cart
 
     def prepare_cart_items(self) -> list[tuple[models.CartItem, models.Item]]:
         """prepares cart items for order processing by returning a list of tuples (cart_item, item) for each item in the user's cart"""
