@@ -1,11 +1,9 @@
 
-import api from '/src/api/axios';
 import '/src/App.css';
 import CartViewer from '/src/componets/cart_viewer';
-import { getItem, getAllItems} from '/src/api/itemsClient';
+import { getAllItems} from '/src/api/itemsClient';
 import { addToCart,viewCart,deleatCart,new_Cart} from '/src/api/CartClient';
 import { useEffect, useState } from 'react';
-import { useNavigate} from 'react-router-dom';
 import UserWidget from'/src/componets/UserWidget';
 import {ItemList} from'/src/componets/cart_componets'
 import { getUser } from '/src/api/userClient';
@@ -26,18 +24,13 @@ const trigger_refresh=()=>{
     setRefreshKey(k => k + 1);
 }
 
-function Log_Out({setUser}){
-setUser(null)
-return(
-<button onClick={() => logout(setUser)}>
-  Logout
-</button>
-);
-}
-
 async function refreshUser(user_id){
-    setUser(await getUser(user_id));
-    console.log("user",user)
+    const refreshedUser = await getUser(user_id);
+    setUser((currentUser) => ({
+        ...currentUser,
+        ...refreshedUser,
+    }));
+    return refreshedUser;
 }
 
 async function refreshCart(user){
@@ -55,15 +48,15 @@ async function refreshItems(){
 async function refresh(user){
     await refreshItems();
     if(user?.id){
-        refreshUser(user.id);
-        refreshCart(user);        
+        const refreshedUser = await refreshUser(user.id);
+        await refreshCart(refreshedUser);
     }
 }
 
  
-    useEffect(()=>{
-  refresh(user);
- },[refreshKey]);
+    useEffect(() => {
+        refresh(user);
+    }, [refreshKey]);
 
 async function handle_cartRemovel(User){
     if (!User?.cart_id ){
@@ -121,9 +114,9 @@ function handleQuantityChange(itemId,value){
             alert("adding new cart")
             
             const cart = await handleNewCart(user)
-            const  idata = await addToCart(user.id,item.id,quantity,cart.id)
+            await addToCart(user.id,item.id,quantity,cart.id)
         }else{
-            const idata = await addToCart(user.id,item.id,quantity,user.cart_id);
+            await addToCart(user.id,item.id,quantity,user.cart_id);
         }
             
                 trigger_refresh();
@@ -143,7 +136,6 @@ function handleQuantityChange(itemId,value){
         user={user}
         setUser={setUser}
         refresh={refresh}
-        onOpenCart ={()=> setShowCart(true)}
         />
         <ViewOrders user={user}/>
         <ItemList

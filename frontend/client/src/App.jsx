@@ -1,15 +1,17 @@
 import '/src/App.css';
-import {  useState, useEffect } from 'react';
-
-import { Routes, Route, useNavigate} from 'react-router-dom';
+import { useState } from 'react';
  
 import CartPage from '/src/pages/CartPage';
-import UserWidget from'/src/componets/UserWidget';
 
 function  App() {
-  const [user, setUser] = useState({id:null,email:null,cart_id:null,UserStatus:'inactive'});
+  const [user, setUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('store_user')) || null;
+    } catch {
+      return null;
+    }
+  });
   const [incart, setCart]= useState({});
-  const nav = useNavigate();
   return(
     <div>
       <h1>Store</h1>
@@ -19,7 +21,6 @@ function  App() {
         setCart={setCart}
         user = {user}
         setUser={setUser}
-        onClose={() => setShowCart(false)}
         />
       
     </div>
