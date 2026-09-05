@@ -1,13 +1,17 @@
 FROM python:3.12-slim
 
-WORKDIR /api
+WORKDIR /app
 
-COPY requirements.txt .
+COPY api/requirements.txt /app/api/requirements.txt
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r /app/api/requirements.txt
 
-COPY . .
+COPY api /app/api
+COPY alembic.ini /app/alembic.ini
+COPY alembic /app/alembic
+
+ENV PYTHONPATH=/app:/app/api
 
 EXPOSE 8000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
