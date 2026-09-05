@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 import logging
+from api.services.cart_services import CartService
 import models.sqlAmodels as models
 from sqlalchemy.orm import Session
 from models.ordermodels import Order
@@ -19,9 +20,13 @@ class OrderProcessing:
     """Class to handle order processing logic, including stock checks, order creation, and cart management."""
     def __init__(self, db: Session,user_id:int,cart_id:int):
         self.db = db
-        self.user_id = user_id
-        self.cart_id = cart_id
-    def prepare_cart_items(self):
+        self.cartsev = CartService(db, user_id, cart_id)
+        if not self.cart:
+            raise HTTPException(status_code=404, detail="Cart not found for this user")
+
+        self.cart=self.cartsev.cart
+
+    def prepare_cart_items(self) -> list[tuple[models.CartItem, models.Item]]:
         """prepares cart items for order processing by returning a list of tuples (cart_item, item) for each item in the user's cart"""
         
         prepared_cart_items = (self.db.query(models.CartItem, models.Item)
@@ -31,7 +36,7 @@ class OrderProcessing:
         
         return prepared_cart_items
     
-    def pre_order_checks(self, cart_items: list[tuple[models.CartItem, models.Item]]):
+    def pre_order_checks(self, cart_items: list[tuple[models.CartItem, models.Item]]) -> list[tuple[models.CartItem, models.Item]]:
         """perform pre-order checks such as stock availability and  if cart_items exceed the stock
         for right now it returns the input and HTTP"""
         if not cart_items:
@@ -47,9 +52,7 @@ class OrderProcessing:
             raise HTTPException(status_code=400,detail="A cart items exceed available stock.")       
         return cart_items
     
-   
-
-    def create_order(self, cart_items: list[tuple[models.CartItem, models.Item]]):
+    def create_order(self, cart_items: list[tuple[models.CartItem, models.Item]]) -> Order:
         """Create the order and order items in the database without committing.
         This function prepares the Order ORM object, flushes to populate its id,
         creates the order_items rows, and returns the Order object. The caller
@@ -80,7 +83,7 @@ class OrderProcessing:
             return []
         return cart_items_data
     
-    def update_stock(self, cart_items: list[tuple[models.CartItem, models.Item]]):
+    def update_stock(self, cart_items: list[tuple[models.CartItem, models.Item]]) -> bool:
         """Update stock quantity for each item in the cart after order is created.
         Raises an error on failure so the caller can rollback the transaction.
         """
@@ -91,23 +94,23 @@ class OrderProcessing:
             FROM cart_items
             WHERE items.id = cart_items.item_id
             AND cart_items.cart_id = :cart_id"""),
-            {"cart_id": self.cart_id})
+            {"cart_id": self.cart.id})
             return True
         except Exception as e:
             # Propagate the failure so a surrounding transaction will be rolled back
-            logging.error(f"Error updating stock for cart {self.cart_id}: {e}")
+            logging.error(f"Error updating stock for cart {self.cart.id}: {e}")
             raise error(status_code=500, detail=f"An error occurred while updating stock quantities: {e}") from e
     
     def clear_cart(self):
         """Clear cart items after order is created. Does not commit; expects caller to manage the transaction."""
         try:
-            self.db.query(models.CartItem).filter(models.CartItem.cart_id == self.cart_id).delete()
+            self.db.query(models.CartItem).filter(models.CartItem.cart_id == self.cart.id).delete()
             return True
         except Exception as e:
-            logging.error(f"Error clearing cart {self.cart_id}: {e}")
+            logging.error(f"Error clearing cart {self.cart.id}: {e}")
             raise error(status_code=500, detail="An error occurred while clearing the cart")
 
-    def process_order(self, cart_items: list[tuple[models.CartItem, models.Item]]):
+    def process_order(self, cart_items: list[tuple[models.CartItem, models.Item]]) -> Order:
         """Process an order as a single atomic transaction: run pre-order checks,
         create the order and order_items rows, update stock, and clear the cart.
         Uses a transactional context so either everything commits or everything
@@ -140,31 +143,47 @@ class OrderProcessing:
             logging.error(f"Order processing failed for user {self.user_id}, cart {self.cart_id}: {e}")
             self.db.rollback()
             raise error(status_code=500, detail=f"An error occurred while processing the order: {e}") from e
-    
-def get_active_items(item_id:int,db:Session):
-    """get active item by id, if item is not found or not in stock, return None"""
-    out=db.query(models.Item).filter(models.Item.id == item_id, models.Item.quantity > 0).first()
-    if not out:
-        return None
-    return out
-    
-def createItem(name:str, description:str, price:float, quantity:int,db:Session):
-    """create a new item in the database, if an item with the same name already exists, raise an error"""
-    if db.query(models.Item).filter(models.Item.name == name).first():
-        raise error(status_code=400, detail=f"Item with name {name} already exists")
-    
-    new_item = models.Item(name=name, description=description, price=price, quantity=quantity)
 
-    db.add(new_item)
-    db.commit()
-    return new_item
+
+class ItemService:
+    """Service class for item-related operations."""
+    def __init__(self, db: Session,item_id:int):
+        self.db = db
+        self.item = self.get_active_items(item_id)
+
+    def get_active_items(self, item_id: int) -> models.Item:
+        """get active item by id, if item is not found or not in stock, return None"""
+        out = self.db.query(models.Item).filter(models.Item.id == item_id, models.Item.quantity > 0).first()
+        if not out:
+            raise HTTPException(status_code=404, detail=f"Item with id {item_id} not found or out of stock")
+        return out
+
+    def createItem(self, name:str, description:str, price:float, quantity:int) -> models.Item:
+        """create a new item in the database, if an item with the same name already exists, raise an error"""
+        if self.db.query(models.Item).filter(models.Item.name == name).first():
+            raise error(status_code=400, detail=f"Item with name {name} already exists")
+
+        new_item = models.Item(name=name, description=description, price=price, quantity=quantity)
+        
+        self.db.add(new_item)
+        self.db.commit()
+        return new_item
+
+    def get_items(self, item_id: int) -> models.Item:
+        """get item by id, if item is not found raise an error"""
+        out = self.db.query(models.Item).filter(models.Item.id == item_id).first()
+        if not out:
+            raise HTTPException(status_code=404, detail=f"Item with id {item_id} not found")
+        return out
     
-def get_items(item_id:int,db:Session):
-    """get item by id, if item is not found return None"""
-    out=db.query(models.Item).filter(models.Item.id==item_id).first()
-    if not out:
-        return None
-    return out
+    def validate_item_stock(self, item_id: int, required_quantity: int) -> bool:
+        """validate if the item has enough stock for the required quantity"""
+        item = self.get_items(item_id)
+        if not item:
+            raise error(status_code=404, detail=f"Item with id {item_id} not found")
+        if item.quantity < required_quantity:
+            raise error(status_code=400, detail=f"Insufficient stock for item {item_id}. Available: {item.quantity}, Required: {required_quantity}")
+        return True
     
     
    

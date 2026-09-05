@@ -75,10 +75,6 @@ def new_user(email:str,password:str,db:Session):
 
 
 
-
-
-
-
 class CartService:
     def __init__(self, db: Session, user_id: int, cart_id: int):
         self.db = db
