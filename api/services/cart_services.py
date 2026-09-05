@@ -104,6 +104,15 @@ class CartService:
             raise HTTPException(status_code=404, detail="Cart not found for this user")
         self.cart = cart
 
+    def is_cart_empty(self) -> bool:
+        """Check if the cart is empty. Returns True if empty, False otherwise."""
+        try:
+            cart_items_count = self.db.query(models.CartItem).filter(models.CartItem.cart_id == self.cart.id).count()
+            return cart_items_count == 0
+        except Exception as e:
+            logging.error(f"Error checking if cart {self.cart.id} is empty: {e}")
+            raise HTTPException(status_code=500, detail="An error occurred while checking if the cart is empty")
+
     def FindCart(self,cart_id:int):
         """this gets a cart User info when a user_id and Cart_id are in a relashinship """
         try:
