@@ -9,12 +9,16 @@ from passlib.context import CryptContext
 from datetime import datetime
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-def newcart(user_id,db:Session):
+
+
+        
+
+def newcart(db: Session, user_id: int):
     """deletes a users existing cart if it exists then
       creates a new cart for a user and returns the cart sql model"""
     cart_date = datetime.now()
     new_cart = models.Cart(user_id=user_id, cart_date=cart_date)
-    user=filter_user(user_id=new_cart.user_id,status=pmod.UserStatus.active,db=db)
+    user=UserService(db,user_id).filter_user(user_id=new_cart.user_id,status=pmod.UserStatus.active,db=db)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
@@ -76,47 +80,9 @@ def getcaritem(cart_id:int,item_id:int, db: Session):
         
         return cartitem    
     except Exception as e:
-        logging(f"error reteving cartitem{e}")
+        logging.error(f"error retrieving cartitem: {e}")
         raise e
-    
-def get_user(user_id:int,db:Session):
-    """this gets a user model by there user_id even if there status is not active and returns the sql model"""
-    try:
-        user=(db.query(models.User).filter(models.User.id == user_id).first())
-        if not user:
-            return None        
-        return user
-    except Exception as e:
-        logging(f"error reteving user {e}")
-        raise e
-def filter_user(user_id:int,db:Session,status:pmod.UserStatus=pmod.UserStatus.active):
-    """this gets a user model by there user_id but filters by the givin status and returns the sql model status defaults to active."""
-    try:
-        user=(db.query(models.User).filter(models.User.id == user_id).first())
-        if not user:
-            return None        
-        if user.status != status:
-            return False
-        return user
-    except Exception as e:
-        logging(f"error reteving user {e}")
-        raise 
-
-def get_user_Email(email:str,db:Session):
-    try:
-        email = email.strip()
-        user=(db.query(models.User).filter(models.User.email == email).first())
-        if not user:
-            return None
-        
-        if user.status != pmod.UserStatus.active:
-            return False
-            
-        return  user
-    except Exception as e:
-        logging(f"error reteving user {e}")
-        raise e
-    
+  
 def delete_cart(cart_id:int,db:Session):
     """deletes a cart and all cartitems that are related to the cart_id"""
     try:
@@ -193,7 +159,6 @@ def additemCart(item_id:int,user:pmod.cartpacage,quantity:int,db:Session):
         # Log full stack trace to help diagnose the server-side failure
         logging.exception(f"Error checking for existing cart info for user {user_id} and item {item_id}")
        
-        traceback.print_exc()
         db.rollback()
         
         raise HTTPException(status_code=500, detail=f"Internal error")
@@ -214,3 +179,88 @@ def additemCart(item_id:int,user:pmod.cartpacage,quantity:int,db:Session):
 
 
 
+
+
+class CartService:
+    def __init__(self, db: Session, user_id: int, cart_id: int):
+        self.db = db
+
+        self.userService = UserService(db, user_id=user_id, email=None)  # Initialize UserService with user_id
+        if not self.userService.filter_user(status=pmod.UserStatus.active):  # Filter user by active status
+            raise HTTPException(status_code=400, detail="User is not active. Cannot modify cart.")
+
+        self.cart = FindCart(cart_id=cart_id)
+        if not self.cart:
+            raise HTTPException(status_code=404, detail="Cart not found for this user")
+        
+
+    def FindCart(self,cart_id:int):
+        """this gets a cart User info when a user_id and Cart_id are in a relashinship """
+        try:
+            cart=(self.db.query(models.Cart.id,models.Cart.cart_date,models.Cart.user_id,models.User.status)
+          .filter(models.Cart.user_id == self.UserService.user.id, models.Cart.id == cart_id)
+          .join(models.User, models.User.id == models.Cart.user_id)).first()
+    
+            if not cart:
+                return None
+        
+            return cart
+    
+        except Exception as e:
+            logging.error(f"error retrieving user cart: {e}")
+            raise e
+
+    
+    def getcart(self, cart_id: int):
+        """reusable serves to retreave a users carts info and then returns a pydantic model"""
+        
+        # this query will join with 
+        cart=(self.db.query(models.Cart.id,models.Cart.cart_date,models.Cart.user_id,models.User.status)
+            .filter(models.Cart.user_id == self.UserService.user.id, models.Cart.id == cart_id)
+            .join(models.User, models.User.id == models.Cart.user_id)).first()
+
+        if not cart:
+            logging.info(f"No cart found for user {self.UserService.user.id}.")
+            raise HTTPException(status_code=404, detail="Cart not found for this user")
+            
+        return cart
+        
+
+
+class UserService:
+    def __init__(self, db: Session, user_id: int|None, email: str|None):
+        self.db = db
+        if user_id is not None and email is not None:
+            raise ValueError("Provide either user_id or email, not both.")
+
+        self.user = self.get_user(user_id=user_id, email=email)  # Retrieve the user model during initialization
+
+    def filter_user(self, status: pmod.UserStatus = pmod.UserStatus.active):
+        """Filter the user by status. Returns the user model if it matches the status, otherwise returns None."""
+        if not self.user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        if self.user.status != status:
+            return None
+        
+        return self.user
+
+    def get_user(self, user_id: int | None = None, email: str | None = None):
+        """Retrieve the user model for the given user_id."""
+        try:
+            if user_id is not None:
+                user = (self.db.query(models.User).filter(models.User.id == user_id).first()) 
+            elif email is not None:
+                email = email.strip()
+                user = (self.db.query(models.User).filter(models.User.email == email).first())
+            else:
+                raise ValueError("Either user_id or email must be provided.")
+
+            if not user:
+                raise HTTPException(status_code=404, detail="User not found")
+            return user
+        except Exception as e:
+            logging.error(f"Error retrieving user {user_id or email}: {e}")
+            raise HTTPException(status_code=500, detail="An error occurred while retrieving the user")
+
+    

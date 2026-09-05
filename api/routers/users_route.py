@@ -5,7 +5,7 @@ import models.sqlAmodels as models
 from passlib.context import CryptContext
 from typing import List
 from psycopg_models import users,userOut, login,userinfo
-from services.cart_services import get_user, getcart, get_user_Email,new_user
+from services.cart_services import UserService, getcart,new_user
 
 router = APIRouter(prefix="/users", tags=["users"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
