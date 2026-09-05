@@ -6,7 +6,7 @@ from database import get_db
 import models.sqlAmodels as models
 from typing import List
 from psycopg_models import CartItemsOut, cartpacage,carts,create_cartItem,UserStatus
-from services.cart_services import CartService, additemCart, newcart,getcaritem
+from services.cart_services import CartService, UserService, newcart,getcaritem
 router = APIRouter(prefix="/carts", tags=["carts"])
 
 #add item to cart
@@ -20,10 +20,7 @@ def carthome():
 def viewCart(user_id:int,cart_id:int, db: Session=Depends(get_db)):
     """retreves all items in the cart that relar to the user_id and returns a list of models with the item name, description, price and quantity"""
     
-    cart=FindCart(user_id,cart_id, db)
-
-    if not cart:
-        raise HTTPException(status_code=404,detail=f"no cart found ")
+    cart=CartService(db,user_id,cart_id).cart
     
     if cart.status != UserStatus.active:
         raise HTTPException(status_code=400, detail="User is not active. Cannot view cart.")
@@ -69,7 +66,9 @@ def addtoCart(user_id:int,cart_id:int, item:create_cartItem,db:Session=Depends(g
         raise HTTPException( status_code=400,detail="cant add less than 1 items to a cart")
     
     try:
-        cartitem = additemCart(item_id=item_id, user=cartpacage(user_id=user_id, cart_id=cart_id), quantity=quantity, db=db)
+        if not CartService(db,user_id,cart_id).userService.filter_user(status=UserStatus.active):
+
+            cartitem = CartService(db,user_id,cart_id).add_item(item_id=item_id, quantity=quantity)
         
         return cartitem
     except HTTPException as err:
@@ -85,11 +84,11 @@ def addtoCart(user_id:int,cart_id:int, item:create_cartItem,db:Session=Depends(g
 def newCart(user_id:int, db: Session = Depends(get_db)):
     """creates a new cart for the user if one does not already exist"""
     
-    user=filter_user(user_id=user_id,status=models.UserStatus.active,db=db)
+    user=CartService(db,user_id).userService.filter_user(status=models.UserStatus.active)
     if not user:
         raise HTTPException(status_code=404, detail="user not found or is inactive")
     
-    exists=getcart(user_id,db) 
+    exists=CartService(db,user_id).get_cart()
     if exists:
          raise HTTPException(status_code=400, detail="Cart already active")
     
@@ -112,18 +111,14 @@ def leaveitem(item_id:int,cart_id:int,user_id:int,db:Session=Depends(get_db)):
     """delete a cartItem that  relats to carts.id== cartitems.cart_id belongs to carts.user_id
     returns item_id quantity of cartitem"""
     
-    cart = FindCart(cart_id=cart_id,user_id=user_id,db=db)
-    if not cart:# Ensure the cart exists user_id is not needed for this check
-        raise HTTPException(status_code=404, detail="Cart not found.")
-    
-    cartitem = getcaritem(cart_id=cart_id,item_id=item_id,db=db)
+    cartitem = CartService(db, user_id, cart_id).getcaritem(cart_id=cart_id, item_id=item_id)
     if not cartitem:
         raise HTTPException(status_code=404, detail="Item not in cart.")
     
     try:    
         db.delete(cartitem)
         db.commit()
-        item=create_cartItem(item_id=cartitem.item_id,quantity=cartitem.quantity)
+        item=CartService(db, user_id, cart_id).create_cartItem(item_id=cartitem.item_id, quantity=cartitem.quantity)
         return item
     except Exception as e:
         logging.error(f"Error occurred while querying cart item for cart {cart_id} and item {item_id}: {e}")
@@ -135,13 +130,11 @@ def dropcart(user_id:int,cart_id:int,db:Session=Depends(get_db)):
     """removes all items from the cartItems tabel pertaning to the user_id and removes the cart from the Cart tebel"""
    
     try:
-        cart=FindCart(user_id=user_id,cart_id=cart_id,db=db)
-        if not cart:
-            raise HTTPException(status_code=404, detail="Cart not found.")
-            
-        CartService(db,user_id,cart_id).delete_cart(cart_id=cart_id,db=db)
         
-        return carts(id=cart.id,user_id=cart.user_id,cart_date=cart.cart_date)
+            
+        CartService(db,user_id,cart_id).delete_cart(cart_id=cart_id)
+        
+        
     except Exception as e:
         logging.error(f"Error occurred while dropping the cart for user {user_id}: {e}")
         db.rollback()

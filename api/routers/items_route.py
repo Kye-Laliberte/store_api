@@ -8,7 +8,7 @@ from services.item_s import get_items,get_active_items,createItem
 router = APIRouter(prefix="/items", tags=["items"])
 
 # READ all items
-@router.get("/get_all",response_model = List[ItemSchema])
+@router.get("/get_all",response_model = List[ItemSchema],status_code=200)
 def readAllItems(db: Session = Depends(get_db)):
     itemlist= db.query(models.Item).filter(models.Item.quantity > 0).all()
     if not itemlist:
