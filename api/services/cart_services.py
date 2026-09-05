@@ -18,8 +18,8 @@ def newcart(db: Session, user_id: int):
       creates a new cart for a user and returns the cart sql model"""
     cart_date = datetime.now()
     new_cart = models.Cart(user_id=user_id, cart_date=cart_date)
-    user=UserService(db,user_id).filter_user(user_id=new_cart.user_id,status=pmod.UserStatus.active,db=db)
-    if not user:
+    
+    if not UserService(db,user_id).filter_user(status=pmod.UserStatus.active):
         raise HTTPException(status_code=404, detail="User not found")
     
     try:
@@ -39,37 +39,6 @@ def newcart(db: Session, user_id: int):
         db.rollback()
         raise HTTPException(status_code=500, detail="An error occurred while creating a new cart")
 
-def FindCart(user_id:int,cart_id:int,db:Session):
-    """this gets a cart User info when a user_id and Cart_id are in a relashinship """
-    try:
-        cart=(db.query(models.Cart.id,models.Cart.cart_date,models.Cart.user_id,models.User.status)
-          .filter(models.Cart.user_id == user_id, models.Cart.id == cart_id)
-          .join(models.User, models.User.id == models.Cart.user_id)).first()
-    
-        if not cart:
-            return None
-        
-        return cart
-    
-    except Exception as e:
-        logging.error(f"error retrieving user cart: {e}")
-        raise e
-
-def getcart(user_id: int, db: Session):
-    """reusable serves to retreave a users carts info and then returns a pydantic model"""
-    try:
-        # this query will join with 
-        cart=(db.query(models.Cart.id,models.Cart.cart_date,models.Cart.user_id,models.User.status)
-              .filter(models.Cart.user_id == user_id)
-              .join(models.User, models.User.id == models.Cart.user_id)).first()
-
-        if not cart:
-            return None
-        
-        return cart
-    except Exception as e:
-        logging.error(f"error retrieving user cart: {e}")
-        raise e
 
 def getcaritem(cart_id:int,item_id:int, db: Session):
     try:
@@ -83,23 +52,9 @@ def getcaritem(cart_id:int,item_id:int, db: Session):
         logging.error(f"error retrieving cartitem: {e}")
         raise e
   
-def delete_cart(cart_id:int,db:Session):
-    """deletes a cart and all cartitems that are related to the cart_id"""
-    try:
-        if not db.query(models.Cart).filter(models.Cart.id == cart_id).first():
-            raise HTTPException(status_code=404, detail=f"Cart with id {cart_id} not found.")    
-        
-        db.query(models.CartItem).filter(models.CartItem.cart_id==cart_id).delete()
-        db.query(models.Cart).filter(models.Cart.id==cart_id).delete()
-        db.commit()
-        return True
-    except Exception as e:
-        logging.error(f"Error occurred while dropping the cart for cart {cart_id}: {e}")
-        db.rollback()
-        raise HTTPException(status_code=500, detail="An error occurred while dropping the cart")
 
 def new_user(email:str,password:str,db:Session):
-    exists=get_user_Email(email=email,db=db)
+    exists=UserService(db, email=email)
 
     if(exists is not None):
         raise HTTPException(status_code=400, detail="email already in use")
@@ -118,64 +73,7 @@ def new_user(email:str,password:str,db:Session):
     db.refresh(user)
     return user
 
-def additemCart(item_id:int,user:pmod.cartpacage,quantity:int,db:Session):
-    """adds an item to a users cart if the user is active and the item is in stock"""
-    
-    user_id=user.user_id
-    
-    cart=FindCart(user_id=user_id,cart_id = user.cart_id,db=db)
 
-    logging.info(f"FindCart result for user {user_id}, cart {user.cart_id}: {cart}")
-
-    if not cart:
-        raise HTTPException(status_code=404,detail=" cart not found.")
-    
-    if cart.status != pmod.UserStatus.active:
-        raise HTTPException(status_code=400, detail="User is not active. Cannot add items to cart.")
-
-    item=(db.query(models.Item).filter(models.Item.id==item_id).first())
-    logging.info(f"Item query result for item_id={item_id}, required_qty={quantity}: {item}")
-
-    if not item:
-            raise HTTPException(status_code=404,detail=f"item with id {item_id} not found or out of stock")
-    
-    if item.quantity < quantity:
-            logging.error(f"Insufficient stock for item {item_id} while adding to cart for user {user_id}")
-            raise HTTPException(status_code=400, detail=f"Insufficient stock for item {item_id}")
-    
-    try:
-        existing = (
-            db.query(models.CartItem)
-            .filter(models.CartItem.cart_id == cart.id, models.CartItem.item_id == item_id).first())
-        
-        if existing:
-            existing.quantity = quantity
-            out = existing
-        else:
-            out =models.CartItem(cart_id=cart.id, item_id=item_id, quantity=quantity)
-             
-         
-    except Exception as e:
-        # Log full stack trace to help diagnose the server-side failure
-        logging.exception(f"Error checking for existing cart info for user {user_id} and item {item_id}")
-       
-        db.rollback()
-        
-        raise HTTPException(status_code=500, detail=f"Internal error")
-    except KeyError as e:
-        logging.error(f"Key error while processing cart item for user {user_id} and item {item_id}: {e}")
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"An error occurred while processing cart item {e}")
-    db.add(out)
-    db.commit() 
-    db.refresh(out)
-            # convert Decimal price values to float for pydantic and compute total using the cart item's quantity
-    return pmod.CartItemsOut(item_id=out.item_id,
-                             quantity=out.quantity,
-                            name=str(item.name),
-                            description=item.description,
-                            price=float(item.price),
-                            totalprice=float(out.quantity) * float(item.price))
 
 
 
@@ -189,41 +87,94 @@ class CartService:
         if not self.userService.filter_user(status=pmod.UserStatus.active):  # Filter user by active status
             raise HTTPException(status_code=400, detail="User is not active. Cannot modify cart.")
 
-        self.cart = FindCart(cart_id=cart_id)
+        self.cart = self.FindCart(cart_id=cart_id)
         if not self.cart:
             raise HTTPException(status_code=404, detail="Cart not found for this user")
         
-
     def FindCart(self,cart_id:int):
         """this gets a cart User info when a user_id and Cart_id are in a relashinship """
         try:
             cart=(self.db.query(models.Cart.id,models.Cart.cart_date,models.Cart.user_id,models.User.status)
           .filter(models.Cart.user_id == self.UserService.user.id, models.Cart.id == cart_id)
           .join(models.User, models.User.id == models.Cart.user_id)).first()
-    
-            if not cart:
-                return None
-        
-            return cart
-    
         except Exception as e:
             logging.error(f"error retrieving user cart: {e}")
             raise e
-
-    
-    def getcart(self, cart_id: int):
-        """reusable serves to retreave a users carts info and then returns a pydantic model"""
         
-        # this query will join with 
-        cart=(self.db.query(models.Cart.id,models.Cart.cart_date,models.Cart.user_id,models.User.status)
-            .filter(models.Cart.user_id == self.UserService.user.id, models.Cart.id == cart_id)
-            .join(models.User, models.User.id == models.Cart.user_id)).first()
-
-        if not cart:
-            logging.info(f"No cart found for user {self.UserService.user.id}.")
+        if not self.cart:
             raise HTTPException(status_code=404, detail="Cart not found for this user")
-            
         return cart
+        
+    def delete_cart(self, cart_id:int):
+        """deletes a cart and all cartitems that are related to the cart_id"""
+        try:
+            if not self.db.query(models.Cart).filter(models.Cart.id == cart_id).first():
+                raise HTTPException(status_code=404, detail=f"Cart with id {cart_id} not found.")    
+
+            self.db.query(models.CartItem).filter(models.CartItem.cart_id==cart_id).delete()
+            self.db.query(models.Cart).filter(models.Cart.id==cart_id).delete()
+            self.db.commit()
+            return True
+        except Exception as e:
+            logging.error(f"Error occurred while dropping the cart for cart {cart_id}: {e}")
+            self.db.rollback()
+            raise HTTPException(status_code=500, detail="An error occurred while dropping the cart")
+
+    def additemCart(self,item_id:int,quantity:int,):
+        """adds an item to a users cart if the user is active and the item is in stock"""
+    
+        user_id=self.userService.user.id
+        
+        logging.info(f"FindCart result for user {user_id}, cart {self.cart.id}: {self.cart}")
+
+        if not self.cart:
+            raise HTTPException(status_code=404,detail=" cart not found.")
+    
+        if self.cart.status != pmod.UserStatus.active:
+            raise HTTPException(status_code=400, detail="User is not active. Cannot add items to cart.")
+
+        item=(self.db.query(models.Item).filter(models.Item.id==item_id).first())
+        logging.info(f"Item query result for item_id={item_id}, required_qty={quantity}: {item}")
+
+        if not item:
+            raise HTTPException(status_code=404,detail=f"item with id {item_id} not found or out of stock")
+    
+        if item.quantity < quantity:
+            logging.error(f"Insufficient stock for item {item_id} while adding to cart for user {user_id}")
+            raise HTTPException(status_code=400, detail=f"Insufficient stock for item {item_id}")
+    
+        try:
+            existing = (
+            self.db.query(models.CartItem)
+            .filter(models.CartItem.cart_id == self.cart.id, models.CartItem.item_id == item_id).first())
+        
+            if existing:
+                existing.quantity = quantity
+                out = existing
+            else:
+                out =models.CartItem(cart_id=self.cart.id, item_id=item_id, quantity=quantity)
+             
+        except Exception as e:
+            # Log full stack trace to help diagnose the server-side failure
+            logging.exception(f"Error checking for existing cart info for user {user_id} and item {item_id}")
+       
+            self.db.rollback()
+        
+            raise HTTPException(status_code=500, detail=f"Internal error")
+        except KeyError as e:
+            logging.error(f"Key error while processing cart item for user {user_id} and item {item_id}: {e}")
+            self.db.rollback()
+            raise HTTPException(status_code=500, detail=f"An error occurred while processing cart item {e}")
+        self.db.add(out)
+        self.db.commit() 
+        self.db.refresh(out)
+            # convert Decimal price values to float for pydantic and compute total using the cart item's quantity
+        return pmod.CartItemsOut(item_id=out.item_id,
+                             quantity=out.quantity,
+                            name=str(item.name),
+                            description=item.description,
+                            price=float(item.price),
+                            totalprice=float(out.quantity) * float(item.price))
         
 
 
@@ -235,15 +186,12 @@ class UserService:
 
         self.user = self.get_user(user_id=user_id, email=email)  # Retrieve the user model during initialization
 
-    def filter_user(self, status: pmod.UserStatus = pmod.UserStatus.active):
-        """Filter the user by status. Returns the user model if it matches the status, otherwise returns None."""
+    def filter_user(self, status: pmod.UserStatus = pmod.UserStatus.active) -> bool:
+        """Filter the user by status. Returns True if the user matches the status, otherwise returns False."""
         if not self.user:
             raise HTTPException(status_code=404, detail="User not found")
         
-        if self.user.status != status:
-            return None
-        
-        return self.user
+        return self.user.status != status
 
     def get_user(self, user_id: int | None = None, email: str | None = None):
         """Retrieve the user model for the given user_id."""
