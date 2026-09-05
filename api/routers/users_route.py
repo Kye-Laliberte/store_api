@@ -3,9 +3,11 @@ from sqlalchemy.orm import Session
 from database import get_db
 import models.sqlAmodels as models
 from passlib.context import CryptContext
+from passlib.exc import UnknownHashError
 from typing import List
-from psycopg_models import users,userOut, login,userinfo
+from psycopg_models import users,userOut, login, loginResponse,userinfo
 from services.cart_services import UserService, getcart,new_user
+from core.security import create_access_token, get_current_user
 
 router = APIRouter(prefix="/users", tags=["users"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -54,7 +56,9 @@ def readuser(user_id: int, db: Session = Depends(get_db)):
     
 
 @router.put("/{user_id}/status",response_model=userOut, status_code=200)
-def updateStatus(user_id:int,status:models.UserStatus,db:Session=Depends(get_db)):    
+def updateStatus(user_id:int,status:models.UserStatus,db:Session=Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    if current_user.id != user_id:
+        raise HTTPException(status_code=403, detail="Cannot change another user's status")
     
     user=UserService(db,user_id=user_id).user
     if not user:
@@ -65,22 +69,31 @@ def updateStatus(user_id:int,status:models.UserStatus,db:Session=Depends(get_db)
     db.refresh(user)
     return userOut(id= user.id, email= user.email, user_status=user.status)
     
-@router.post("/login", response_model=userOut, status_code=200)
+@router.post("/login", response_model=loginResponse, status_code=200)
 def loginn(log: login, db: Session=Depends(get_db)):
-    """returns the user_Id, and email and cart_id if the user has one active"""
+    """Verify credentials and return a bearer token for the active user."""
     
     user=UserService(db,email=log.email).user
     
-    if user is None:
-        raise HTTPException(status_code=404, detail="user not found")
+    try:
+        password_matches = user is not None and pwd_context.verify(log.password, user.password_hash)
+    except (UnknownHashError, ValueError):
+        password_matches = False
+
+    if not password_matches:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
     
-    if user is False:
-        raise HTTPException(status_code=400, detail="user is not active")
+    if user.status != models.UserStatus.active:
+        raise HTTPException(status_code=403, detail="User is not active")
     
     cart=getcart(user_id=user.id,db=db)       
-    if cart:
-        return userOut(id= user.id, email= user.email, cart_id= cart.id, user_status=user.status)
-    return userOut(id = user.id, email= user.email, user_status= user.status)
+    return loginResponse(
+        id=user.id,
+        email=user.email,
+        cart_id=cart.id if cart else None,
+        user_status=user.status,
+        access_token=create_access_token(user.id),
+    )
         
     
     

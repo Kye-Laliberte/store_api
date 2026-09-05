@@ -121,16 +121,7 @@ def orderCart(user_id:int,cart_id:int, db: Session=Depends(get_db), current_user
     if current_user.id != user_id:
         raise HTTPException(status_code=403, detail="Cannot order another user's cart")
 
-    #cart=getcart(user_id=user_id,db=db)
-    cart = CartService(db, user_id, cart_id).cart
-    if not cart:
-        raise HTTPException(status_code=404, detail="Cart not found for this user")
-
-    if cart.status != UserStatus.active:
-        raise HTTPException(status_code=400, detail="user is not active")
-
-    Service=OrderProcessing(db=db, user_id=user_id,cart_id=cart.id)
-
+    Service=OrderProcessing(db=db, user_id=user_id,cart_id=cart_id)
     prepared_cart_items=Service.prepare_cart_items()
     
     if not prepared_cart_items:
