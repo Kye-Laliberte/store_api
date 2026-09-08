@@ -10,7 +10,7 @@ from datetime import datetime
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def getcart(user_id: int, db: Session):
+def getcart(user_id: int, db: Session) -> models.Cart:
     return db.query(models.Cart).filter(models.Cart.user_id == user_id).first()
 
 def FindCart(user_id: int, cart_id: int, db: Session):
@@ -28,7 +28,7 @@ def FindCart(user_id: int, cart_id: int, db: Session):
     return cart
         
 
-def newcart(db: Session, user_id: int):
+def newcart(db: Session, user_id: int) -> models.Cart:
     """deletes a users existing cart if it exists then
       creates a new cart for a user and returns the cart sql model"""
     cart_date = datetime.now()
@@ -58,7 +58,7 @@ def newcart(db: Session, user_id: int):
 
   
 
-def new_user(email:str,password:str,db:Session):
+def new_user(email:str,password:str,db:Session) -> models.User:
     if db.query(models.User).filter(models.User.email == email).first():
         raise HTTPException(status_code=400, detail="email already in use")
     
