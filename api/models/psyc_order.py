@@ -13,8 +13,6 @@ class ordersout(BaseModel):
     order_date: Optional[datetime] = Field(default_factory=datetime.utcnow)
     number_of_items: int = Field(...,gt=0)
     
-   
-
 class orders(BaseModel):
     id: int
     total_price: float = Field(...,gt=0)
