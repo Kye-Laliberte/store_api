@@ -91,7 +91,7 @@ class CartService:
             raise HTTPException(status_code=404, detail="Cart not found for this user")
         self.cart = cart
 
-    def clear_cart(self):
+    def clear_cart(self) -> bool:
             """Clear cart items in a cart, Does not commit; expects caller to manage the transaction."""
             try:
                 self.db.query(models.CartItem).filter(models.CartItem.cart_id == self.cart.id).delete()
@@ -109,7 +109,7 @@ class CartService:
             logging.error(f"Error checking if cart {self.cart.id} is empty: {e}")
             raise HTTPException(status_code=500, detail="An error occurred while checking if the cart is empty")
 
-    def FindCart(self,cart_id:int):
+    def FindCart(self,cart_id:int) -> pmod.cartout:
         """this gets a cart User info when a user_id and Cart_id are in a relashinship """
         try:
             cart=(self.db.query(models.Cart.id,models.Cart.cart_date,models.Cart.user_id,models.User.status)
@@ -123,7 +123,7 @@ class CartService:
             raise HTTPException(status_code=404, detail="Cart not found for this user")
         return cart
         
-    def delete_cart(self, cart_id:int):
+    def delete_cart(self, cart_id:int) -> bool:
         """deletes a cart and all cartitems that are related to the cart_id"""
         try:
             if not self.db.query(models.Cart).filter(models.Cart.id == cart_id).first():
@@ -133,14 +133,14 @@ class CartService:
             self.db.query(models.Cart).filter(models.Cart.id==cart_id).delete()
             self.db.commit()
             return True
-        except HTTPException:
-            raise
+        except HTTPException as erorr:
+            raise HTTPException(status_code=404,detail=erorr)
         except Exception as e:
             logging.error(f"Error occurred while dropping the cart for cart {cart_id}: {e}")
             self.db.rollback()
             raise HTTPException(status_code=500, detail="An error occurred while dropping the cart")
 
-    def additemCart(self,item_id:int,quantity:int,):
+    def additemCart(self,item_id:int,quantity:int,) -> pmod.CartItemsOut:
         """adds an item to a users cart if the user is active and the item is in stock"""
     
         user_id=self.userService.user.id
@@ -245,7 +245,6 @@ class UserService:
             raise ValueError("Provide either user_id or email, not both.")
 
         self.user = self.get_user(user_id=user_id, email=email)  # Retrieve the user model during initialization
-
     def filter_user(self, status: pmod.UserStatus = pmod.UserStatus.active) -> bool:
         """Filter the user by status. Returns True if the user matches the status, otherwise returns False."""
         if not self.user:
@@ -253,7 +252,7 @@ class UserService:
         
         return self.user.status == status
 
-    def get_user(self, user_id: int | None = None, email: str | None = None):
+    def get_user(self, user_id: int | None = None, email: str | None = None) -> models.User:
         """Retrieve the user model for the given user_id."""
         try:
             if user_id is not None:

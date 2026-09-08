@@ -6,7 +6,7 @@ from database import get_db
 import models.sqlAmodels as models
 from typing import List
 from psycopg_models import CartItemsOut,create_cartItem,UserStatus,cartout
-from services.cart_services import CartService, UserService, newcart, getcart_item, getcart,FindCart
+from services.cart_services import CartService, UserService, newcart, getcart,FindCart
 from core.security import get_current_user
 router = APIRouter(prefix="/carts", tags=["carts"])
 
