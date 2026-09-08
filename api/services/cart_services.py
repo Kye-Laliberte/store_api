@@ -55,20 +55,7 @@ def newcart(db: Session, user_id: int):
         raise HTTPException(status_code=500, detail="An error occurred while creating a new cart")
 
 
-def getcart_item(cart_id:int,item_id:int, db: Session):
-    try:
-        cartitem = (db.query(models.CartItem)
-                  .filter(models.CartItem.cart_id == cart_id,  models.CartItem.item_id == item_id)).first()
-        if not cartitem:
-            return False
-        
-        return cartitem    
-    except Exception as e:
-        logging.error(f"error retrieving cartitem: {e}")
-        raise e
 
-
-    getcaritem = getcart_item
   
 
 def new_user(email:str,password:str,db:Session):
@@ -208,8 +195,20 @@ class CartService:
                             description=item.description,
                             price=float(item.price),
                             totalprice=float(out.quantity) * float(item.price))
-
-    def get_cart_items(self):
+    def getcart_item(self, item_id:int) -> pmod.CartItemsOut:
+        try:
+            cartitem = (self.db.query(models.CartItem)
+                  .filter(models.CartItem.cart_id == self.cart.id,  models.CartItem.item_id == item_id)).first()
+            if not cartitem:
+                return []
+        
+            return cartitem    
+        except Exception as err:
+            logging.error(f"error retrieving cartitem: {err}")
+            raise HTTPException(status_code=400,detail="faled to retreave data")
+        
+    
+    def get_cart_items(self)->list[tuple[pmod.CartItemsOut]]:
         """retrieves all items in the cart that relate to the user_id and returns a list of models with the item name, description, price and quantity"""
         try:
             cart_items = (self.db.query(models.CartItem.item_id,
