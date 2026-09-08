@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 import models.sqlAmodels as models
 from typing import List
-from psycopg_models import CartItemsOut,carts,create_cartItem,UserStatus
+from psycopg_models import CartItemsOut,create_cartItem,UserStatus,cartout
 from services.cart_services import CartService, UserService, newcart, getcart_item, getcart,FindCart
 from core.security import get_current_user
 router = APIRouter(prefix="/carts", tags=["carts"])
@@ -50,7 +50,7 @@ def viewCart(user_id:int,cart_id:int, db: Session=Depends(get_db)):
         for items in cart_items
         ]
 
-@router.get("/getallcarts",response_model=List[carts], status_code=200)
+@router.get("/getallcarts",response_model=List[cartout], status_code=200)
 def GetCarts(db: Session = Depends(get_db)):
     """retreves all of the carts info and returns a list of cart models"""
     out=db.query(models.Cart).all()
@@ -82,7 +82,7 @@ def addtoCart(user_id:int,cart_id:int, item:create_cartItem,db:Session=Depends(g
         raise HTTPException(status_code=500, detail="An error occurred while checking for existing cart item")
     
 
-@router.post("/{user_id}/newcart", response_model=carts, status_code=201)
+@router.post("/{user_id}/newcart", response_model=cartout, status_code=201)
 def newCart(user_id:int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """creates a new cart for the user if one does not already exist"""
     

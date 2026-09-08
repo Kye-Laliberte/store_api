@@ -5,7 +5,7 @@ import models.sqlAmodels as models
 from passlib.context import CryptContext
 from passlib.exc import UnknownHashError
 from typing import List
-from psycopg_models import users,userOut, login, loginResponse,userinfo
+from psycopg_models import users,userOut, login, loginResponse
 from services.cart_services import UserService, getcart,new_user
 from core.security import create_access_token, get_current_user
 
@@ -35,11 +35,11 @@ def getUser(email:str,db:Session=Depends(get_db)):
 
 
 # this is a test route to get all users in the database, for testing purposes only
-@router.get("/getAll",response_model=List[userinfo])
+@router.get("/getAll",response_model=List[userOut], status_code=200)
 def getUsers(db: Session = Depends(get_db)):
     """retreves a list[] of all users and returns there email id and created_at"""
     out = db.query(models.User).all()
-    return [userinfo(id= u.id, email= u.email, created_at= u.created_at,user_status=u.status) 
+    return [userOut(id= u.id, email= u.email, created_at= u.created_at,user_status=u.status) 
             for u in out]
 
 # READ user by ID

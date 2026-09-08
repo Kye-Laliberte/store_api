@@ -2,14 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import  get_db
 import models.sqlAmodels as models
-from psycopg_models import item,createitem, updateitem, ItemSchema
+from psycopg_models import item, updateitem, itemout
 from typing import List
 from services.item_s import createItem,ItemService
 from core.security import get_current_user
 router = APIRouter(prefix="/items", tags=["items"])
 
 # READ all items
-@router.get("/get_all",response_model = List[ItemSchema],status_code=200)
+@router.get("/get_all",response_model = List[itemout],status_code=200)
 def readAllItems(db: Session = Depends(get_db)):
     itemlist= db.query(models.Item).filter(models.Item.quantity > 0).all()
     if not itemlist:
@@ -18,7 +18,7 @@ def readAllItems(db: Session = Depends(get_db)):
 
 
 @router.post("/add_item",response_model=item, status_code=201)
-def create_item(newitems:createitem, db: Session = Depends(get_db)):
+def create_item(newitems:item, db: Session = Depends(get_db)):
     """add a item to the stores inventory"""
     name=newitems.name.strip().lower().strip()
     description=newitems.description.strip() if newitems.description else None
@@ -35,7 +35,7 @@ def create_item(newitems:createitem, db: Session = Depends(get_db)):
     return out
 
 # UPDATE an item
-@router.put("/{item_id}/update",response_model=ItemSchema, status_code=200)
+@router.put("/{item_id}/update",response_model=itemout, status_code=200)
 def update_item(item_id: int,update:updateitem, db: Session = Depends(get_db)):
     """update a items infermation"""
     
@@ -52,7 +52,7 @@ def update_item(item_id: int,update:updateitem, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(items)
         
-        return ItemSchema(id=items.id,name=items.name, description=items.description, quantity=items.quantity, price=items.price)
+        return itemout(id=items.id,name=items.name, description=items.description, quantity=items.quantity, price=items.price)
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error updating item {e}") from e

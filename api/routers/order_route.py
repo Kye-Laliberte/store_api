@@ -7,10 +7,8 @@ from database import get_db
 import models.sqlAmodels as models
 import  models.ordermodels as Omodels
 from typing import List
-from psycopg_models import UserStatus
 from datetime import datetime, timedelta
 import models.psyc_order as pmodels
-from services.cart_services import CartService
 from services.item_s import OrderProcessing
 from core.security import get_current_user
 router = APIRouter(prefix="/orders", tags=["orders"])
