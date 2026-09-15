@@ -292,19 +292,18 @@ Order data represents permanent transaction history.
 
 ---
 
+## Authentication
+* User login system
+* With JWT authentication
+
+
 # Future Improvements
 
-## Authentication
-
-* User login system
-* JWT authentication
-* Role-based access
-
 ## Security
-
+* Role-based access
 * Rate limiting
 * Improved request validation
-* Permission controls
+* add Permission controls
 
 ## Database
 
