@@ -9,14 +9,15 @@ def seed_data():
     This function connects to the database, and inserts sample data into the users, items, carts, and orders tables."""
    with get_connection()as conn:
         with conn.cursor() as cursor:
+
             
             cursor.execute("""
                 INSERT INTO users (email, password_hash, created_at, status)
                 VALUES
                 ('alice@gmail.com', 'hash_alice', %s, 'active'),
                        ('bob@outlook.com', 'hash_bob', %s, 'active')
-                ON CONFLICT (email) DO NOTHING;
-            """, (datetime.now(), datetime.now()))
+                ON CONFLICT (email) DO NOTHING;""", 
+                (datetime.now(), datetime.now()))
 
             # Items
             cursor.execute("""
@@ -24,42 +25,16 @@ def seed_data():
                 VALUES
                 ('Keyboard', 'Mechanical keyboard', 10, 49.99),
                 ('Mouse', 'Wireless mouse', 20, 19.99),
-                ('Monitor', '24-inch monitor', 5, 149.99)
-                ON CONFLICT (name) DO NOTHING;
-            """)
+                ('Monitor', '24-inch monitor', 5, 149.99),
+                ('Pens','32 colored pen set',50,'5.99'),
+                ('ipad','touch screen',3, 250.99),
+                ('lazer ponter','Zap Zap', 8, 15.39)
+                ON CONFLICT (name) DO NOTHING;""")
 
-            # Carts (one per user)
-            cursor.execute("""
-                INSERT INTO carts (user_id, cart_date)
-                SELECT id, %s FROM users
-                ON CONFLICT (user_id) DO NOTHING;
-            """, (datetime.now(),))
+            
 
-            # Cart Items
-            cursor.execute("""
-                INSERT INTO cart_items (cart_id, item_id, quantity)
-                SELECT c.id, i.id, 1
-                FROM carts c
-                JOIN items i ON i.name = 'Keyboard'
-                WHERE c.user_id = (SELECT id FROM users WHERE email = 'alice@gmail.com')
-                ON CONFLICT (cart_id, item_id) DO NOTHING;
-            """)
-            # Orders
-            cursor.execute("""
-                INSERT INTO orders (user_id, total_price, order_date)
-                SELECT id, 49.99, %s FROM users
-                WHERE email = 'alice@gmail.com';
-            """, (datetime.now(),))
-            #ON CONFLICT (user_id) DO NOTHING
-            # Order Items
-            cursor.execute("""
-                INSERT INTO order_items (order_id, item_id, quantity, price_at_order)
-                SELECT o.id, i.id, 1 , i.price
-                FROM orders o
-                JOIN items i ON i.name = 'Keyboard'
-                WHERE o.user_id = (SELECT id FROM users WHERE email = 'alice@gmail.com')
-                ;
-            """)
+           
+            
 def setup_db():
     try:
         seed_data()
