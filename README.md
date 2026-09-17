@@ -201,21 +201,17 @@ docker compose up --build
 ```
 
 Services:
-
 Frontend:
-
 ```
 http://localhost:5173
 ```
 
 API:
-
 ```
 http://localhost:8000
 ```
 
 Swagger Documentation:
-
 ```
 http://localhost:8000/docs
 ```
@@ -306,14 +302,12 @@ Order data represents permanent transaction history.
 * add Permission controls
 
 ## Database
-
 * Additional order history tables
 * Transaction logging
 * Query optimization
 * Indexing improvements
 
 ## Cart Improvements
-
 * Cart expiration
 * Multiple carts per user
 * Persistent abandoned carts
