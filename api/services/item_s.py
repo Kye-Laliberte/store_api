@@ -188,9 +188,6 @@ class ItemService:
         return True
 
 
-
-
-
 def createItem(name: str, description: str | None, price: float, quantity: int, db: Session) -> models.Item:
     service = ItemService.__new__(ItemService)
     service.db = db

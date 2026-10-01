@@ -1,4 +1,6 @@
+from symtable import Class
 from fastapi import HTTPException
+from database import get_db
 import logging
 import models.sqlAmodels as models
 import psycopg_models as pmod # pydantic models
@@ -53,10 +55,20 @@ def newcart(db: Session, user_id: int) -> models.Cart:
         raise HTTPException(status_code=500, detail="An error occurred while creating a new cart")
 
 
+def getcart_item(cart_id:int,item_id:int, db: Session):
+    try:
+        cartitem = (db.query(models.CartItem)
+                  .filter(models.CartItem.cart_id == cart_id,  models.CartItem.item_id == item_id)).first()
+        if not cartitem:
+            return False
 
+        return cartitem
+    except Exception as e:
+        logging.error(f"error retrieving cartitem: {e}")
+        raise e
   
 
-def new_user(email:str,password:str,db:Session) -> models.User:
+def new_user(email:str,password:str,db:Session):
     if db.query(models.User).filter(models.User.email == email).first():
         raise HTTPException(status_code=400, detail="email already in use")
     
@@ -84,30 +96,11 @@ class CartService:
         if not self.userService.filter_user(status=pmod.UserStatus.active):  # Filter user by active status
             raise HTTPException(status_code=400, detail="User is not active. Cannot modify cart.")
 
-        cart = self.FindCart(cart_id=cart_id)
-        if not cart:
+        self.cart = self.FindCart(cart_id=cart_id)
+        if not self.cart:
             raise HTTPException(status_code=404, detail="Cart not found for this user")
-        self.cart = cart
 
-    def clear_cart(self) -> bool:
-            """Clear cart items in a cart, Does not commit; expects caller to manage the transaction."""
-            try:
-                self.db.query(models.CartItem).filter(models.CartItem.cart_id == self.cart.id).delete()
-                return True
-            except Exception as e:
-                logging.error(f"Error clearing cart {self.cart.id}: {e}")
-                raise HTTPException(status_code=500, detail="An error occurred while clearing the cart")
-    
-    def is_cart_empty(self) -> bool:
-        """Check if the cart is empty. Returns True if empty, False otherwise."""
-        try:
-            cart_items_count = self.db.query(models.CartItem).filter(models.CartItem.cart_id == self.cart.id).count()
-            return cart_items_count == 0
-        except Exception as e:
-            logging.error(f"Error checking if cart {self.cart.id} is empty: {e}")
-            raise HTTPException(status_code=500, detail="An error occurred while checking if the cart is empty")
-
-    def FindCart(self,cart_id:int) -> pmod.cartout:
+    def FindCart(self,cart_id:int):
         """this gets a cart User info when a user_id and Cart_id are in a relashinship """
         try:
             cart=(self.db.query(models.Cart.id,models.Cart.cart_date,models.Cart.user_id,models.User.status)
@@ -120,8 +113,35 @@ class CartService:
         if not cart:
             raise HTTPException(status_code=404, detail="Cart not found for this user")
         return cart
+
+    def is_cart_empty(self) -> bool:
+        try:
+            cart_items_count = self.db.query(models.CartItem).filter(
+                models.CartItem.cart_id == self.cart.id
+            ).count()
+            return cart_items_count == 0
+        except Exception as e:
+            logging.exception("Error checking whether cart %s is empty", self.cart.id)
+            raise HTTPException(
+                status_code=500,
+                detail="An error occurred while checking if the cart is empty",
+            ) from e
+
+    def clear_cart(self) -> bool:
+        """Clear cart items without committing; the caller owns the transaction."""
+        try:
+            self.db.query(models.CartItem).filter(
+                models.CartItem.cart_id == self.cart.id
+            ).delete()
+            return True
+        except Exception as e:
+            logging.exception("Error clearing cart %s", self.cart.id)
+            raise HTTPException(
+                status_code=500,
+                detail="An error occurred while clearing the cart",
+            ) from e
         
-    def delete_cart(self, cart_id:int) -> bool:
+    def delete_cart(self, cart_id:int):
         """deletes a cart and all cartitems that are related to the cart_id"""
         try:
             if not self.db.query(models.Cart).filter(models.Cart.id == cart_id).first():
@@ -131,14 +151,14 @@ class CartService:
             self.db.query(models.Cart).filter(models.Cart.id==cart_id).delete()
             self.db.commit()
             return True
-        except HTTPException as erorr:
-            raise HTTPException(status_code=404,detail=erorr)
+        except HTTPException:
+            raise
         except Exception as e:
             logging.error(f"Error occurred while dropping the cart for cart {cart_id}: {e}")
             self.db.rollback()
             raise HTTPException(status_code=500, detail="An error occurred while dropping the cart")
 
-    def additemCart(self,item_id:int,quantity:int,) -> pmod.CartItemsOut:
+    def additemCart(self,item_id:int,quantity:int,):
         """adds an item to a users cart if the user is active and the item is in stock"""
     
         user_id=self.userService.user.id
@@ -193,20 +213,8 @@ class CartService:
                             description=item.description,
                             price=float(item.price),
                             totalprice=float(out.quantity) * float(item.price))
-    def getcart_item(self, item_id:int) -> pmod.CartItemsOut:
-        try:
-            cartitem = (self.db.query(models.CartItem)
-                  .filter(models.CartItem.cart_id == self.cart.id,  models.CartItem.item_id == item_id)).first()
-            if not cartitem:
-                return []
-        
-            return cartitem    
-        except Exception as err:
-            logging.error(f"error retrieving cartitem: {err}")
-            raise HTTPException(status_code=400,detail="faled to retreave data")
-        
-    
-    def get_cart_items(self)->list[tuple[pmod.CartItemsOut]]:
+
+    def get_cart_items(self):
         """retrieves all items in the cart that relate to the user_id and returns a list of models with the item name, description, price and quantity"""
         try:
             cart_items = (self.db.query(models.CartItem.item_id,
@@ -243,6 +251,7 @@ class UserService:
             raise ValueError("Provide either user_id or email, not both.")
 
         self.user = self.get_user(user_id=user_id, email=email)  # Retrieve the user model during initialization
+
     def filter_user(self, status: pmod.UserStatus = pmod.UserStatus.active) -> bool:
         """Filter the user by status. Returns True if the user matches the status, otherwise returns False."""
         if not self.user:
@@ -250,7 +259,7 @@ class UserService:
         
         return self.user.status == status
 
-    def get_user(self, user_id: int | None = None, email: str | None = None) -> models.User:
+    def get_user(self, user_id: int | None = None, email: str | None = None):
         """Retrieve the user model for the given user_id."""
         try:
             if user_id is not None:
@@ -264,8 +273,8 @@ class UserService:
             if not user:
                 raise HTTPException(status_code=404, detail="User not found")
             return user
-        except HTTPException as err:
-            raise HTTPException(status_code=err.status_code, detail=err.detail)
+        except HTTPException:
+            raise
         except Exception as e:
             logging.error(f"Error retrieving user {user_id or email}: {e}")
             raise HTTPException(status_code=500, detail="An error occurred while retrieving the user")

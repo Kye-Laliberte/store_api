@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import  get_db
@@ -5,7 +7,7 @@ import models.sqlAmodels as models
 from psycopg_models import item, updateitem, itemout
 from typing import List
 from services.item_s import createItem,ItemService
-from core.security import get_current_user
+from core.security import require_admin
 router = APIRouter(prefix="/items", tags=["items"])
 
 # READ all items
@@ -17,8 +19,8 @@ def readAllItems(db: Session = Depends(get_db)):
     return itemlist
 
 
-@router.post("/add_item",response_model=item, status_code=201)
-def create_item(newitems:item, db: Session = Depends(get_db)):
+@router.post("/add_item",response_model=itemout, status_code=201)
+def create_item(newitems: item,db: Session = Depends(get_db),current_user: models.User = Depends(require_admin),):
     """add a item to the stores inventory"""
     name=newitems.name.strip().lower().strip()
     description=newitems.description.strip() if newitems.description else None
@@ -30,13 +32,15 @@ def create_item(newitems:item, db: Session = Depends(get_db)):
     except HTTPException:
         raise HTTPException(status_code=400, detail="Item already exists")
     except Exception as e:
+        logging.exception("Error creating item")
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error creating item {e}") from e
     return out
 
 # UPDATE an item
 @router.put("/{item_id}/update",response_model=itemout, status_code=200)
-def update_item(item_id: int,update:updateitem, db: Session = Depends(get_db)):
+def update_item(item_id:int,update:updateitem,db:Session = Depends(get_db),
+                current_user: models.User = Depends(require_admin),):
     """update a items infermation"""
     
     items=ItemService(db,item_id).item
@@ -54,18 +58,24 @@ def update_item(item_id: int,update:updateitem, db: Session = Depends(get_db)):
         
         return itemout(id=items.id,name=items.name, description=items.description, quantity=items.quantity, price=items.price)
     except Exception as e:
+        logging.exception("Error updating item %s", item_id)
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error updating item {e}") from e
     
 
 #get items details
-@router.get("/{item_id}/details",response_model=item, status_code=200)
+@router.get("/{item_id}/details",response_model=itemout, status_code=200)
 def getItem(item_id: int, db: Session = Depends(get_db)):
     """gets items infermation"""
     
     items=ItemService(db,item_id).item
     if not items:
         raise HTTPException(status_code=404, detail="Item not found")
-        
-    out=item(name=items.name, description=items.description, quantity=items.quantity, price=items.price, id=items.id)
+
+    out = itemout(
+        id=items.id,
+        name=items.name,
+        description=items.description,
+        quantity=items.quantity,
+        price=items.price,)
     return out

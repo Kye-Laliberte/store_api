@@ -5,8 +5,8 @@ from database import get_db
 import models.sqlAmodels as models
 from typing import List
 from psycopg_models import CartItemsOut,create_cartItem,UserStatus,cartout
-from services.cart_services import CartService, UserService, newcart, getcart
-from core.security import get_current_user
+from services.cart_services import CartService, UserService, newcart, getcart, getcart_item
+from core.security import get_current_user, require_admin
 router = APIRouter(prefix="/carts", tags=["carts"])
 
 #add item to cart
@@ -17,8 +17,11 @@ def carthome():
 
 
 @router.get("/{user_id}/viewcart/{cart_id}",response_model=List[CartItemsOut], status_code=200)
-def viewCart(user_id:int,cart_id:int, db: Session=Depends(get_db)):
+def viewCart(user_id:int,cart_id:int, db: Session=Depends(get_db),current_user: models.User=Depends(get_current_user),
+):
     """retreves all items in the cart that relar to the user_id and returns a list of models with the item name, description, price and quantity"""
+    if current_user.id != user_id and not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Cannot view another user's cart")
     
     cart=CartService(db,user_id,cart_id).cart
     
@@ -50,7 +53,7 @@ def viewCart(user_id:int,cart_id:int, db: Session=Depends(get_db)):
         ]
 
 @router.get("/getallcarts",response_model=List[cartout], status_code=200)
-def GetCarts(db: Session = Depends(get_db)):
+def GetCarts(db: Session = Depends(get_db),current_user: models.User = Depends(require_admin),):
     """retreves all of the carts info and returns a list of cart models"""
     out=db.query(models.Cart).all()
     return out
