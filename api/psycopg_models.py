@@ -34,6 +34,7 @@ class UserStatus(str, Enum):
 class userOut(users):
     user_status: UserStatus 
     cart_id: Optional[int] = None
+    is_admin: bool = False
     class Config:
         from_attributes = True# allows pydantic to read data from SQLAlchemy models
     

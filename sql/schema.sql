@@ -2,6 +2,7 @@
 CREATE TABLE IF NOT EXISTS users(
     id SERIAL PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
+    is_admin BOOLEAN NOT NULL DEFAULT FALSE,        
     password_hash TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT now(),
     status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK(status IN ('suspended','inactive','active')) 

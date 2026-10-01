@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Numeric, DateTime, ForeignKey, CheckConstraint
+from sqlalchemy import Boolean, Column, Integer, String, Numeric, DateTime, ForeignKey, CheckConstraint
 from  sqlalchemy.orm import relationship
 from database import Base
 from datetime import datetime
@@ -14,6 +14,7 @@ class User(Base):
     password_hash = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     status = Column(Enum(UserStatus),default=UserStatus.active,nullable=False)
+    is_admin = Column(Boolean, nullable=False, default=False, server_default="false")#testing
     orders = relationship("Order", back_populates="user")
     cart = relationship("Cart", back_populates="user", uselist=False)
 
