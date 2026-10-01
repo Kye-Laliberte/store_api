@@ -311,3 +311,21 @@ Order data represents permanent transaction history.
 * Cart expiration
 * Multiple carts per user
 * Persistent abandoned carts
+
+Environment example (keep the real `.env` file local and untracked):
+```dotenv
+DATABASE_URL=
+POSTGRES_DB=
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+DB_HOST=
+DB_PORT=
+JWT_SECRET_KEY=
+FRONTEND_PORT=
+FRONTEND_URL=
+```
+
+Generate a unique signing key with `python -c "import secrets; print(secrets.token_urlsafe(48))"` and set it as `JWT_SECRET_KEY` in `.env`. Do not reuse the database password or commit the generated key.
+
+## Database and Administrator Setup
+Start PostgreSQL and the API with `docker compose up -d --build`. Apply schema migrations with `docker compose exec fastapi alembic upgrade head`, then create or promote an administrator using `docker compose exec fastapi python /app/api/create_admin.py admin@example.com`. The command prompts for a password only when creating a new account. Existing named database volumes keep their initialized PostgreSQL credentials; changing `POSTGRES_USER` or `POSTGRES_PASSWORD` in `.env` does not change credentials inside an existing volume.
