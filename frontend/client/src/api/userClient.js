@@ -15,9 +15,7 @@ export async function Emaillogin(email, password) {
 }
 
 export async function register(email, password) {
-  const response = await api.post("/users/addUser", null, {
-    params: { email, password },
-  });
+  await api.post("/users/addUser", { email, password });
   return Emaillogin(email, password);
 }
 
