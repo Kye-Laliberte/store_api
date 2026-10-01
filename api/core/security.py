@@ -14,13 +14,13 @@ bearer_scheme = HTTPBearer(auto_error=False)
 
 
 def create_access_token(user_id: int) -> str:
-    expires_at = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    issued_at = datetime.now(timezone.utc)
+    expires_at = issued_at + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return jwt.encode(
-        {"sub": str(user_id), "exp": expires_at},
+        {"sub": str(user_id), "iat": issued_at, "exp": expires_at},
         settings.JWT_SECRET_KEY,
         algorithm=settings.JWT_ALGORITHM,
     )
-
 
 def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
@@ -39,8 +39,11 @@ def get_current_user(
             credentials.credentials,
             settings.JWT_SECRET_KEY,
             algorithms=[settings.JWT_ALGORITHM],
+            options={"require": ["exp", "sub"]},
         )
         user_id = int(payload["sub"])
+        if user_id <= 0:
+            raise ValueError("Invalid subject")
     except (jwt.PyJWTError, KeyError, TypeError, ValueError) as exc:
         raise unauthorized from exc
 
@@ -48,3 +51,12 @@ def get_current_user(
     if user is None or user.status != models.UserStatus.active:
         raise unauthorized
     return user
+
+
+def require_admin(current_user: models.User = Depends(get_current_user)) -> models.User:
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrator access required",
+        )
+    return current_user
