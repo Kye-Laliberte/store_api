@@ -289,8 +289,17 @@ Order data represents permanent transaction history.
 ---
 
 ## Authentication
-* User login system
-* With JWT authentication
+The API uses signed JWT bearer tokens for protected routes. Configure `JWT_SECRET_KEY` in the repository-root `.env` file; it must contain at least 32 bytes. The API resolves this `.env` location from its own source path, so configuration works whether the server is started from the repository root or the `api/` directory. When using Docker Compose, the key is passed into the API container from the same `.env` file.
+
+Tokens use the `HS256` algorithm and expire after 30 minutes by default. To override the lifetime, set `ACCESS_TOKEN_EXPIRE_MINUTES` to a value from 1 to 1440.
+
+Log in with `POST /users/login` and the account email and password. The response includes an `access_token` and `token_type: "bearer"`. Send the token with protected API requests in the `Authorization` header:
+
+```http
+Authorization: Bearer <access_token>
+```
+
+The frontend stores the token after login and attaches it to API requests. Logging out removes the stored token. Tokens for inactive or suspended accounts are rejected.
 
 
 # Future Improvements

@@ -104,6 +104,14 @@ def test_user_endpoints(client, db_session, make_user, auth_headers):
     )
     assert response.status_code == 200
     assert response.json()["access_token"]
+    
+    login_token_headers = {
+        "Authorization": f"Bearer {response.json()['access_token']}"}
+    
+    authenticated_response = client.get(f"/users/{user_id}", headers=login_token_headers)
+    
+    assert authenticated_response.status_code == 200
+
     admin_login = client.post(
         "/users/login",
         json={"email": admin_user.email, "password": "correct-horse-battery"},

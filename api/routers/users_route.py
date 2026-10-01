@@ -45,8 +45,7 @@ def grant_admin_privileges(user_id: int,db: Session = Depends(get_db),
     )
 
 @router.get("/{email}/RetrievebyEmail",response_model=users, status_code=200)
-def getUser(email: str,db: Session = Depends(get_db),
-            current_user: models.User = Depends(get_current_user),):
+def getUser(email: str,db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user),):
     """testing not a valid use of pasword retreval"""
     email=email.strip()
     user=UserService(db,email=email).user
@@ -58,8 +57,7 @@ def getUser(email: str,db: Session = Depends(get_db),
 
 # this is a test route to get all users in the database, for testing purposes only
 @router.get("/getAll",response_model=List[userOut], status_code=200)
-def getUsers(db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_admin),):
+def getUsers(db: Session = Depends(get_db),current_user: models.User = Depends(require_admin),):
     """retreves a list[] of all users and returns there email id and created_at"""
     out = db.query(models.User).all()
     return [userOut(id= u.id, email= u.email, created_at= u.created_at,user_status=u.status,is_admin=u.is_admin) 
