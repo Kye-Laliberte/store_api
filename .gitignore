@@ -37,7 +37,7 @@ api/data/__pycache__/
 *.log
 
 #tester files
-tests/
+tests.db
 
 
 # Database backups or local files (optional)
