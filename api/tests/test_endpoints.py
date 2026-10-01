@@ -85,6 +85,15 @@ def test_user_endpoints(client, db_session, make_user, auth_headers):
     assert response.status_code == 200
     assert any(user["id"] == user_id for user in response.json())
 
+    assert client.post(
+        f"/users/{user_id}/grant_admin", headers=headers
+    ).status_code == 403
+    response = client.post(
+        f"/users/{user_id}/grant_admin", headers=admin_headers
+    )
+    assert response.status_code == 200
+    assert response.json()["is_admin"] is True
+
     response = client.get(f"/users/{user_id}", headers=headers)
     assert response.status_code == 200
     assert response.json()["email"] == "new@example.com"

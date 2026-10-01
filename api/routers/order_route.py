@@ -10,7 +10,7 @@ from typing import List
 from datetime import datetime, timedelta
 import models.psyc_order as pmodels
 from services.item_s import OrderProcessing
-from core.security import get_current_user
+from core.security import get_current_user, require_admin
 router = APIRouter(prefix="/orders", tags=["orders"])
 
 #add item to cart
@@ -20,8 +20,12 @@ def carthome():
     return {"message":"order route is under construction"}
 
 @router.get("/{user_id}/vieworders", response_model=List[pmodels.orders], status_code=200)
-def viewOrders(user_id:int,db: Session=Depends(get_db)):
+def viewOrders(user_id: int,db: Session = Depends(get_db),
+               current_user: models.User = Depends(get_current_user),):
     """ shows all past orders for a user"""
+    if current_user.id != user_id and not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Cannot view another user's orders")
+
     orders= db.query(Omodels.Order).filter(Omodels.Order.user_id==user_id).all()
     
     if not orders:
@@ -29,12 +33,16 @@ def viewOrders(user_id:int,db: Session=Depends(get_db)):
     try:    
         return orders
     except Exception as e:
-        logging(f"faled to conect {e}")
+        logging.exception("Failed to return orders for user %s", user_id)
         raise HTTPException(status_code=400,detail=f"error {e}")
     
 @router.get("/{user_id}/TodayOrders",response_model=List[pmodels.orders], status_code=200)
-def viewNewOrders(user_id:int,db: Session=Depends(get_db)):
+def viewNewOrders(user_id: int,db: Session = Depends(get_db),
+                  current_user: models.User = Depends(get_current_user),):
     """gets all orders of a user from before the given datetime"""
+    if current_user.id != user_id and not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Cannot view another user's orders")
+
     today = datetime.now().date()
     orders=db.query(Omodels.Order).filter(Omodels.Order.user_id==user_id, Omodels.Order.order_date >= today).all()
     if (not orders):
@@ -42,8 +50,12 @@ def viewNewOrders(user_id:int,db: Session=Depends(get_db)):
     return orders
 
 @router.get("/{user_id}/weekOrder",response_model=List[pmodels.orders], status_code=200)
-def orderWeek(user_id:int,db: Session=Depends(get_db)):
+def orderWeek(user_id: int,db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),):
     """gets all orders in the same week this api request"""
+    if current_user.id != user_id and not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Cannot view another user's orders")
+
     week_start = datetime.now() - timedelta(days=7)
     
     week=db.query(Omodels.Order).filter(Omodels.Order.user_id == user_id,Omodels.Order.order_date >= week_start).all()
@@ -53,13 +65,15 @@ def orderWeek(user_id:int,db: Session=Depends(get_db)):
 
     
 @router.get("/getallorders", response_model=List[pmodels.orders], status_code=200)
-def getAllOrders(db: Session=Depends(get_db)):
+def getAllOrders(db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_admin),):
     """returns all orders in the database, for testing purposes only"""
     orders = db.query(Omodels.Order).all()
     return orders
 
 @router.get("/{order_id}/details", response_model=List[pmodels.orderInfo], status_code=200)
-def get_order_details(order_id:int, db:Session=Depends(get_db)):
+def get_order_details(order_id: int,db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),):
     """returns the details of an order including item information and price at order time"""
     try:
         order_details = (db.query(Omodels.Order.id,
@@ -72,7 +86,10 @@ def get_order_details(order_id:int, db:Session=Depends(get_db)):
                              )
                              .join(Omodels.OrderItem, Omodels.Order.id == Omodels.OrderItem.order_id)
                              .join(models.Item, Omodels.OrderItem.item_id == models.Item.id)
-                             .filter(Omodels.Order.id == order_id).all())
+                             .filter(Omodels.Order.id == order_id))
+        if not current_user.is_admin:
+            order_details = order_details.filter(Omodels.Order.user_id == current_user.id)
+        order_details = order_details.all()
     except Exception as e:
         logging.error(f"Error retrieving order details for order {order_id}: {e}")
         raise HTTPException(status_code=500, detail="An error occurred while retrieving order details")
@@ -82,9 +99,13 @@ def get_order_details(order_id:int, db:Session=Depends(get_db)):
 
 
 @router.get("/{user_id}/vieworderdetails", response_model=List[pmodels.orderInfo], status_code=200)
-def viewOrderDetails(user_id:int,db: Session=Depends(get_db)):
+def viewOrderDetails(user_id: int,db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),):
     """ shows all detals of past orders by user incluting item infermation and price at order time
     returns a list of OrderItems with item detalies"""
+    if current_user.id != user_id and not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Cannot view another user's orders")
+
     try:
         orderDetails = (db.query(Omodels.Order.id,
                              Omodels.Order.order_date,
