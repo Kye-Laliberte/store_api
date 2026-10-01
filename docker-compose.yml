@@ -7,9 +7,14 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - ${DB_PORT}:5433
+      - "${DB_PORT}:5432"
     volumes:
       - Datastore:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   fastapi:
     build:
@@ -20,11 +25,12 @@ services:
       - "8000:8000"
 
     environment:
-      DATABASE_URL: postgresql://postgres${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/Datastore${POSTGRES_DB}
-      JWT_SECRET_KEY: ${SECRET_KEY}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY in your .env file}
 
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   frontend:
     build:
