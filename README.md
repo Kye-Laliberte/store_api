@@ -192,6 +192,24 @@ docker-compose.yml
 
 # Running the Project
 
+## PowerShell Environment Setup
+
+On Windows, create the repository-root `.env` file before starting the services:
+
+```powershell
+.\setup_env.ps1
+```
+
+The script prompts for PostgreSQL settings and the frontend port, then generates database and JWT secrets. It will not overwrite an existing `.env`, so existing database credentials and signing keys are preserved. Keep the generated `.env` private; it is excluded from Git.
+
+After starting PostgreSQL, check the JWT key configuration and database network connection with:
+
+```powershell
+.\security_test.ps1
+```
+
+The database check verifies that the configured host and port accept TCP connections; it does not test database authentication.
+
 ## Using Docker
 
 Start all services:

@@ -43,7 +43,20 @@ def grant_admin_privileges(user_id: int,db: Session = Depends(get_db),
         user_status=user.status,
         is_admin=user.is_admin,
     )
-
+@router.get("/{email}/password_reset",response_model=users, status_code=200)
+def reset_password(email: str,password: str, db: Session = Depends(get_db)):
+    """Reset user password"""
+    email=email.strip()
+    password=password.strip()
+    user=UserService(db,email=email).user
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    hashed_password = pwd_context.hash(password)
+    user.password_hash = hashed_password
+    db.commit()
+    db.refresh(user)
+    return users(id=user.id,email=user.email,created_at=user.created_at)
+    
 @router.get("/{email}/RetrievebyEmail",response_model=users, status_code=200)
 def getUser(email: str,db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user),):
     """testing not a valid use of pasword retreval"""
@@ -85,7 +98,7 @@ def readuser(user_id: int, db: Session = Depends(get_db),
 @router.put("/{user_id}/status",response_model=userOut, status_code=200)
 def updateStatus(user_id:int,status:models.UserStatus,db:Session=Depends(get_db), current_user: models.User = Depends(get_current_user)):
     if current_user.id != user_id and not current_user.is_admin:
-        raise HTTPException(status_code=403, detail="Cannot change another user's status")
+        raise HTTPException(status_code=403, detail="non-admin user can only update their own status")
     
     user=UserService(db,user_id=user_id).user
     if not user:
